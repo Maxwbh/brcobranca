@@ -73,7 +73,7 @@ max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 2 }
 min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { 1 }
 threads min_threads_count, max_threads_count
 
-# Workers reduzido para economizar memória
+# Workers reduzidos para economizar memória
 worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "production"
 
 # Usar apenas 1 worker no plano free
