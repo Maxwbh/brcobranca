@@ -7,7 +7,19 @@ Gem para emissão de boletos de cobrança para bancos brasileiros.
 
 [gem]: https://rubygems.org/gems/brcobranca
 
-### Exemplos
+## Documentação Completa
+
+- 📖 **[Guia de Início Rápido](GUIA_INICIO_RAPIDO.md)** - Comece a usar a gem rapidamente
+- 📋 **[Campos por Banco](CAMPOS_BANCOS.md)** - Documentação detalhada de campos obrigatórios, opcionais e validações para cada banco
+- 🚀 **[Deploy no Render](RENDER_DEPLOY.md)** - Guia completo para deploy otimizado no Render (plano free)
+
+### Exemplos e Documentação
+
+- 📖 **[Guia de Início Rápido](GUIA_INICIO_RAPIDO.md)** - Tutorial completo para começar
+- 📋 **[Documentação de Campos](CAMPOS_BANCOS.md)** - Campos obrigatórios e opcionais por banco
+- 🚀 **[Deploy no Render](RENDER_DEPLOY.md)** - Guia de deploy otimizado
+
+#### Aplicações de Exemplo
 
 - https://brcobranca.herokuapp.com
 - http://github.com/kivanio/brcobranca_exemplo
@@ -70,14 +82,17 @@ Criado pelo pessoal da [Akretion](http://www.akretion.com) muito TOP \o/
 - Santander (CNAB400)
 - Santander (CNAB240)
 
-### Documentação
+### Documentação e Recursos
 
-Caso queira verificar(ou adicionar) alguma documentação, acesse [nosso wiki](https://github.com/kivanio/brcobranca/wiki).
+#### Documentação Local
+- **[Guia de Início Rápido](GUIA_INICIO_RAPIDO.md)** - Como usar a gem passo a passo
+- **[Campos por Banco](CAMPOS_BANCOS.md)** - Referência completa de campos para cada banco
+- **[Deploy no Render](RENDER_DEPLOY.md)** - Otimização e deploy para produção
 
-### Rubydoc
-
-- [versão estável](http://rubydoc.info/gems/brcobranca)
-- [versão de desenvolvimento](http://rubydoc.info/github/kivanio/brcobranca/master/frames)
+#### Documentação Online
+- **[Wiki Oficial](https://github.com/kivanio/brcobranca/wiki)** - Documentação colaborativa
+- **[RubyDoc Estável](http://rubydoc.info/gems/brcobranca)** - Documentação da versão estável
+- **[RubyDoc Desenvolvimento](http://rubydoc.info/github/kivanio/brcobranca/master/frames)** - Documentação da versão de desenvolvimento
 
 ### Apoio
 
