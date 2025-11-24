@@ -50,7 +50,7 @@ Todos os bancos herdam da classe `Brcobranca::Boleto::Base` e compartilham os se
 | `variacao` | String | Variação da carteira | - |
 | `data_processamento` | Date | Data de processamento | Data atual |
 | `quantidade` | Integer | Quantidade de boletos | 1 |
-| `documento_numero` | String | Número do documento fiscal | - |
+| `documento_numero` | String | Número do documento fiscal/NF (⚠️ nome correto: `documento_numero`, NÃO `numero_documento`) | - |
 | `codigo_servico` | Boolean | Código de serviço | - |
 | `local_pagamento` | String | Local onde pode ser pago | 'QUALQUER BANCO ATÉ O VENCIMENTO' |
 | `demonstrativo` | String | Informações para o sacado | - |
@@ -91,11 +91,14 @@ Todos os bancos herdam da classe `Brcobranca::Boleto::Base` e compartilham os se
 | 6 dígitos | 17 dígitos | Se `codigo_servico` = true (carteiras 16 ou 18) |
 | 4 dígitos | 7 dígitos | Nosso Número de 11 dígitos |
 
-### Campos Opcionais
+### Campos Opcionais (mas recomendados)
 
-| Campo | Descrição |
-|-------|-----------|
-| `codigo_servico` | Boolean - Define formato do nosso número para convênio 6 dígitos |
+| Campo | Descrição | Observações |
+|-------|-----------|-------------|
+| `codigo_servico` | Boolean - Define formato do nosso número para convênio 6 dígitos | - |
+| `documento_numero` | Número do documento (NF, Pedido, Contrato) | **Recomendado** - Required para "Recibo do Pagador" segundo Doc BB |
+| `cedente_endereco` | Endereço do beneficiário | **Recomendado** - Required para "Recibo do Pagador" segundo Doc BB |
+| `sacado_endereco` | Endereço do sacado | **Recomendado** - Melhora identificação |
 
 ### Exemplo de Uso
 
@@ -103,13 +106,16 @@ Todos os bancos herdam da classe `Brcobranca::Boleto::Base` e compartilham os se
 boleto = Brcobranca::Boleto::BancoBrasil.new(
   valor: 135.00,
   cedente: 'Empresa Exemplo Ltda',
+  cedente_endereco: 'Rua Example, 123 - Centro - CEP 12345-678',
   documento_cedente: '12345678000190',
   sacado: 'João da Silva',
   sacado_documento: '12345678900',
+  sacado_endereco: 'Rua do Cliente, 456 - Bairro - CEP 98765-432',
   agencia: '4042',
   conta_corrente: '61900',
   convenio: 12387989,        # 8 dígitos
-  nosso_numero: '777700168', # 9 dígitos
+  nosso_numero: '777700168', # 9 dígitos (varia conforme convênio)
+  documento_numero: 'NF-001234',  # Número da NF/Pedido/Contrato (RECOMENDADO!)
   carteira: '18',
   data_documento: Date.today,
   data_vencimento: Date.today + 30
