@@ -24,7 +24,9 @@ O erro **"type is missing"** indica que a requisição para a API BRCobranca nã
 
 ### 2. Campos removidos incorretamente
 
-A aplicação Django está removendo campos que são **OBRIGATÓRIOS** para o Sicoob:
+⚠️ **PRINCÍPIO IMPORTANTE**: Somente campos que **NÃO PODEM** ser enviados devem ser removidos. Campos **OPCIONAIS** devem permanecer se tiverem valor.
+
+A aplicação Django estava removendo campos incorretamente:
 
 #### ❌ `especie_documento` - NÃO DEVE SER REMOVIDO
 - **Status:** Campo OBRIGATÓRIO (validado em `lib/brcobranca/boleto/base.rb:98`)
@@ -39,10 +41,11 @@ A aplicação Django está removendo campos que são **OBRIGATÓRIOS** para o Si
 - **Descrição:** Se o banco aceita o boleto após vencimento (S/N)
 - **Ação:** Manter no payload com valor `'N'` para Sicoob
 
-#### ✅ `documento_numero` - PODE SER REMOVIDO
+#### ✅ `documento_numero` - CAMPO OPCIONAL (MANTER SE TIVER VALOR)
 - **Status:** Campo OPCIONAL
 - **Descrição:** Número do documento fiscal/NF
-- **Ação:** Remoção está correta se não for necessário
+- **Ação:** INCLUIR no payload se tiver valor, OMITIR se for None/vazio
+- **Princípio**: Campos opcionais devem permanecer quando têm valor
 
 ## Correções Necessárias na Aplicação Django
 
@@ -69,7 +72,7 @@ def gerar_boleto_sicoob(dados_boleto):
         "especie_documento": dados_boleto.get("especie_documento", "DM"),
         "aceite": dados_boleto.get("aceite", "N"),  # 'N' para Sicoob
 
-        # documento_numero é opcional - incluir se disponível
+        # documento_numero é opcional - incluir se tiver valor (será filtrado depois se None)
         "documento_numero": dados_boleto.get("documento_numero"),
 
         # Outros campos obrigatórios
@@ -99,8 +102,10 @@ CAMPOS_REMOVER_POR_BANCO = {
 }
 
 # DEPOIS (CORRETO):
+# Não remover campos opcionais - apenas omitir se forem None/vazios
 CAMPOS_REMOVER_POR_BANCO = {
-    '756': ['documento_numero'],  # ✅ Apenas campos realmente opcionais
+    '756': [],  # ✅ Sicoob aceita todos os campos base
+    # Apenas listar campos que causam erro na API
 }
 
 # Ou melhor ainda, usar valores padrão específicos por banco
@@ -243,14 +248,14 @@ def preparar_payload_sicoob(dados):
         "data_documento": dados.get("data_documento", str(date.today())),
         "data_processamento": dados.get("data_processamento", str(date.today())),
 
-        # Campos opcionais
+        # Campos opcionais (incluir se tiverem valor)
         "documento_numero": dados.get("documento_numero"),
         "instrucoes": dados.get("instrucoes"),
         "local_pagamento": dados.get("local_pagamento", "QUALQUER BANCO ATÉ O VENCIMENTO"),
     }
 
-    # Remover campos None
-    return {k: v for k, v in payload.items() if v is not None}
+    # Remover apenas campos None/vazios (campos opcionais permanecem se tiverem valor)
+    return {k: v for k, v in payload.items() if v is not None and v != ''}
 ```
 
 ## Exemplo de Payload Correto para Sicoob
@@ -308,12 +313,14 @@ def preparar_payload_sicoob(dados):
 - `data_vencimento`
 
 ### 🔧 Campos Opcionais
-- `documento_numero` - Número NF/Pedido (pode ser omitido)
-- `cedente_endereco` - Recomendado
-- `sacado_endereco` - Recomendado
-- `instrucoes`
-- `local_pagamento`
-- `data_documento`, `data_processamento`
+⚠️ **Campos opcionais devem ser INCLUÍDOS se tiverem valor, não removidos!**
+
+- `documento_numero` - Número NF/Pedido (incluir se disponível)
+- `cedente_endereco` - Recomendado (incluir se disponível)
+- `sacado_endereco` - Recomendado (incluir se disponível)
+- `instrucoes` - Instruções adicionais (incluir se fornecido)
+- `local_pagamento` - Local de pagamento (incluir se específico)
+- `data_documento`, `data_processamento` - Datas (usar padrões se não fornecidas)
 
 ## Referências
 
