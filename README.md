@@ -9,15 +9,15 @@ Gem para emissão de boletos de cobrança para bancos brasileiros.
 
 ## Documentação Completa
 
-- 📖 **[Guia de Início Rápido](GUIA_INICIO_RAPIDO.md)** - Comece a usar a gem rapidamente
-- 📋 **[Campos por Banco](CAMPOS_BANCOS.md)** - Documentação detalhada de campos obrigatórios, opcionais e validações para cada banco
-- 🚀 **[Deploy no Render](RENDER_DEPLOY.md)** - Guia completo para deploy otimizado no Render (plano free)
+- 📖 **[Guia de Início Rápido](docs/getting-started/quick-start.md)** - Comece a usar a gem rapidamente
+- 📋 **[Campos por Banco](docs/banks/fields-reference.md)** - Documentação detalhada de campos obrigatórios, opcionais e validações para cada banco
+- 🚀 **[Deploy no Render](docs/deployment/render-guide.md)** - Guia completo para deploy otimizado no Render (plano free)
 
 ### Exemplos e Documentação
 
-- 📖 **[Guia de Início Rápido](GUIA_INICIO_RAPIDO.md)** - Tutorial completo para começar
-- 📋 **[Documentação de Campos](CAMPOS_BANCOS.md)** - Campos obrigatórios e opcionais por banco
-- 🚀 **[Deploy no Render](RENDER_DEPLOY.md)** - Guia de deploy otimizado
+- 📖 **[Guia de Início Rápido](docs/getting-started/quick-start.md)** - Tutorial completo para começar
+- 📋 **[Documentação de Campos](docs/banks/fields-reference.md)** - Campos obrigatórios e opcionais por banco
+- 🚀 **[Deploy no Render](docs/deployment/render-guide.md)** - Guia de deploy otimizado
 
 #### Aplicações de Exemplo
 
@@ -85,9 +85,10 @@ Criado pelo pessoal da [Akretion](http://www.akretion.com) muito TOP \o/
 ### Documentação e Recursos
 
 #### Documentação Local
-- **[Guia de Início Rápido](GUIA_INICIO_RAPIDO.md)** - Como usar a gem passo a passo
-- **[Campos por Banco](CAMPOS_BANCOS.md)** - Referência completa de campos para cada banco
-- **[Deploy no Render](RENDER_DEPLOY.md)** - Otimização e deploy para produção
+- **[Guia de Início Rápido](docs/getting-started/quick-start.md)** - Como usar a gem passo a passo
+- **[Campos por Banco](docs/banks/fields-reference.md)** - Referência completa de campos para cada banco
+- **[Deploy no Render](docs/deployment/render-guide.md)** - Otimização e deploy para produção
+- **[📚 Índice Completo da Documentação](docs/README.md)** - Navegação completa de todos os recursos
 
 #### Documentação Online
 - **[Wiki Oficial](https://github.com/kivanio/brcobranca/wiki)** - Documentação colaborativa
