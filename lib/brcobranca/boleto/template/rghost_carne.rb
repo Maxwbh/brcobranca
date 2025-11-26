@@ -134,7 +134,7 @@ module Brcobranca
 
         # carrega background do boleto
         def modelo_carne_load_background(doc, margin_bottom)
-          template_path = File.join(File.dirname(__FILE__), '..', '..', 'arquivos', 'templates', 'modelo_carne.eps')
+          template_path = File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'assets', 'templates', 'modelo_carne.eps')
           raise 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
 
           doc.image template_path, x: 1, y: margin_bottom

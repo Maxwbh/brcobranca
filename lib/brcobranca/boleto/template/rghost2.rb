@@ -71,7 +71,7 @@ module Brcobranca
         # @option options [Symbol] :formato Formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
         def modelo_generico(boleto, options = {})
           doc = Document.new paper: [21, 29.7] # A4
-          template_path = File.join(File.dirname(__FILE__), '..', '..', 'arquivos', 'templates', 'modelo_generico2.eps')
+          template_path = File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'assets', 'templates', 'modelo_generico2.eps')
           raise 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
 
           modelo_recibo_beneficiario(doc, boleto)
@@ -93,7 +93,7 @@ module Brcobranca
         # @option options [Symbol] :formato Formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
         def modelo_generico_multipage(boletos, options = {})
           doc = Document.new paper: [21, 29.7] # A4
-          template_path = File.join(File.dirname(__FILE__), '..', '..', 'arquivos', 'templates', 'modelo_generico2.eps')
+          template_path = File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'assets', 'templates', 'modelo_generico2.eps')
           raise 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
 
           boletos.each_with_index do |boleto, index|
