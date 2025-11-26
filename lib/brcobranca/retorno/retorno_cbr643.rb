@@ -3,7 +3,8 @@
 require 'parseline'
 module Brcobranca
   module Retorno
-    # Formato de Retorno CNAB 643
+    # Formato de Retorno CNAB 643 (Banco do Brasil)
+    # Classe base legada - Use as classes específicas em cnab400/ quando disponíveis
     class RetornoCbr643 < Base
       extend ParseLine::FixedWidth # Extendendo parseline
 

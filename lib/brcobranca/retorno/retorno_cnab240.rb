@@ -4,6 +4,7 @@ require 'parseline'
 module Brcobranca
   module Retorno
     # Formato de Retorno CNAB 240
+    # Classe base legada - Use as classes específicas em cnab240/ quando disponíveis
     class RetornoCnab240 < Base
       # Regex para remoção de headers e trailers além de registros diferentes de T ou U
       REGEX_DE_EXCLUSAO_DE_REGISTROS_NAO_T_OU_U = /^((?!^.{7}3.{5}[T|U].*$).)*$/.freeze
