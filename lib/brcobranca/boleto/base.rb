@@ -225,6 +225,20 @@ module Brcobranca
         end
       end
 
+      # Linha digitável do boleto
+      #
+      # Método de conveniência que retorna a linha digitável formatada do código de barras.
+      # A linha digitável é a representação do código de barras que pode ser digitada
+      # manualmente para pagamento.
+      #
+      # @return [String] linha digitável formatada.
+      # @raise [Brcobranca::BoletoInvalido] Caso o boleto seja inválido.
+      # @example
+      #  boleto.linha_digitavel #=> "00190.00009 01238.798779 77700.168188 2 37690000013500"
+      def linha_digitavel
+        codigo_barras.linha_digitavel
+      end
+
       # Monta a segunda parte do código de barras, que é específico para cada banco.
       #
       # @abstract Deverá ser sobreescrito para cada banco.
