@@ -1,0 +1,102 @@
+name: Auto Version Bump
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - 'lib/brcobranca/version.rb'
+      - 'CHANGELOG.md'
+      - '**.md'
+      - 'docs/**'
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore: Bump version')"
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determinar tipo de bump
+        id: bump-type
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+
+          if echo "$COMMIT_MSG" | grep -qiE "^(feat|feature)(\(.*\))?!:|^BREAKING CHANGE:|breaking change"; then
+            echo "type=major" >> $GITHUB_OUTPUT
+            echo "🔥 Breaking change detectado - MAJOR bump"
+          elif echo "$COMMIT_MSG" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+            echo "✨ Nova feature detectada - MINOR bump"
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "🔧 Mudança normal - PATCH bump"
+          fi
+
+      - name: Incrementar versão
+        run: |
+          chmod +x bin/bump_version
+          bin/bump_version ${{ steps.bump-type.outputs.type }}
+
+      - name: Obter nova versão
+        id: version
+        run: |
+          VERSION=$(ruby -r ./lib/brcobranca/version.rb -e "puts Brcobranca::VERSION")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Nova versão: $VERSION"
+
+      - name: Commit e Push
+        run: |
+          git add lib/brcobranca/version.rb CHANGELOG.md
+          git commit -m "chore: Bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release ${{ steps.version.outputs.version }}"
+          git push origin HEAD:${{ github.ref_name }}
+          git push --tags
+
+      - name: Criar Release Notes
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: Release ${{ steps.version.outputs.version }}
+          body: |
+            ## Mudanças nesta versão
+
+            Versão bumpeada automaticamente baseada no commit: ${{ github.event.head_commit.message }}
+
+            Veja o [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) para detalhes completos.
+
+            ### Instalação
+
+            ```bash
+            gem install brcobranca -v ${{ steps.version.outputs.version }}
+            ```
+
+            Ou no Gemfile:
+
+            ```ruby
+            gem 'brcobranca', '~> ${{ steps.version.outputs.version }}'
+            ```
+          draft: false
+          prerelease: false
