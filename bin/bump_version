@@ -1,0 +1,114 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Script para incrementar a versão do BRCobranca
+# Uso:
+#   bin/bump_version patch  # 12.0.0 -> 12.0.1
+#   bin/bump_version minor  # 12.0.0 -> 12.1.0
+#   bin/bump_version major  # 12.0.0 -> 13.0.0
+
+VERSION_FILE = File.join(__dir__, '..', 'lib', 'brcobranca', 'version.rb')
+CHANGELOG_FILE = File.join(__dir__, '..', 'CHANGELOG.md')
+
+class VersionBumper
+  attr_reader :bump_type
+
+  def initialize(bump_type = 'patch')
+    @bump_type = bump_type.to_s.downcase
+    validate_bump_type!
+  end
+
+  def run
+    current_version = read_current_version
+    new_version = calculate_new_version(current_version)
+
+    puts "📦 Atualizando versão: #{current_version} → #{new_version}"
+
+    update_version_file(new_version)
+    update_changelog(current_version, new_version)
+
+    puts "✓ Versão atualizada com sucesso!"
+    puts "  Arquivos modificados:"
+    puts "  - #{VERSION_FILE}"
+    puts "  - #{CHANGELOG_FILE}"
+    puts ""
+    puts "⚠️  Não se esqueça de:"
+    puts "  1. Revisar as mudanças no CHANGELOG.md"
+    puts "  2. Fazer commit: git add . && git commit -m 'chore: Bump version to #{new_version}'"
+    puts "  3. Criar tag: git tag -a v#{new_version} -m 'Release #{new_version}'"
+    puts "  4. Push: git push && git push --tags"
+  end
+
+  private
+
+  def validate_bump_type!
+    valid_types = %w[major minor patch]
+    return if valid_types.include?(bump_type)
+
+    puts "❌ Erro: Tipo de bump inválido '#{bump_type}'"
+    puts "   Use: major, minor ou patch"
+    exit 1
+  end
+
+  def read_current_version
+    content = File.read(VERSION_FILE)
+    match = content.match(/VERSION = ['"]([^'"]+)['"]/)
+
+    unless match
+      puts "❌ Erro: Não foi possível encontrar VERSION no arquivo"
+      exit 1
+    end
+
+    match[1]
+  end
+
+  def calculate_new_version(current_version)
+    parts = current_version.split('.').map(&:to_i)
+
+    case bump_type
+    when 'major'
+      [parts[0] + 1, 0, 0].join('.')
+    when 'minor'
+      [parts[0], parts[1] + 1, 0].join('.')
+    when 'patch'
+      [parts[0], parts[1], parts[2] + 1].join('.')
+    end
+  end
+
+  def update_version_file(new_version)
+    content = File.read(VERSION_FILE)
+    new_content = content.gsub(
+      /VERSION = ['"]([^'"]+)['"]/,
+      "VERSION = '#{new_version}'"
+    )
+
+    File.write(VERSION_FILE, new_content)
+  end
+
+  def update_changelog(old_version, new_version)
+    content = File.read(CHANGELOG_FILE)
+    today = Time.now.strftime('%Y-%m-%d')
+
+    # Substituir [Unreleased] pela nova versão
+    new_content = content.sub(
+      /## \[Unreleased\]/,
+      "## [Unreleased]\n\n<!-- Adicione novas mudanças aqui -->\n\n## [#{new_version}] - #{today}"
+    )
+
+    # Se não houver [Unreleased], adicionar antes da primeira versão
+    unless new_content.include?('[Unreleased]')
+      new_content = content.sub(
+        /## \[\d+\.\d+\.\d+\]/,
+        "## [Unreleased]\n\n<!-- Adicione novas mudanças aqui -->\n\n## [#{new_version}] - #{today}"
+      )
+    end
+
+    File.write(CHANGELOG_FILE, new_content)
+  end
+end
+
+# Executar script
+if __FILE__ == $PROGRAM_NAME
+  bump_type = ARGV[0] || 'patch'
+  VersionBumper.new(bump_type).run
+end
