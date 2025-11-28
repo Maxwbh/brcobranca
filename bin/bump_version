@@ -99,7 +99,9 @@ class VersionBumper
     new_content = content.sub('## [Unreleased]', changelog_entry(new_version))
 
     # Se não houver [Unreleased], adicionar antes da primeira versão
-    new_content = content.sub(/## \[\d+\.\d+\.\d+\]/, changelog_entry(new_version)) unless new_content.include?('[Unreleased]')
+    unless new_content.include?('[Unreleased]')
+      new_content = content.sub(/## \[\d+\.\d+\.\d+\]/, changelog_entry(new_version))
+    end
 
     File.write(CHANGELOG_FILE, new_content)
   end
