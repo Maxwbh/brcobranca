@@ -90,23 +90,17 @@ class VersionBumper
 
   def update_changelog(new_version)
     content = File.read(CHANGELOG_FILE)
-    today = Time.now.strftime('%Y-%m-%d')
-
-    # Substituir [Unreleased] pela nova versão
-    new_content = content.sub(
-      /## \[Unreleased\]/,
-      "## [Unreleased]\n\n<!-- Adicione novas mudanças aqui -->\n\n## [#{new_version}] - #{today}"
-    )
+    new_content = content.sub('## [Unreleased]', changelog_entry(new_version))
 
     # Se não houver [Unreleased], adicionar antes da primeira versão
-    unless new_content.include?('[Unreleased]')
-      new_content = content.sub(
-        /## \[\d+\.\d+\.\d+\]/,
-        "## [Unreleased]\n\n<!-- Adicione novas mudanças aqui -->\n\n## [#{new_version}] - #{today}"
-      )
-    end
+    new_content = content.sub(/## \[\d+\.\d+\.\d+\]/, changelog_entry(new_version)) unless new_content.include?('[Unreleased]')
 
     File.write(CHANGELOG_FILE, new_content)
+  end
+
+  def changelog_entry(new_version)
+    today = Time.now.strftime('%Y-%m-%d')
+    "## [Unreleased]\n\n<!-- Adicione novas mudanças aqui -->\n\n## [#{new_version}] - #{today}"
   end
 end
 
