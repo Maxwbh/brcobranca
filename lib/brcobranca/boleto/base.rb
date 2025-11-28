@@ -127,9 +127,9 @@ module Brcobranca
       # @return [Path] Caminho para o arquivo de logotipo do banco.
       def logotipo
         if Brcobranca.configuration.gerador == :rghost_carne
-          File.join(File.dirname(__FILE__), '..', 'arquivos', 'logos', "#{class_name}_carne.eps")
+          File.join(File.dirname(__FILE__), '..', '..', '..', 'assets', 'logos', "#{class_name}_carne.eps")
         else
-          File.join(File.dirname(__FILE__), '..', 'arquivos', 'logos', "#{class_name}.eps")
+          File.join(File.dirname(__FILE__), '..', '..', '..', 'assets', 'logos', "#{class_name}.eps")
         end
       end
 
@@ -223,6 +223,20 @@ module Brcobranca
                      message: "tamanho(#{codigo.size}) prévio do código de barras(#{codigo}) inválido, deveria ser 43 dígitos")
           raise Brcobranca::BoletoInvalido, self
         end
+      end
+
+      # Linha digitável do boleto
+      #
+      # Método de conveniência que retorna a linha digitável formatada do código de barras.
+      # A linha digitável é a representação do código de barras que pode ser digitada
+      # manualmente para pagamento.
+      #
+      # @return [String] linha digitável formatada.
+      # @raise [Brcobranca::BoletoInvalido] Caso o boleto seja inválido.
+      # @example
+      #  boleto.linha_digitavel #=> "00190.00009 01238.798779 77700.168188 2 37690000013500"
+      def linha_digitavel
+        codigo_barras.linha_digitavel
       end
 
       # Monta a segunda parte do código de barras, que é específico para cada banco.

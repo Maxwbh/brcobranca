@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require 'brcobranca/calculo'
-require 'brcobranca/limpeza'
-require 'brcobranca/formatacao'
-require 'brcobranca/formatacao_string'
-require 'brcobranca/calculo_data'
-require 'brcobranca/currency'
-require 'brcobranca/validations'
+require 'brcobranca/util/calculo'
+require 'brcobranca/util/limpeza'
+require 'brcobranca/util/formatacao'
+require 'brcobranca/util/formatacao_string'
+require 'brcobranca/util/calculo_data'
+require 'brcobranca/util/currency'
+require 'brcobranca/util/validations'
 require 'brcobranca/util/date'
 require 'fast_blank'
 

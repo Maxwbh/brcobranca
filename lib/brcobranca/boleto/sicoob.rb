@@ -12,7 +12,7 @@ module Brcobranca
       validates_length_of :quantidade, maximum: 3, message: 'deve ser menor ou igual a 3 dígitos.'
 
       def initialize(campos = {})
-        campos = { carteira: '1', variacao: '01', quantidade: '001' }.merge!(campos)
+        campos = { carteira: '1', variacao: '01', quantidade: '001', aceite: 'N' }.merge!(campos)
         super(campos)
       end
 
