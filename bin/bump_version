@@ -26,23 +26,29 @@ class VersionBumper
     new_version = calculate_new_version(current_version)
 
     puts "📦 Atualizando versão: #{current_version} → #{new_version}"
-
     update_version_file(new_version)
     update_changelog(new_version)
+    print_success_summary
+    print_next_steps(new_version)
+  end
 
+  private
+
+  def print_success_summary
     puts '✓ Versão atualizada com sucesso!'
     puts '  Arquivos modificados:'
     puts "  - #{VERSION_FILE}"
     puts "  - #{CHANGELOG_FILE}"
     puts ''
+  end
+
+  def print_next_steps(new_version)
     puts '⚠️  Não se esqueça de:'
     puts '  1. Revisar as mudanças no CHANGELOG.md'
     puts "  2. Fazer commit: git add . && git commit -m 'chore: Bump version to #{new_version}'"
     puts "  3. Criar tag: git tag -a v#{new_version} -m 'Release #{new_version}'"
     puts '  4. Push: git push && git push --tags'
   end
-
-  private
 
   def validate_bump_type!
     valid_types = %w[major minor patch]
