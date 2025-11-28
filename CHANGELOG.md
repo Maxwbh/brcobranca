@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.0.1] - 2025-11-28
+
 ### Added
 - Reestruturação completa da documentação
 - Nova estrutura de diretórios `docs/` organizada por categoria
