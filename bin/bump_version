@@ -25,7 +25,7 @@ class VersionBumper
     puts "📦 Atualizando versão: #{current_version} → #{new_version}"
 
     update_version_file(new_version)
-    update_changelog(current_version, new_version)
+    update_changelog(new_version)
 
     puts "✓ Versão atualizada com sucesso!"
     puts "  Arquivos modificados:"
@@ -85,7 +85,7 @@ class VersionBumper
     File.write(VERSION_FILE, new_content)
   end
 
-  def update_changelog(old_version, new_version)
+  def update_changelog(new_version)
     content = File.read(CHANGELOG_FILE)
     today = Time.now.strftime('%Y-%m-%d')
 
