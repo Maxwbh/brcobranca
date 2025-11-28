@@ -30,16 +30,16 @@ class VersionBumper
     update_version_file(new_version)
     update_changelog(new_version)
 
-    puts "✓ Versão atualizada com sucesso!"
-    puts "  Arquivos modificados:"
+    puts '✓ Versão atualizada com sucesso!'
+    puts '  Arquivos modificados:'
     puts "  - #{VERSION_FILE}"
     puts "  - #{CHANGELOG_FILE}"
-    puts ""
-    puts "⚠️  Não se esqueça de:"
-    puts "  1. Revisar as mudanças no CHANGELOG.md"
+    puts ''
+    puts '⚠️  Não se esqueça de:'
+    puts '  1. Revisar as mudanças no CHANGELOG.md'
     puts "  2. Fazer commit: git add . && git commit -m 'chore: Bump version to #{new_version}'"
     puts "  3. Criar tag: git tag -a v#{new_version} -m 'Release #{new_version}'"
-    puts "  4. Push: git push && git push --tags"
+    puts '  4. Push: git push && git push --tags'
   end
 
   private
@@ -49,7 +49,7 @@ class VersionBumper
     return if valid_types.include?(bump_type)
 
     puts "❌ Erro: Tipo de bump inválido '#{bump_type}'"
-    puts "   Use: major, minor ou patch"
+    puts '   Use: major, minor ou patch'
     exit 1
   end
 
@@ -58,7 +58,7 @@ class VersionBumper
     match = content.match(/VERSION = ['"]([^'"]+)['"]/)
 
     unless match
-      puts "❌ Erro: Não foi possível encontrar VERSION no arquivo"
+      puts '❌ Erro: Não foi possível encontrar VERSION no arquivo'
       exit 1
     end
 
