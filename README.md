@@ -1,35 +1,100 @@
-Gem para emissão de boletos de cobrança para bancos brasileiros.
+# BRCobranca
+
+> Gem Ruby para emissão de boletos bancários e geração de arquivos de remessa/retorno CNAB para bancos brasileiros.
 
 [![Ruby](https://github.com/kivanio/brcobranca/actions/workflows/main.yml/badge.svg)](https://github.com/kivanio/brcobranca/actions/workflows/main.yml)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkivanio%2Fbrcobranca.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkivanio%2Fbrcobranca?ref=badge_shield)
-
 [![Gem Version](http://img.shields.io/gem/v/brcobranca.svg)][gem]
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkivanio%2Fbrcobranca.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkivanio%2Fbrcobranca?ref=badge_shield)
 
 [gem]: https://rubygems.org/gems/brcobranca
 
-## Documentação Completa
+## 📋 Índice
 
-- 📖 **[Guia de Início Rápido](docs/getting-started/quick-start.md)** - Comece a usar a gem rapidamente
-- 📋 **[Campos por Banco](docs/banks/fields-reference.md)** - Documentação detalhada de campos obrigatórios, opcionais e validações para cada banco
-- 🚀 **[Deploy no Render](docs/deployment/render-guide.md)** - Guia completo para deploy otimizado no Render (plano free)
+- [Características](#-características)
+- [Instalação](#-instalação)
+- [Início Rápido](#-início-rápido)
+- [Bancos Suportados](#-bancos-suportados)
+- [Documentação](#-documentação)
+- [Exemplos](#-exemplos)
+- [Contribuindo](#-contribuindo)
+- [Licença](#-licença)
 
-### Exemplos e Documentação
+## ✨ Características
 
-- 📖 **[Guia de Início Rápido](docs/getting-started/quick-start.md)** - Tutorial completo para começar
-- 📋 **[Documentação de Campos](docs/banks/fields-reference.md)** - Campos obrigatórios e opcionais por banco
-- 🚀 **[Deploy no Render](docs/deployment/render-guide.md)** - Guia de deploy otimizado
+- ✅ **17 bancos brasileiros** suportados com validações específicas
+- 📄 **Geração de boletos** em PDF com código de barras
+- 💾 **Arquivos CNAB** de remessa (240/400/444) e retorno
+- 🔒 **Validações robustas** de campos por banco
+- 🎨 **Layouts customizáveis** para boletos
+- 🧪 **Amplamente testado** com RSpec
+- 📦 **Pronto para produção** (usado por milhares de empresas)
+- 🌐 **Ruby 2.7+** até 3.3
 
-#### Aplicações de Exemplo
+## 📥 Instalação
 
-- https://brcobranca.herokuapp.com
-- http://github.com/kivanio/brcobranca_exemplo
-- https://github.com/thiagoc7/brcobranca_app
+Adicione ao seu `Gemfile`:
 
-### API Server
+```ruby
+gem 'brcobranca'
+```
 
-Criado pelo pessoal da [Akretion](http://www.akretion.com) muito TOP \o/
+E execute:
 
-[API server for brcobranca](https://github.com/akretion/boleto_cnab_api)
+```bash
+bundle install
+```
+
+Ou instale diretamente:
+
+```bash
+gem install brcobranca
+```
+
+**Requisito adicional:** GhostScript > 9.0 (para geração de PDFs)
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install ghostscript
+
+# macOS
+brew install ghostscript
+```
+
+📖 **[Guia de Instalação Completo](docs/installation.md)**
+
+## 🚀 Início Rápido
+
+```ruby
+require 'brcobranca'
+
+# Criar um boleto
+boleto = Brcobranca::Boleto::BancoDoBrasil.new(
+  cedente: "Minha Empresa",
+  documento_cedente: "12345678000199",
+  sacado: "Cliente",
+  sacado_documento: "12345678900",
+  agencia: "1234",
+  conta_corrente: "123456",
+  convenio: "1234567",
+  numero_documento: "123456",
+  valor: 100.00,
+  data_vencimento: Date.today + 30,
+  data_documento: Date.today
+)
+
+# Gerar PDF
+File.open('boleto.pdf', 'wb') { |f| f.write(boleto.to(:pdf)) }
+
+# Obter linha digitável
+puts boleto.linha_digitavel
+#=> "00190.00009 01234.567891 12345.678901 2 34567890123456"
+```
+
+📖 **[Guia de Início Rápido Completo](docs/getting-started/quick-start.md)**
+
+## 🏦 Bancos Suportados
+
+### Boletos (17 bancos)
 
 ### Bancos Disponíveis
 
