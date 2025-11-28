@@ -10,6 +10,9 @@
 VERSION_FILE = File.join(__dir__, '..', 'lib', 'brcobranca', 'version.rb')
 CHANGELOG_FILE = File.join(__dir__, '..', 'CHANGELOG.md')
 
+# Handles version bumping for BRCobranca gem.
+# Supports major, minor, and patch version increments,
+# and automatically updates version file and changelog.
 class VersionBumper
   attr_reader :bump_type
 
