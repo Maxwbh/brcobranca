@@ -73,12 +73,33 @@ module Brcobranca
 
     private
 
+    # Coleta validações de um tipo específico da hierarquia de classes
+    # @param type [Symbol] tipo de validação (:presences, :lengths, :numericals, etc.)
+    # @param default [Object] valor padrão quando não há validações ([] para arrays, {} para hashes)
+    # @return [Object] validações coletadas de todas as superclasses
+    def collect_validations(type, default = [])
+      result = default.dup
+
+      # Coleta validações das superclasses (até 2 níveis)
+      [self.class.superclass.superclass, self.class.superclass, self.class].each do |klass|
+        next unless klass.respond_to?(type)
+
+        value = klass.send(type)
+        next unless value
+
+        if result.is_a?(Hash)
+          result.merge!(value)
+        else
+          result += value
+        end
+      end
+
+      result
+    end
+
     def check_eachs
-      eachs = {}
-      eachs.merge!(self.class.superclass.superclass.eachs || {}) if self.class.superclass.superclass.respond_to?(:eachs)
-      eachs.merge!(self.class.superclass.eachs || {}) if self.class.superclass.respond_to?(:eachs)
-      eachs.merge!(self.class.eachs) if self.class.eachs
-      return true if eachs.keys.size.zero?
+      eachs = collect_validations(:eachs, {})
+      return true if eachs.empty?
 
       eachs.each do |attr_name, block|
         value = ''
@@ -92,12 +113,9 @@ module Brcobranca
     end
 
     def check_presences
-      presences = []
-      if self.class.superclass.superclass.respond_to?(:presences)
-        presences = self.class.superclass.superclass.presences || []
-      end
-      presences += self.class.superclass.presences || [] if self.class.superclass.respond_to?(:presences)
-      presences += self.class.presences if self.class.presences
+      presences = collect_validations(:presences)
+      return true if presences.empty?
+
       all_present = true
       presences.each do |presence|
         presence.select { |p| p.is_a? Symbol }.each do |variable|
@@ -113,10 +131,8 @@ module Brcobranca
     end
 
     def check_numericals
-      numericals = []
-      numericals = self.class.superclass.numericals || [] if self.class.superclass.respond_to?(:numericals)
-      numericals += self.class.numericals if self.class.numericals
-      return true unless numericals
+      numericals = collect_validations(:numericals)
+      return true if numericals.empty?
 
       all_numerical = true
       numericals.each do |numerical|
@@ -133,11 +149,8 @@ module Brcobranca
     end
 
     def check_lengths
-      lengths = []
-      lengths = self.class.superclass.superclass.lengths || [] if self.class.superclass.superclass.respond_to?(:lengths)
-      lengths += self.class.superclass.lengths || [] if self.class.superclass.respond_to?(:lengths)
-      lengths += self.class.lengths if self.class.lengths
-      return true unless lengths
+      lengths = collect_validations(:lengths)
+      return true if lengths.empty?
 
       all_checked = true
       lengths.each do |rule|
@@ -180,13 +193,8 @@ module Brcobranca
     end
 
     def check_inclusions
-      inclusions = []
-      if self.class.superclass.superclass.respond_to?(:inclusions)
-        inclusions = self.class.superclass.superclass.inclusions || []
-      end
-      inclusions += self.class.superclass.inclusions || [] if self.class.superclass.respond_to?(:inclusions)
-      inclusions += self.class.inclusions if self.class.inclusions
-      return true unless inclusions
+      inclusions = collect_validations(:inclusions)
+      return true if inclusions.empty?
 
       all_checked = true
       inclusions.each do |rule|
@@ -208,13 +216,8 @@ module Brcobranca
     end
 
     def check_with_formats
-      with_formats = []
-      if self.class.superclass.superclass.respond_to?(:with_formats)
-        with_formats = self.class.superclass.superclass.with_formats || []
-      end
-      with_formats += self.class.superclass.with_formats || [] if self.class.superclass.respond_to?(:with_formats)
-      with_formats += self.class.with_formats if self.class.with_formats
-      return true unless with_formats
+      with_formats = collect_validations(:with_formats)
+      return true if with_formats.empty?
 
       all_checked = true
       with_formats.each do |rule|
