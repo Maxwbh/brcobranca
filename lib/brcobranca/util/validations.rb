@@ -47,7 +47,64 @@ module Brcobranca
         end
       end
 
-      def with_options(options, &block); end
+      # Permite aplicar opções comuns a múltiplas validações
+      # Similar ao with_options do ActiveModel
+      #
+      # @param options [Hash] opções a serem aplicadas (ex: if:, unless:)
+      # @yield [OptionsProxy] proxy que aplica as opções às validações
+      #
+      # @example
+      #   with_options if: :usa_seu_numero? do |v|
+      #     v.validates_length_of :seu_numero, maximum: 7, message: 'erro'
+      #   end
+      def with_options(options, &block)
+        block.call(OptionsProxy.new(self, options))
+      end
+    end
+
+    # Proxy para aplicar opções comuns às validações
+    class OptionsProxy
+      def initialize(target, options)
+        @target = target
+        @options = options
+      end
+
+      def validates_presence_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_presence_of(*merged)
+      end
+
+      def validates_length_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_length_of(*merged)
+      end
+
+      def validates_numericality_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_numericality_of(*merged)
+      end
+
+      def validates_inclusion_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_inclusion_of(*merged)
+      end
+
+      def validates_format_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_format_of(*merged)
+      end
+
+      private
+
+      def merge_options(attr_names)
+        if attr_names.last.is_a?(Hash)
+          options = attr_names.pop
+          attr_names << @options.merge(options)
+        else
+          attr_names << @options.dup
+        end
+        attr_names
+      end
     end
 
     def errors
