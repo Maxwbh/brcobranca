@@ -200,5 +200,6 @@ module Brcobranca
   module Util
     autoload :Empresa, 'brcobranca/util/empresa'
     autoload :Errors, 'brcobranca/util/errors'
+    autoload :FormatacaoCampos, 'brcobranca/util/formatacao_campos'
   end
 end

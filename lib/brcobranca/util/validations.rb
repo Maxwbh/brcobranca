@@ -47,7 +47,64 @@ module Brcobranca
         end
       end
 
-      def with_options(options, &block); end
+      # Permite aplicar opções comuns a múltiplas validações
+      # Similar ao with_options do ActiveModel
+      #
+      # @param options [Hash] opções a serem aplicadas (ex: if:, unless:)
+      # @yield [OptionsProxy] proxy que aplica as opções às validações
+      #
+      # @example
+      #   with_options if: :usa_seu_numero? do |v|
+      #     v.validates_length_of :seu_numero, maximum: 7, message: 'erro'
+      #   end
+      def with_options(options)
+        yield OptionsProxy.new(self, options)
+      end
+    end
+
+    # Proxy para aplicar opções comuns às validações
+    class OptionsProxy
+      def initialize(target, options)
+        @target = target
+        @options = options
+      end
+
+      def validates_presence_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_presence_of(*merged)
+      end
+
+      def validates_length_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_length_of(*merged)
+      end
+
+      def validates_numericality_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_numericality_of(*merged)
+      end
+
+      def validates_inclusion_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_inclusion_of(*merged)
+      end
+
+      def validates_format_of(*attr_names)
+        merged = merge_options(attr_names)
+        @target.validates_format_of(*merged)
+      end
+
+      private
+
+      def merge_options(attr_names)
+        if attr_names.last.is_a?(Hash)
+          options = attr_names.pop
+          attr_names << @options.merge(options)
+        else
+          attr_names << @options.dup
+        end
+        attr_names
+      end
     end
 
     def errors
@@ -73,12 +130,20 @@ module Brcobranca
 
     private
 
+    # Coleta validações de um tipo específico da hierarquia de classes
+    def collect_validations(type, default = [])
+      result = default.dup
+      [self.class.superclass.superclass, self.class.superclass, self.class].each do |klass|
+        next unless klass.respond_to?(type) && (value = klass.send(type))
+
+        result.is_a?(Hash) ? result.merge!(value) : result += value
+      end
+      result
+    end
+
     def check_eachs
-      eachs = {}
-      eachs.merge!(self.class.superclass.superclass.eachs || {}) if self.class.superclass.superclass.respond_to?(:eachs)
-      eachs.merge!(self.class.superclass.eachs || {}) if self.class.superclass.respond_to?(:eachs)
-      eachs.merge!(self.class.eachs) if self.class.eachs
-      return true if eachs.keys.size.zero?
+      eachs = collect_validations(:eachs, {})
+      return true if eachs.empty?
 
       eachs.each do |attr_name, block|
         value = ''
@@ -92,12 +157,9 @@ module Brcobranca
     end
 
     def check_presences
-      presences = []
-      if self.class.superclass.superclass.respond_to?(:presences)
-        presences = self.class.superclass.superclass.presences || []
-      end
-      presences += self.class.superclass.presences || [] if self.class.superclass.respond_to?(:presences)
-      presences += self.class.presences if self.class.presences
+      presences = collect_validations(:presences)
+      return true if presences.empty?
+
       all_present = true
       presences.each do |presence|
         presence.select { |p| p.is_a? Symbol }.each do |variable|
@@ -113,10 +175,8 @@ module Brcobranca
     end
 
     def check_numericals
-      numericals = []
-      numericals = self.class.superclass.numericals || [] if self.class.superclass.respond_to?(:numericals)
-      numericals += self.class.numericals if self.class.numericals
-      return true unless numericals
+      numericals = collect_validations(:numericals)
+      return true if numericals.empty?
 
       all_numerical = true
       numericals.each do |numerical|
@@ -133,11 +193,8 @@ module Brcobranca
     end
 
     def check_lengths
-      lengths = []
-      lengths = self.class.superclass.superclass.lengths || [] if self.class.superclass.superclass.respond_to?(:lengths)
-      lengths += self.class.superclass.lengths || [] if self.class.superclass.respond_to?(:lengths)
-      lengths += self.class.lengths if self.class.lengths
-      return true unless lengths
+      lengths = collect_validations(:lengths)
+      return true if lengths.empty?
 
       all_checked = true
       lengths.each do |rule|
@@ -180,13 +237,8 @@ module Brcobranca
     end
 
     def check_inclusions
-      inclusions = []
-      if self.class.superclass.superclass.respond_to?(:inclusions)
-        inclusions = self.class.superclass.superclass.inclusions || []
-      end
-      inclusions += self.class.superclass.inclusions || [] if self.class.superclass.respond_to?(:inclusions)
-      inclusions += self.class.inclusions if self.class.inclusions
-      return true unless inclusions
+      inclusions = collect_validations(:inclusions)
+      return true if inclusions.empty?
 
       all_checked = true
       inclusions.each do |rule|
@@ -208,13 +260,8 @@ module Brcobranca
     end
 
     def check_with_formats
-      with_formats = []
-      if self.class.superclass.superclass.respond_to?(:with_formats)
-        with_formats = self.class.superclass.superclass.with_formats || []
-      end
-      with_formats += self.class.superclass.with_formats || [] if self.class.superclass.respond_to?(:with_formats)
-      with_formats += self.class.with_formats if self.class.with_formats
-      return true unless with_formats
+      with_formats = collect_validations(:with_formats)
+      return true if with_formats.empty?
 
       all_checked = true
       with_formats.each do |rule|

@@ -212,18 +212,22 @@ end
 brcobranca/
 ├── assets/              # Logos e templates
 ├── docs/                # Documentação
-│   ├── banks/          # Documentação por banco
-│   ├── deployment/     # Guias de deploy
-│   ├── getting-started/# Tutoriais iniciais
-│   └── guides/         # Guias diversos
+│   ├── README.md        # Índice da documentação
+│   ├── guia_rapido.md   # Tutorial de início rápido
+│   └── campos_por_banco.md  # Referência de campos
 ├── lib/
 │   └── brcobranca/
-│       ├── boleto/     # Classes de boleto por banco
-│       ├── remessa/    # Classes de remessa
-│       ├── retorno/    # Classes de retorno
-│       └── util/       # Utilitários (cálculo, formatação, etc)
-├── spec/               # Testes RSpec
-└── ...
+│       ├── boleto/      # Classes de boleto por banco
+│       ├── remessa/     # Classes de remessa (CNAB)
+│       ├── retorno/     # Classes de retorno (CNAB)
+│       └── util/        # Utilitários (cálculo, formatação, validações)
+├── spec/                # Testes RSpec
+├── CHANGELOG.md         # Histórico de versões
+├── CONTRIBUTING.md      # Este arquivo
+├── Dockerfile           # Container Docker
+├── README.md            # Documentação principal
+├── SECURITY.md          # Política de segurança
+└── render.yaml          # Deploy Render.com
 ```
 
 ### Adicionando Suporte a um Novo Banco
