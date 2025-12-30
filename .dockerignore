@@ -1,0 +1,33 @@
+# Arquivos Git
+.git
+.gitignore
+
+# Arquivos de desenvolvimento
+.ruby-version
+.ruby-gemset
+.rspec
+
+# Coverage e relatórios
+coverage/
+*.log
+
+# Arquivos de editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Documentação gerada
+doc/
+.yardoc/
+
+# Gems instaladas localmente
+vendor/bundle/
+
+# Arquivos temporários
+tmp/
+*.tmp
+
+# Arquivos pkg (gems construídas)
+pkg/

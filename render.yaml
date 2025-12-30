@@ -1,0 +1,20 @@
+# Configuração para deploy no Render.com
+# Este arquivo define como o projeto deve ser construído e testado
+# Mais informações: https://render.com/docs/blueprint-spec
+
+services:
+  # Serviço de background para executar testes da gem
+  - type: worker
+    name: brcobranca-tests
+    env: ruby
+    region: oregon
+    plan: free
+    buildCommand: |
+      apt-get update && apt-get install -y ghostscript
+      bundle install
+    startCommand: bundle exec rspec --format documentation
+    envVars:
+      - key: RUBY_VERSION
+        value: 3.3.0
+      - key: BUNDLE_WITHOUT
+        value: development
