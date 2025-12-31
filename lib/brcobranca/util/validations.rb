@@ -57,8 +57,8 @@ module Brcobranca
       #   with_options if: :usa_seu_numero? do |v|
       #     v.validates_length_of :seu_numero, maximum: 7, message: 'erro'
       #   end
-      def with_options(options, &block)
-        block.call(OptionsProxy.new(self, options))
+      def with_options(options)
+        yield OptionsProxy.new(self, options)
       end
     end
 
@@ -131,26 +131,12 @@ module Brcobranca
     private
 
     # Coleta validações de um tipo específico da hierarquia de classes
-    # @param type [Symbol] tipo de validação (:presences, :lengths, :numericals, etc.)
-    # @param default [Object] valor padrão quando não há validações ([] para arrays, {} para hashes)
-    # @return [Object] validações coletadas de todas as superclasses
     def collect_validations(type, default = [])
       result = default.dup
-
-      # Coleta validações das superclasses (até 2 níveis)
       [self.class.superclass.superclass, self.class.superclass, self.class].each do |klass|
-        next unless klass.respond_to?(type)
-
-        value = klass.send(type)
-        next unless value
-
-        if result.is_a?(Hash)
-          result.merge!(value)
-        else
-          result += value
-        end
+        next unless klass.respond_to?(type) && (value = klass.send(type))
+        result.is_a?(Hash) ? result.merge!(value) : result += value
       end
-
       result
     end
 
