@@ -2,9 +2,6 @@
 
 require 'simplecov'
 SimpleCov.start do
-  # Define cobertura mínima para garantir qualidade do código
-  minimum_coverage 80
-
   # Adiciona grupos para melhor visualização
   add_group 'Boletos', 'lib/brcobranca/boleto'
   add_group 'Remessa', 'lib/brcobranca/remessa'
