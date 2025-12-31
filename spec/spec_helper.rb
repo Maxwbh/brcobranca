@@ -1,7 +1,17 @@
 # frozen_string_literal: true
 
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+  # Adiciona grupos para melhor visualização
+  add_group 'Boletos', 'lib/brcobranca/boleto'
+  add_group 'Remessa', 'lib/brcobranca/remessa'
+  add_group 'Retorno', 'lib/brcobranca/retorno'
+  add_group 'Utilitários', 'lib/brcobranca/util'
+
+  # Ignora arquivos que não precisam de cobertura
+  add_filter '/spec/'
+  add_filter '/vendor/'
+end
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
