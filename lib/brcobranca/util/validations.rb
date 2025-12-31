@@ -135,6 +135,7 @@ module Brcobranca
       result = default.dup
       [self.class.superclass.superclass, self.class.superclass, self.class].each do |klass|
         next unless klass.respond_to?(type) && (value = klass.send(type))
+
         result.is_a?(Hash) ? result.merge!(value) : result += value
       end
       result
