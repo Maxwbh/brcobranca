@@ -9,6 +9,45 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.1.0] - 2025-12-31
+
+### Added
+- **FormatacaoCampos**: Novo módulo para formatação padronizada de campos bancários
+  - Método `formata_campo` para gerar setters com padding automático
+  - Método `formata_campos` para definir múltiplos campos de uma vez
+- **with_options**: Implementação completa do método para validações condicionais
+  - Classe `OptionsProxy` para aplicar opções comuns a múltiplas validações
+  - Similar ao padrão do ActiveModel
+- **Documentação de campos por banco** (`docs/campos_por_banco.md`)
+  - Referência completa de campos obrigatórios/opcionais por banco
+  - Exemplos de código para cada banco suportado
+- **Guia de início rápido** (`docs/guia_rapido.md`)
+  - Instalação e configuração
+  - Geração de boletos e arquivos CNAB
+  - Integração com Rails
+  - Troubleshooting
+
+### Changed
+- **RGhost**: Dependência atualizada de `= 0.9.8` para `>= 0.9.8`
+  - Permite uso do RGhost 0.9.9 (lançado em Mar/2024)
+  - Resolve issue #269 do repositório original
+- **Retorno::Base**: Atributos reorganizados em grupos lógicos com documentação
+- **Validations**: Método `collect_validations` extraído para reduzir duplicação
+
+### Improved
+- **SimpleCov**: Configuração aprimorada com cobertura mínima de 80%
+  - Grupos por módulo (Boletos, Remessa, Retorno, Utilitários)
+  - Filtros para `/spec/` e `/vendor/`
+- **Docker**: Adicionado Dockerfile para containerização
+  - Ruby 3.3 com GhostScript
+  - Otimizado para CI/CD
+- **Render.com**: Adicionada configuração para deploy gratuito
+  - Blueprint em `render.yaml`
+  - Configuração de worker para testes
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA
+
 ## [12.0.1] - 2025-11-28
 
 ### Added
@@ -103,3 +142,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 **Mantido por:** [Kivanio Barbosa](https://github.com/kivanio/brcobranca)
 **Contribuidores:** Comunidade BRCobrança
+
+---
+
+### Contribuidor v12.1.0
+
+**Maxwell Oliveira** - M&S do Brasil LTDA
+- Email: maxwbh@gmail.com
+- LinkedIn: [/maxwbh](https://linkedin.com/in/maxwbh)
+- Website: [www.msbrasil.inf.br](https://www.msbrasil.inf.br)
