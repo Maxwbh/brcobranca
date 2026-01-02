@@ -265,6 +265,123 @@ module Brcobranca
       def class_name
         self.class.to_s.split('::').last.downcase
       end
+
+      public
+
+      # Retorna todos os dados do boleto como Hash
+      #
+      # Inclui dados de entrada e todos os campos calculados como código de barras,
+      # linha digitável, nosso número formatado, etc.
+      #
+      # @param options [Hash] opções para personalizar o retorno
+      # @option options [Boolean] :somente_calculados retorna apenas campos calculados
+      # @return [Hash] dados do boleto
+      #
+      # @example
+      #   boleto.to_hash
+      #   #=> { banco: '001', codigo_barras: '00191...', linha_digitavel: '00190.00009...', ... }
+      def to_hash(options = {})
+        return dados_calculados if options[:somente_calculados]
+
+        dados_entrada.merge(dados_calculados)
+      end
+
+      # Retorna dados do boleto em formato compatível com JSON
+      #
+      # @param options [Hash] opções passadas para to_hash
+      # @return [Hash] dados do boleto prontos para serialização JSON
+      def as_json(options = {})
+        to_hash(options).transform_keys(&:to_s)
+      end
+
+      # Retorna dados do boleto como JSON string
+      #
+      # @param options [Hash] opções passadas para as_json
+      # @return [String] JSON string
+      def to_json(options = {})
+        require 'json'
+        as_json(options).to_json
+      end
+
+      # Dados de entrada do boleto (campos informados pelo usuário)
+      #
+      # @return [Hash] dados de entrada
+      def dados_entrada
+        {
+          convenio: convenio,
+          moeda: moeda,
+          carteira: carteira,
+          carteira_label: carteira_label,
+          variacao: variacao,
+          data_processamento: data_processamento,
+          quantidade: quantidade,
+          valor: valor,
+          agencia: agencia,
+          conta_corrente: conta_corrente,
+          cedente: cedente,
+          documento_cedente: documento_cedente,
+          nosso_numero: nosso_numero,
+          especie: especie,
+          especie_documento: especie_documento,
+          data_documento: data_documento,
+          data_vencimento: data_vencimento,
+          documento_numero: documento_numero,
+          codigo_servico: codigo_servico,
+          local_pagamento: local_pagamento,
+          aceite: aceite,
+          sacado: sacado,
+          sacado_endereco: sacado_endereco,
+          sacado_documento: sacado_documento,
+          avalista: avalista,
+          avalista_documento: avalista_documento,
+          cedente_endereco: cedente_endereco,
+          emv: emv
+        }
+      end
+
+      # Dados calculados do boleto (campos gerados automaticamente)
+      #
+      # @return [Hash] dados calculados
+      # @raise [Brcobranca::BoletoInvalido] se o boleto for inválido
+      def dados_calculados
+        raise Brcobranca::BoletoInvalido, self unless valid?
+
+        {
+          banco: banco,
+          banco_dv: banco_dv,
+          banco_nome: banco_nome,
+          agencia_dv: agencia_dv,
+          conta_corrente_dv: conta_corrente_dv,
+          nosso_numero_dv: nosso_numero_dv,
+          nosso_numero_boleto: nosso_numero_boleto,
+          agencia_conta_boleto: agencia_conta_boleto,
+          valor_documento: valor_documento,
+          valor_documento_formatado: valor_documento_formatado,
+          fator_vencimento: fator_vencimento,
+          codigo_barras: codigo_barras,
+          linha_digitavel: linha_digitavel,
+          pix: dados_pix
+        }
+      end
+
+      # Nome do banco para exibição
+      #
+      # @return [String] nome do banco
+      def banco_nome
+        self.class.to_s.split('::').last
+      end
+
+      # Dados para pagamento via PIX (quando disponível)
+      #
+      # @return [Hash, nil] dados do PIX ou nil se não disponível
+      def dados_pix
+        return nil unless emv
+
+        {
+          emv: emv,
+          qrcode_disponivel: true
+        }
+      end
     end
   end
 end

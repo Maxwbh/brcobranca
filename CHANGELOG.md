@@ -9,9 +9,37 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
-## [12.1.1] - 2025-12-31
+## [12.2.0] - 2025-12-31
 
-<!-- Adicione novas mudanças aqui -->
+### Added
+- **API para retorno de dados do boleto**: Novos métodos para facilitar integração
+  - `to_hash`: Retorna todos os dados do boleto como Hash
+  - `as_json`: Retorna dados prontos para serialização JSON
+  - `to_json`: Retorna string JSON
+  - `dados_entrada`: Campos informados pelo usuário
+  - `dados_calculados`: Campos gerados automaticamente (código de barras, linha digitável, etc)
+  - `banco_nome`: Nome do banco para exibição
+  - `dados_pix`: Dados para pagamento via PIX (EMV, QRCode)
+
+### Example
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(params)
+
+# Todos os dados
+boleto.to_hash
+#=> { convenio: '123', ..., codigo_barras: '756...', linha_digitavel: '75691...', ... }
+
+# Apenas campos calculados
+boleto.to_hash(somente_calculados: true)
+#=> { banco: '756', codigo_barras: '...', linha_digitavel: '...', nosso_numero_boleto: '...' }
+
+# JSON para APIs
+boleto.to_json
+#=> '{"convenio":"123","codigo_barras":"756...",...}'
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA
 
 ## [12.1.0] - 2025-12-31
 
