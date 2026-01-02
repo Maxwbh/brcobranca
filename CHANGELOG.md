@@ -9,6 +9,51 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.3.0] - 2026-01-02
+
+### Added
+- **Métodos de Validação Seguros**: Novos métodos que não levantam exceções
+  - `valido?`: Retorna true/false sem levantar exceção (diferente de `valid?`)
+  - `to_hash_seguro`: Retorna hash com flag `:valid` e lista `:errors`
+  - `as_json_seguro`: Versão JSON-ready do `to_hash_seguro`
+  - `to_json_seguro`: String JSON segura
+
+- **Melhorias em Errors**: Novos métodos na classe `Brcobranca::Util::Errors`
+  - `to_hash`: Retorna erros como Hash agrupados por atributo
+  - `as_json`: Hash com chaves string para JSON
+  - `to_json`: String JSON dos erros
+  - `any?` / `empty?`: Verificação de existência de erros
+  - `first_messages`: Primeiro erro de cada atributo
+  - `clear`: Limpa todos os erros
+  - `merge!`: Combina erros de outro objeto
+
+### Example
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(params)
+
+# Validação sem exceção
+if boleto.valido?
+  processar(boleto)
+else
+  tratar_erros(boleto.errors.to_hash)
+end
+
+# Hash seguro (nunca levanta exceção)
+resultado = boleto.to_hash_seguro
+if resultado[:valid]
+  usar_dados(resultado)
+else
+  mostrar_erros(resultado[:errors])
+end
+
+# Erros como JSON
+boleto.errors.as_json
+#=> { "sacado" => ["não pode estar em branco"], "agencia" => ["não é um número"] }
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
+
 ## [12.2.0] - 2025-12-31
 
 ### Added

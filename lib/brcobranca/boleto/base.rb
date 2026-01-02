@@ -382,6 +382,65 @@ module Brcobranca
           qrcode_disponivel: true
         }
       end
+
+      # Verifica se o boleto é válido sem levantar exceção
+      #
+      # Diferente de valid?, este método nunca levanta exceção.
+      # Útil para verificações onde não se deseja tratar exceções.
+      #
+      # @return [Boolean] true se válido, false caso contrário
+      #
+      # @example
+      #   if boleto.valido?
+      #     processar(boleto)
+      #   else
+      #     tratar_erros(boleto.errors)
+      #   end
+      def valido?
+        valid?
+      rescue StandardError
+        false
+      end
+
+      # Retorna hash com dados do boleto de forma segura (sem exceção)
+      #
+      # Se o boleto for válido, retorna todos os dados incluindo campos calculados.
+      # Se inválido, retorna dados de entrada com flag :valid => false e lista de erros.
+      #
+      # @return [Hash] dados do boleto com status de validação
+      #
+      # @example Boleto válido
+      #   boleto.to_hash_seguro
+      #   #=> { valid: true, errors: [], banco: '756', codigo_barras: '...', ... }
+      #
+      # @example Boleto inválido
+      #   boleto.to_hash_seguro
+      #   #=> { valid: false, errors: ['Sacado não pode estar em branco'], ... }
+      def to_hash_seguro
+        if valido?
+          to_hash.merge(valid: true, errors: [])
+        else
+          dados_entrada.merge(
+            valid: false,
+            errors: errors.full_messages
+          )
+        end
+      end
+
+      # Retorna hash seguro em formato JSON
+      #
+      # @return [Hash] dados com chaves string
+      def as_json_seguro
+        to_hash_seguro.transform_keys(&:to_s)
+      end
+
+      # Retorna JSON string de forma segura
+      #
+      # @return [String] JSON string
+      def to_json_seguro
+        require 'json'
+        as_json_seguro.to_json
+      end
     end
   end
 end
