@@ -53,6 +53,9 @@ boleto.errors.as_json
 
 ### Contributors
 - Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
+## [12.2.1] - 2026-01-02
+
+<!-- Adicione novas mudanças aqui -->
 
 ## [12.2.0] - 2025-12-31
 
