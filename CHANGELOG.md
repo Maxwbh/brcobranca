@@ -9,6 +9,58 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.5.0] - 2026-01-03
+
+### Added
+- **API de Serialização para Retorno** (Fase 4): Novos métodos para processamento de arquivos de retorno
+  - `Retorno::Base#to_hash`: Retorna todos os atributos do registro como Hash
+  - `Retorno::Base#as_json`: Retorna dados com chaves string
+  - `Retorno::Base#to_json`: Retorna string JSON
+  - `Retorno::Base#dados_titulo`: Dados principais do título
+  - `Retorno::Base#dados_recebimento`: Dados de recebimento/pagamento
+  - `Retorno::Base#dados_ocorrencia`: Dados da ocorrência/movimento
+  - `Retorno::Base#dados_bancarios`: Dados bancários
+  - `Retorno::Base#dados_pix`: Dados PIX quando disponíveis
+
+- **Factory Method para Retorno**: `Brcobranca::Retorno.parse`
+  - Processamento simplificado de arquivos de retorno
+  - Auto-detecção de formato (CNAB240, CNAB400, CBR643)
+  - Auto-detecção de banco pelo header do arquivo
+  - `Brcobranca::Retorno.detectar_formato`: Detecta formato pelo tamanho da linha
+  - `Brcobranca::Retorno.detectar_banco`: Detecta código do banco
+  - `Brcobranca::Retorno.formato_valido?`: Verifica se arquivo é válido
+  - `Brcobranca::Retorno.load_lines`: Carrega registros como objetos
+
+### Example
+```ruby
+# Auto-detecção completa
+resultado = Brcobranca::Retorno.parse('retorno.ret')
+#=> {
+#     formato: :cnab400,
+#     banco: '237',
+#     total_registros: 10,
+#     registros: [{ nosso_numero: '123', valor_recebido: '10050', ... }, ...]
+#   }
+
+# Acessar registro individual
+registro = Brcobranca::Retorno.load_lines('retorno.ret').first
+registro.dados_titulo
+#=> { nosso_numero: '123', valor_titulo: '10000', ... }
+
+registro.dados_recebimento
+#=> { valor_recebido: '10050', data_credito: '021226', ... }
+
+# Verificar formato
+Brcobranca::Retorno.formato_valido?('arquivo.ret')
+#=> true
+
+Brcobranca::Retorno.detectar_formato('arquivo.ret')
+#=> :cnab400
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
+
 ## [12.4.0] - 2026-01-03
 
 ### Added
