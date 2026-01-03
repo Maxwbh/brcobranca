@@ -3,8 +3,8 @@
 > Plano detalhado para simplificar e integrar os dois projetos
 >
 > **Autor:** Maxwell Oliveira (@maxwbh)
-> **Data:** 2025-12-31
-> **Versão brcobranca:** 12.2.0
+> **Data:** 2026-01-03 (Atualizado)
+> **Versão brcobranca:** 12.5.0
 
 ---
 
@@ -21,28 +21,7 @@
 
 ## Visão Geral
 
-### Situação Atual
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    boleto_cnab_api                          │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  Grape API + Código duplicado de mapeamento           │  │
-│  │  - Mapeia campos manualmente                          │  │
-│  │  - Converte datas manualmente                         │  │
-│  │  - Monta respostas campo por campo                    │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                           │                                 │
-│                           ▼                                 │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │                   brcobranca                          │  │
-│  │  - Boletos, Remessa, Retorno                          │  │
-│  │  - Sem API de serialização (até v12.1.0)              │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Situação Proposta
+### Situação Atual (✅ IMPLEMENTADO)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -56,11 +35,12 @@
 │                           │                                 │
 │                           ▼                                 │
 │  ┌───────────────────────────────────────────────────────┐  │
-│  │                brcobranca v12.2.0+                    │  │
+│  │                brcobranca v12.5.0                     │  │
 │  │  - to_hash, as_json, to_json (✅ IMPLEMENTADO)        │  │
 │  │  - dados_calculados, dados_entrada (✅ IMPLEMENTADO)  │  │
-│  │  - Remessa#to_hash (🔄 A FAZER)                       │  │
-│  │  - Retorno#to_hash (🔄 A FAZER)                       │  │
+│  │  - Remessa#to_hash (✅ IMPLEMENTADO v12.4.0)          │  │
+│  │  - Retorno#to_hash (✅ IMPLEMENTADO v12.5.0)          │  │
+│  │  - valido?, to_hash_seguro (✅ IMPLEMENTADO v12.3.0)  │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -143,9 +123,9 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 2: Melhorias de Validação (🔄 A FAZER)
+### Fase 2: Melhorias de Validação (✅ CONCLUÍDO em v12.3.0)
 
-- [ ] **2.1** Criar método `valido?` sem exceção
+- [x] **2.1** Criar método `valido?` sem exceção
   ```ruby
   # Arquivo: lib/brcobranca/boleto/base.rb
   # Linha: após método valid?
@@ -160,7 +140,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **2.2** Criar método `to_hash_seguro`
+- [x] **2.2** Criar método `to_hash_seguro`
   ```ruby
   # Arquivo: lib/brcobranca/boleto/base.rb
 
@@ -183,7 +163,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **2.3** Melhorar mensagens de erro
+- [x] **2.3** Melhorar mensagens de erro
   ```ruby
   # Arquivo: lib/brcobranca/util/errors.rb
 
@@ -199,9 +179,9 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 3: Remessa API (🔄 A FAZER)
+### Fase 3: Remessa API (✅ CONCLUÍDO em v12.4.0)
 
-- [ ] **3.1** Implementar `Remessa::Base#to_hash`
+- [x] **3.1** Implementar `Remessa::Base#to_hash`
   ```ruby
   # Arquivo: lib/brcobranca/remessa/base.rb
 
@@ -223,7 +203,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **3.2** Implementar `Remessa::Pagamento#to_hash`
+- [x] **3.2** Implementar `Remessa::Pagamento#to_hash`
   ```ruby
   # Arquivo: lib/brcobranca/remessa/pagamento.rb
 
@@ -238,7 +218,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **3.3** Criar factory method `Remessa.criar`
+- [x] **3.3** Criar factory method `Remessa.criar`
   ```ruby
   # Arquivo: lib/brcobranca/remessa.rb
 
@@ -256,9 +236,9 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 4: Retorno API (🔄 A FAZER)
+### Fase 4: Retorno API (✅ CONCLUÍDO em v12.5.0)
 
-- [ ] **4.1** Melhorar `Retorno::Base#to_hash`
+- [x] **4.1** Melhorar `Retorno::Base#to_hash`
   ```ruby
   # Arquivo: lib/brcobranca/retorno/base.rb
 
@@ -279,7 +259,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **4.2** Criar factory method `Retorno.parse`
+- [x] **4.2** Criar factory method `Retorno.parse`
   ```ruby
   # Arquivo: lib/brcobranca/retorno.rb
 
@@ -302,7 +282,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **4.3** Implementar detecção automática de formato
+- [x] **4.3** Implementar detecção automática de formato
   ```ruby
   # Arquivo: lib/brcobranca/retorno.rb
 
@@ -319,9 +299,9 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 5: Testes (🔄 A FAZER)
+### Fase 5: Testes (✅ CONCLUÍDO)
 
-- [ ] **5.1** Testes para `valido?` e `to_hash_seguro`
+- [x] **5.1** Testes para `valido?` e `to_hash_seguro`
   ```ruby
   # Arquivo: spec/brcobranca/boleto/base_api_spec.rb
 
@@ -352,23 +332,21 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **5.2** Testes para Remessa#to_hash
-  ```ruby
-  # Arquivo: spec/brcobranca/remessa/base_api_spec.rb
-  ```
+- [x] **5.2** Testes para Remessa#to_hash
+  - Arquivo: `spec/brcobranca/remessa/remessa_api_spec.rb`
+  - Status: ✅ Implementado em v12.4.0
 
-- [ ] **5.3** Testes para Retorno#to_hash
-  ```ruby
-  # Arquivo: spec/brcobranca/retorno/base_api_spec.rb
-  ```
+- [x] **5.3** Testes para Retorno#to_hash
+  - Arquivo: `spec/brcobranca/retorno/retorno_api_spec.rb`
+  - Status: ✅ Implementado em v12.5.0
 
 ---
 
-### Fase 6: Documentação (🔄 A FAZER)
+### Fase 6: Documentação (✅ CONCLUÍDO)
 
-- [ ] **6.1** Documentar API em `docs/api_referencia.md`
-- [ ] **6.2** Criar exemplos de integração REST
-- [ ] **6.3** Documentar migração do boleto_cnab_api
+- [x] **6.1** Documentar API em `docs/api_referencia.md`
+- [x] **6.2** Criar exemplos de integração REST (incluído em api_referencia.md)
+- [x] **6.3** Documentar migração do boleto_cnab_api (ver Guia de Migração abaixo)
 
 ---
 
