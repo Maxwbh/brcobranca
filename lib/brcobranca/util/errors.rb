@@ -38,6 +38,72 @@ module Brcobranca
       end
       alias to_a full_messages
 
+      # Verifica se existem erros
+      #
+      # @return [Boolean] true se houver erros
+      def any?
+        @messages.values.flatten.any?
+      end
+
+      # Verifica se não existem erros
+      #
+      # @return [Boolean] true se não houver erros
+      def empty?
+        @messages.values.flatten.empty?
+      end
+
+      # Retorna erros como Hash
+      #
+      # @return [Hash] erros agrupados por atributo
+      #
+      # @example
+      #   errors.to_hash
+      #   #=> { sacado: ['não pode estar em branco'], agencia: ['não é um número'] }
+      def to_hash
+        @messages.transform_values(&:dup)
+      end
+
+      # Retorna erros em formato compatível com JSON
+      #
+      # @return [Hash] erros com chaves string
+      def as_json
+        to_hash.transform_keys(&:to_s)
+      end
+
+      # Retorna erros como JSON string
+      #
+      # @param _args [Array] argumentos opcionais para compatibilidade com JSON.generate
+      # @return [String] JSON string
+      def to_json(*_args)
+        require 'json'
+        as_json.to_json
+      end
+
+      # Retorna primeiro erro de cada atributo
+      #
+      # @return [Hash] primeiro erro por atributo
+      def first_messages
+        @messages.transform_values(&:first)
+      end
+
+      # Limpa todos os erros
+      #
+      # @return [void]
+      def clear
+        @messages.clear
+        @details.clear
+      end
+
+      # Adiciona erros de outro objeto Errors
+      #
+      # @param other [Errors] outro objeto de erros
+      # @return [void]
+      def merge!(other)
+        other.messages.each do |attribute, msgs|
+          msgs.each { |msg| add(attribute, msg) }
+        end
+      end
+
       private
 
       def apply_default_array(hash)

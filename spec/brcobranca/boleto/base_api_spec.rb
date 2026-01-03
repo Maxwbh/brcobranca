@@ -120,9 +120,9 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
       resultado = boleto.dados_calculados
 
       expect(resultado[:banco]).to eq('756')
-      expect(resultado[:banco_dv]).to be_a(Integer)
+      expect(resultado[:banco_dv]).to eq('0')
       expect(resultado[:banco_nome]).to eq('Sicoob')
-      expect(resultado[:nosso_numero_dv]).to be_a(Integer)
+      expect(resultado[:nosso_numero_dv]).to eq(4)
       expect(resultado[:nosso_numero_boleto]).to eq('00000024')
       expect(resultado[:agencia_conta_boleto]).to eq('4327 / 0229385')
       expect(resultado[:valor_documento]).to eq(50.0)
@@ -180,7 +180,13 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
     end
 
     it 'funciona com Itau' do
-      itau = Brcobranca::Boleto::Itau.new(valid_attributes)
+      itau = Brcobranca::Boleto::Itau.new(
+        valid_attributes.merge(
+          convenio: '12345',
+          conta_corrente: '12345',
+          agencia: '1234'
+        )
+      )
 
       expect { itau.to_hash }.not_to raise_error
       expect(itau.to_hash[:banco]).to eq('341')
@@ -190,12 +196,236 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
       caixa = Brcobranca::Boleto::Caixa.new(
         valid_attributes.merge(
           convenio: '123456',
-          versao_aplicativo: '0'
+          nosso_numero: '000000000000001'
         )
       )
 
       expect { caixa.to_hash }.not_to raise_error
       expect(caixa.to_hash[:banco]).to eq('104')
+    end
+  end
+
+  # ============================================================
+  # Fase 2: Métodos de Validação Seguros (v12.3.0)
+  # ============================================================
+
+  describe '#valido?' do
+    it 'retorna true para boleto válido' do
+      expect(boleto.valido?).to be true
+    end
+
+    it 'retorna false para boleto inválido sem levantar exceção' do
+      boleto_invalido = Brcobranca::Boleto::Sicoob.new
+
+      expect { boleto_invalido.valido? }.not_to raise_error
+      expect(boleto_invalido.valido?).to be false
+    end
+
+    it 'retorna false quando boleto tem campos obrigatórios vazios' do
+      boleto_incompleto = Brcobranca::Boleto::Sicoob.new(
+        agencia: '4327',
+        conta_corrente: '417270'
+        # faltando: nosso_numero, sacado, sacado_documento
+      )
+
+      expect(boleto_incompleto.valido?).to be false
+    end
+  end
+
+  describe '#to_hash_seguro' do
+    it 'retorna hash com valid: true para boleto válido' do
+      resultado = boleto.to_hash_seguro
+
+      expect(resultado[:valid]).to be true
+      expect(resultado[:errors]).to be_empty
+      expect(resultado[:codigo_barras]).to be_a(String)
+      expect(resultado[:linha_digitavel]).to be_a(String)
+    end
+
+    it 'retorna hash com valid: false para boleto inválido' do
+      boleto_invalido = Brcobranca::Boleto::Sicoob.new
+
+      resultado = boleto_invalido.to_hash_seguro
+
+      expect(resultado[:valid]).to be false
+      expect(resultado[:errors]).to be_an(Array)
+      expect(resultado[:errors]).not_to be_empty
+    end
+
+    it 'não lança exceção para boleto inválido' do
+      boleto_invalido = Brcobranca::Boleto::Sicoob.new
+
+      expect { boleto_invalido.to_hash_seguro }.not_to raise_error
+    end
+
+    it 'inclui dados de entrada mesmo quando inválido' do
+      boleto_parcial = Brcobranca::Boleto::Sicoob.new(
+        cedente: 'Empresa Teste',
+        valor: 100.0
+      )
+
+      resultado = boleto_parcial.to_hash_seguro
+
+      expect(resultado[:valid]).to be false
+      expect(resultado[:cedente]).to eq('Empresa Teste')
+      expect(resultado[:valor]).to eq(100.0)
+    end
+
+    it 'inclui lista de erros específicos' do
+      boleto_invalido = Brcobranca::Boleto::Sicoob.new
+
+      resultado = boleto_invalido.to_hash_seguro
+
+      expect(resultado[:errors]).to include(a_string_matching(/não pode estar em branco/))
+    end
+  end
+
+  describe '#as_json_seguro' do
+    it 'retorna hash com chaves string' do
+      resultado = boleto.as_json_seguro
+
+      expect(resultado).to be_a(Hash)
+      expect(resultado.keys.first).to be_a(String)
+      expect(resultado['valid']).to be true
+    end
+
+    it 'funciona para boleto inválido' do
+      boleto_invalido = Brcobranca::Boleto::Sicoob.new
+
+      resultado = boleto_invalido.as_json_seguro
+
+      expect(resultado['valid']).to be false
+      expect(resultado['errors']).to be_an(Array)
+    end
+  end
+
+  describe '#to_json_seguro' do
+    it 'retorna string JSON válida' do
+      json_string = boleto.to_json_seguro
+
+      expect(json_string).to be_a(String)
+      expect { JSON.parse(json_string) }.not_to raise_error
+    end
+
+    it 'funciona para boleto inválido' do
+      boleto_invalido = Brcobranca::Boleto::Sicoob.new
+
+      json_string = boleto_invalido.to_json_seguro
+      parsed = JSON.parse(json_string)
+
+      expect(parsed['valid']).to be false
+      expect(parsed['errors']).to be_an(Array)
+    end
+  end
+end
+
+RSpec.describe Brcobranca::Util::Errors do
+  let(:base_object) { double('base') }
+  let(:errors) { described_class.new(base_object) }
+
+  describe '#to_hash' do
+    it 'retorna hash vazio quando não há erros' do
+      expect(errors.to_hash).to eq({})
+    end
+
+    it 'retorna hash com erros agrupados por atributo' do
+      errors.add(:sacado, 'não pode estar em branco')
+      errors.add(:agencia, 'não é um número')
+
+      resultado = errors.to_hash
+
+      expect(resultado[:sacado]).to include('Sacado não pode estar em branco')
+      expect(resultado[:agencia]).to include('Agencia não é um número')
+    end
+
+    it 'agrupa múltiplos erros do mesmo atributo' do
+      errors.add(:valor, 'não pode estar em branco')
+      errors.add(:valor, 'deve ser maior que zero')
+
+      resultado = errors.to_hash
+
+      expect(resultado[:valor].size).to eq(2)
+    end
+  end
+
+  describe '#as_json' do
+    it 'retorna hash com chaves string' do
+      errors.add(:sacado, 'erro')
+
+      resultado = errors.as_json
+
+      expect(resultado.keys.first).to be_a(String)
+      expect(resultado['sacado']).to be_an(Array)
+    end
+  end
+
+  describe '#to_json' do
+    it 'retorna string JSON válida' do
+      errors.add(:campo, 'erro')
+
+      json_string = errors.to_json
+
+      expect(json_string).to be_a(String)
+      expect { JSON.parse(json_string) }.not_to raise_error
+    end
+  end
+
+  describe '#any?' do
+    it 'retorna false quando não há erros' do
+      expect(errors.any?).to be false
+    end
+
+    it 'retorna true quando há erros' do
+      errors.add(:campo, 'erro')
+
+      expect(errors.any?).to be true
+    end
+  end
+
+  describe '#empty?' do
+    it 'retorna true quando não há erros' do
+      expect(errors.empty?).to be true
+    end
+
+    it 'retorna false quando há erros' do
+      errors.add(:campo, 'erro')
+
+      expect(errors.empty?).to be false
+    end
+  end
+
+  describe '#first_messages' do
+    it 'retorna primeiro erro de cada atributo' do
+      errors.add(:campo1, 'erro 1')
+      errors.add(:campo1, 'erro 2')
+      errors.add(:campo2, 'erro 3')
+
+      resultado = errors.first_messages
+
+      expect(resultado[:campo1]).to eq('Campo1 erro 1')
+      expect(resultado[:campo2]).to eq('Campo2 erro 3')
+    end
+  end
+
+  describe '#clear' do
+    it 'limpa todos os erros' do
+      errors.add(:campo, 'erro')
+      expect(errors.any?).to be true
+
+      errors.clear
+
+      expect(errors.empty?).to be true
+    end
+  end
+
+  describe '#merge!' do
+    it 'adiciona erros de outro objeto Errors' do
+      other_errors = described_class.new(base_object)
+      other_errors.add(:campo, 'erro do outro')
+
+      errors.merge!(other_errors)
+
+      expect(errors.to_hash[:campo]).to include('Campo erro do outro')
     end
   end
 end
