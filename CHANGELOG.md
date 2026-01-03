@@ -9,6 +9,157 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.5.0] - 2026-01-03
+
+### Added
+- **API de Serialização para Retorno** (Fase 4): Novos métodos para processamento de arquivos de retorno
+  - `Retorno::Base#to_hash`: Retorna todos os atributos do registro como Hash
+  - `Retorno::Base#as_json`: Retorna dados com chaves string
+  - `Retorno::Base#to_json`: Retorna string JSON
+  - `Retorno::Base#dados_titulo`: Dados principais do título
+  - `Retorno::Base#dados_recebimento`: Dados de recebimento/pagamento
+  - `Retorno::Base#dados_ocorrencia`: Dados da ocorrência/movimento
+  - `Retorno::Base#dados_bancarios`: Dados bancários
+  - `Retorno::Base#dados_pix`: Dados PIX quando disponíveis
+
+- **Factory Method para Retorno**: `Brcobranca::Retorno.parse`
+  - Processamento simplificado de arquivos de retorno
+  - Auto-detecção de formato (CNAB240, CNAB400, CBR643)
+  - Auto-detecção de banco pelo header do arquivo
+  - `Brcobranca::Retorno.detectar_formato`: Detecta formato pelo tamanho da linha
+  - `Brcobranca::Retorno.detectar_banco`: Detecta código do banco
+  - `Brcobranca::Retorno.formato_valido?`: Verifica se arquivo é válido
+  - `Brcobranca::Retorno.load_lines`: Carrega registros como objetos
+
+### Example
+```ruby
+# Auto-detecção completa
+resultado = Brcobranca::Retorno.parse('retorno.ret')
+#=> {
+#     formato: :cnab400,
+#     banco: '237',
+#     total_registros: 10,
+#     registros: [{ nosso_numero: '123', valor_recebido: '10050', ... }, ...]
+#   }
+
+# Acessar registro individual
+registro = Brcobranca::Retorno.load_lines('retorno.ret').first
+registro.dados_titulo
+#=> { nosso_numero: '123', valor_titulo: '10000', ... }
+
+registro.dados_recebimento
+#=> { valor_recebido: '10050', data_credito: '021226', ... }
+
+# Verificar formato
+Brcobranca::Retorno.formato_valido?('arquivo.ret')
+#=> true
+
+Brcobranca::Retorno.detectar_formato('arquivo.ret')
+#=> :cnab400
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
+
+## [12.4.0] - 2026-01-03
+
+### Added
+- **API de Serialização para Remessa** (Fase 3): Novos métodos para Pagamento e Remessa::Base
+  - `Pagamento#to_hash`: Retorna todos os atributos do pagamento
+  - `Pagamento#as_json`: Retorna dados com chaves string
+  - `Pagamento#to_json`: Retorna string JSON
+  - `Pagamento#valido?`: Validação sem exceção
+  - `Pagamento#to_hash_seguro`: Hash com status de validação
+  - `Remessa::Base#to_hash`: Retorna dados da remessa com pagamentos
+  - `Remessa::Base#as_json`: Retorna dados com chaves string
+  - `Remessa::Base#to_json`: Retorna string JSON
+  - `Remessa::Base#valido?`: Validação sem exceção
+  - `Remessa::Base#to_hash_seguro`: Hash com status de validação
+
+- **Factory Method para Remessas**: `Brcobranca::Remessa.criar`
+  - Criação simplificada de remessas por banco e formato
+  - Suporte a códigos bancários (ex: '756') e nomes (ex: :sicoob)
+  - Formatos suportados: :cnab240, :cnab400, :cnab444
+  - `Brcobranca::Remessa.bancos_disponiveis`: Lista bancos disponíveis
+  - `Brcobranca::Remessa.suporta?`: Verifica compatibilidade banco/formato
+
+### Example
+```ruby
+# Criar pagamento
+pagamento = Brcobranca::Remessa::Pagamento.new(
+  nosso_numero: '00001',
+  valor: 100.50,
+  nome_sacado: 'Cliente Exemplo',
+  # ... outros campos
+)
+
+# Serialização
+pagamento.to_hash
+#=> { nosso_numero: '00001', valor: 100.50, ... }
+
+pagamento.to_hash_seguro
+#=> { valid: true, errors: [], nosso_numero: '00001', ... }
+
+# Factory method para remessas
+remessa = Brcobranca::Remessa.criar(
+  banco: :sicoob,
+  formato: :cnab400,
+  empresa_mae: 'Empresa LTDA',
+  pagamentos: [pagamento]
+)
+
+# Verificar suporte
+Brcobranca::Remessa.suporta?(banco: :sicoob, formato: :cnab400)
+#=> true
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
+
+## [12.3.0] - 2026-01-02
+
+### Added
+- **Métodos de Validação Seguros**: Novos métodos que não levantam exceções
+  - `valido?`: Retorna true/false sem levantar exceção (diferente de `valid?`)
+  - `to_hash_seguro`: Retorna hash com flag `:valid` e lista `:errors`
+  - `as_json_seguro`: Versão JSON-ready do `to_hash_seguro`
+  - `to_json_seguro`: String JSON segura
+
+- **Melhorias em Errors**: Novos métodos na classe `Brcobranca::Util::Errors`
+  - `to_hash`: Retorna erros como Hash agrupados por atributo
+  - `as_json`: Hash com chaves string para JSON
+  - `to_json`: String JSON dos erros
+  - `any?` / `empty?`: Verificação de existência de erros
+  - `first_messages`: Primeiro erro de cada atributo
+  - `clear`: Limpa todos os erros
+  - `merge!`: Combina erros de outro objeto
+
+### Example
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(params)
+
+# Validação sem exceção
+if boleto.valido?
+  processar(boleto)
+else
+  tratar_erros(boleto.errors.to_hash)
+end
+
+# Hash seguro (nunca levanta exceção)
+resultado = boleto.to_hash_seguro
+if resultado[:valid]
+  usar_dados(resultado)
+else
+  mostrar_erros(resultado[:errors])
+end
+
+# Erros como JSON
+boleto.errors.as_json
+#=> { "sacado" => ["não pode estar em branco"], "agencia" => ["não é um número"] }
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
 ## [12.2.1] - 2026-01-02
 
 <!-- Adicione novas mudanças aqui -->

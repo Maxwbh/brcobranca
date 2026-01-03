@@ -308,6 +308,95 @@ module Brcobranca
         Brcobranca::Util::Empresa.new(documento_avalista, zero).tipo
       end
 
+      # ============================================================
+      # Fase 3: API de Serialização para Pagamento (v12.4.0)
+      # ============================================================
+
+      # Lista de atributos do pagamento
+      ATRIBUTOS = %i[
+        nosso_numero data_vencimento data_emissao valor
+        documento_sacado nome_sacado endereco_sacado bairro_sacado
+        cep_sacado cidade_sacado uf_sacado identificacao_ocorrencia
+        nome_avalista documento_avalista cod_primeira_instrucao cod_segunda_instrucao
+        valor_mora data_desconto valor_desconto cod_desconto
+        valor_iof valor_abatimento numero documento
+        data_segundo_desconto valor_segundo_desconto
+        data_terceiro_desconto valor_terceiro_desconto
+        especie_titulo codigo_multa percentual_multa data_multa
+        tipo_mora data_mora codigo_juros codigo_protesto dias_protesto
+        codigo_baixa dias_baixa parcela chave_nfe
+      ].freeze
+
+      # Verifica se o pagamento é válido sem levantar exceção
+      #
+      # @return [Boolean] true se válido
+      def valido?
+        valid?
+      rescue StandardError
+        false
+      end
+
+      # Retorna todos os dados do pagamento como Hash
+      #
+      # @return [Hash] dados do pagamento
+      #
+      # @example
+      #   pagamento.to_hash
+      #   #=> { nosso_numero: '123', valor: 100.0, nome_sacado: 'Cliente', ... }
+      def to_hash
+        ATRIBUTOS.each_with_object({}) do |attr, hash|
+          hash[attr] = send(attr)
+        end
+      end
+
+      # Retorna dados do pagamento com chaves string (para APIs REST)
+      #
+      # @return [Hash] dados com chaves string
+      def as_json
+        to_hash.transform_keys(&:to_s)
+      end
+
+      # Retorna dados do pagamento como JSON string
+      #
+      # @return [String] JSON string
+      def to_json(*_args)
+        require 'json'
+        as_json.to_json
+      end
+
+      # Retorna hash seguro com status de validação
+      #
+      # @return [Hash] dados com valid e errors
+      #
+      # @example Pagamento válido
+      #   pagamento.to_hash_seguro
+      #   #=> { valid: true, errors: [], nosso_numero: '123', ... }
+      #
+      # @example Pagamento inválido
+      #   pagamento.to_hash_seguro
+      #   #=> { valid: false, errors: ['Nosso numero não pode estar em branco.'], ... }
+      def to_hash_seguro
+        to_hash.merge(
+          valid: valido?,
+          errors: valido? ? [] : errors.full_messages
+        )
+      end
+
+      # Retorna hash seguro com chaves string
+      #
+      # @return [Hash] dados com chaves string
+      def as_json_seguro
+        to_hash_seguro.transform_keys(&:to_s)
+      end
+
+      # Retorna JSON seguro com status de validação
+      #
+      # @return [String] JSON string
+      def to_json_seguro
+        require 'json'
+        as_json_seguro.to_json
+      end
+
       private
 
       def format_value(attribute, tamanho)
