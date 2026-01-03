@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.6.0] - 2026-01-03
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.5.0] - 2026-01-03
 
 ### Added
