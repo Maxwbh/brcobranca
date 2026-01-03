@@ -65,6 +65,8 @@ module Brcobranca
       end
 
       def totaliza_valor_titulos
+        return 0.0 if pagamentos.nil? || pagamentos.empty?
+
         pagamentos.inject(0.0) { |sum, pagamento| sum + pagamento.valor.to_f }
       end
 

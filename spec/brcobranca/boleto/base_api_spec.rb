@@ -120,9 +120,9 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
       resultado = boleto.dados_calculados
 
       expect(resultado[:banco]).to eq('756')
-      expect(resultado[:banco_dv]).to be_a(Integer)
+      expect(resultado[:banco_dv]).to eq('0')
       expect(resultado[:banco_nome]).to eq('Sicoob')
-      expect(resultado[:nosso_numero_dv]).to be_a(Integer)
+      expect(resultado[:nosso_numero_dv]).to eq(4)
       expect(resultado[:nosso_numero_boleto]).to eq('00000024')
       expect(resultado[:agencia_conta_boleto]).to eq('4327 / 0229385')
       expect(resultado[:valor_documento]).to eq(50.0)
@@ -180,7 +180,13 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
     end
 
     it 'funciona com Itau' do
-      itau = Brcobranca::Boleto::Itau.new(valid_attributes)
+      itau = Brcobranca::Boleto::Itau.new(
+        valid_attributes.merge(
+          convenio: '12345',
+          conta_corrente: '12345',
+          agencia: '1234'
+        )
+      )
 
       expect { itau.to_hash }.not_to raise_error
       expect(itau.to_hash[:banco]).to eq('341')
@@ -190,7 +196,7 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
       caixa = Brcobranca::Boleto::Caixa.new(
         valid_attributes.merge(
           convenio: '123456',
-          versao_aplicativo: '0'
+          nosso_numero: '000000000000001'
         )
       )
 

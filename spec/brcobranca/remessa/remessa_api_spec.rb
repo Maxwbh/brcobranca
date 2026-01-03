@@ -26,15 +26,18 @@ RSpec.describe 'Brcobranca::Remessa API' do
     Brcobranca::Remessa::Pagamento.new
   end
 
+  # Parâmetros base para testes (compatíveis com Sicoob CNAB400)
   let(:remessa_params) do
     {
       empresa_mae: 'Empresa Teste LTDA',
       agencia: '1234',
-      conta_corrente: '12345',
+      conta_corrente: '12345678',
       digito_conta: '1',
-      carteira: '1',
+      carteira: '01',
       sequencial_remessa: '1',
       documento_cedente: '12345678000190',
+      modalidade_carteira: '2',
+      tipo_formulario: '4',
       pagamentos: [pagamento_valido]
     }
   end
@@ -173,7 +176,7 @@ RSpec.describe 'Brcobranca::Remessa API' do
   describe Brcobranca::Remessa::Base do
     let(:remessa) do
       Brcobranca::Remessa::Cnab400::Sicoob.new(
-        remessa_params.merge(convenio: '123456')
+        remessa_params.merge(convenio: '123456789')
       )
     end
 
@@ -199,7 +202,7 @@ RSpec.describe 'Brcobranca::Remessa API' do
         expect(resultado).to be_a(Hash)
         expect(resultado[:empresa_mae]).to eq('Empresa Teste LTDA')
         expect(resultado[:agencia]).to eq('1234')
-        expect(resultado[:conta_corrente]).to eq('12345')
+        expect(resultado[:conta_corrente]).to eq('12345678')
       end
     end
 
@@ -339,7 +342,7 @@ RSpec.describe 'Brcobranca::Remessa API' do
 
   describe 'Brcobranca::Remessa.criar' do
     let(:params_sicoob) do
-      remessa_params.merge(convenio: '123456')
+      remessa_params.merge(convenio: '123456789')
     end
 
     describe 'criação de remessa' do
@@ -406,36 +409,66 @@ RSpec.describe 'Brcobranca::Remessa API' do
 
     describe 'compatibilidade com múltiplos bancos' do
       it 'cria remessa Bradesco CNAB400' do
-        params = remessa_params.merge(codigo_empresa: '123456')
+        params = {
+          empresa_mae: 'Empresa Teste LTDA',
+          agencia: '1234',
+          conta_corrente: '1234567',
+          digito_conta: '1',
+          carteira: '09',
+          documento_cedente: '12345678000190',
+          codigo_empresa: '123456',
+          pagamentos: [pagamento_valido]
+        }
         remessa = Brcobranca::Remessa.criar(banco: :bradesco, formato: :cnab400, **params)
 
         expect(remessa).to be_a(Brcobranca::Remessa::Cnab400::Bradesco)
       end
 
       it 'cria remessa Itau CNAB400' do
-        params = remessa_params.merge(codigo_empresa: '12345')
+        params = {
+          empresa_mae: 'Empresa Teste LTDA',
+          agencia: '1234',
+          conta_corrente: '12345',
+          digito_conta: '1',
+          carteira: '109',
+          documento_cedente: '12345678000190',
+          pagamentos: [pagamento_valido]
+        }
         remessa = Brcobranca::Remessa.criar(banco: :itau, formato: :cnab400, **params)
 
         expect(remessa).to be_a(Brcobranca::Remessa::Cnab400::Itau)
       end
 
       it 'cria remessa Banco Brasil CNAB240' do
-        params = remessa_params.merge(
+        params = {
+          empresa_mae: 'Empresa Teste LTDA',
+          agencia: '12345',
+          conta_corrente: '123456789012',
+          digito_conta: '1',
+          carteira: '17',
+          variacao: '019',
           convenio: '1234567',
-          variacao_carteira: '019',
-          codigo_carteira: '1'
-        )
+          documento_cedente: '12345678000190',
+          pagamentos: [pagamento_valido]
+        }
         remessa = Brcobranca::Remessa.criar(banco: :banco_brasil, formato: :cnab240, **params)
 
         expect(remessa).to be_a(Brcobranca::Remessa::Cnab240::BancoBrasil)
       end
 
       it 'cria remessa Caixa CNAB240' do
-        params = remessa_params.merge(
+        params = {
+          empresa_mae: 'Empresa Teste LTDA',
+          agencia: '1234',
+          digito_agencia: '1',
+          conta_corrente: '123456789012',
+          digito_conta: '1',
+          carteira: '14',
           convenio: '123456',
-          codigo_beneficiario: '123456',
-          versao_aplicativo: '0'
-        )
+          versao_aplicativo: '0000',
+          documento_cedente: '12345678000190',
+          pagamentos: [pagamento_valido]
+        }
         remessa = Brcobranca::Remessa.criar(banco: :caixa, formato: :cnab240, **params)
 
         expect(remessa).to be_a(Brcobranca::Remessa::Cnab240::Caixa)
