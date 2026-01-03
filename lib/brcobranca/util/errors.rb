@@ -72,8 +72,9 @@ module Brcobranca
 
       # Retorna erros como JSON string
       #
+      # @param _args [Array] argumentos opcionais para compatibilidade com JSON.generate
       # @return [String] JSON string
-      def to_json
+      def to_json(*_args)
         require 'json'
         as_json.to_json
       end

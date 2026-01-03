@@ -9,6 +9,61 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.4.0] - 2026-01-03
+
+### Added
+- **API de Serialização para Remessa** (Fase 3): Novos métodos para Pagamento e Remessa::Base
+  - `Pagamento#to_hash`: Retorna todos os atributos do pagamento
+  - `Pagamento#as_json`: Retorna dados com chaves string
+  - `Pagamento#to_json`: Retorna string JSON
+  - `Pagamento#valido?`: Validação sem exceção
+  - `Pagamento#to_hash_seguro`: Hash com status de validação
+  - `Remessa::Base#to_hash`: Retorna dados da remessa com pagamentos
+  - `Remessa::Base#as_json`: Retorna dados com chaves string
+  - `Remessa::Base#to_json`: Retorna string JSON
+  - `Remessa::Base#valido?`: Validação sem exceção
+  - `Remessa::Base#to_hash_seguro`: Hash com status de validação
+
+- **Factory Method para Remessas**: `Brcobranca::Remessa.criar`
+  - Criação simplificada de remessas por banco e formato
+  - Suporte a códigos bancários (ex: '756') e nomes (ex: :sicoob)
+  - Formatos suportados: :cnab240, :cnab400, :cnab444
+  - `Brcobranca::Remessa.bancos_disponiveis`: Lista bancos disponíveis
+  - `Brcobranca::Remessa.suporta?`: Verifica compatibilidade banco/formato
+
+### Example
+```ruby
+# Criar pagamento
+pagamento = Brcobranca::Remessa::Pagamento.new(
+  nosso_numero: '00001',
+  valor: 100.50,
+  nome_sacado: 'Cliente Exemplo',
+  # ... outros campos
+)
+
+# Serialização
+pagamento.to_hash
+#=> { nosso_numero: '00001', valor: 100.50, ... }
+
+pagamento.to_hash_seguro
+#=> { valid: true, errors: [], nosso_numero: '00001', ... }
+
+# Factory method para remessas
+remessa = Brcobranca::Remessa.criar(
+  banco: :sicoob,
+  formato: :cnab400,
+  empresa_mae: 'Empresa LTDA',
+  pagamentos: [pagamento]
+)
+
+# Verificar suporte
+Brcobranca::Remessa.suporta?(banco: :sicoob, formato: :cnab400)
+#=> true
+```
+
+### Contributors
+- Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
+
 ## [12.3.0] - 2026-01-02
 
 ### Added
