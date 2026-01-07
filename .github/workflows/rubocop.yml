@@ -28,8 +28,11 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.7
-          bundler-cache: true # runs 'bundle install' and caches installed
+          ruby-version: '3.0'
+          bundler-cache: false
+
+      - name: Install dependencies
+        run: bundle install --jobs 4
 
       - name: Rubocop run
         run: |
