@@ -44,8 +44,12 @@ jobs:
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true # runs 'bundle install' and caches installed
-        cache-version: 2 # Incrementar para invalidar cache após mudanças no gemspec
+        bundler-cache: false # Desabilitado para permitir atualização do lockfile
+
+    - name: Install dependencies
+      run: |
+        bundle config set --local path vendor/bundle
+        bundle install --jobs 4
 
     - name: Run tests
       run: bundle exec rake
