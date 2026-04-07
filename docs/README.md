@@ -36,10 +36,10 @@ docs/
 
 ## Recursos Online
 
-- [Wiki Oficial](https://github.com/kivanio/brcobranca/wiki) - Documentação colaborativa
+- [Wiki Oficial](https://github.com/Maxwbh/brcobranca/wiki) - Documentação colaborativa
 - [RubyDoc](http://rubydoc.info/gems/brcobranca) - API Reference
 - [RubyGems](https://rubygems.org/gems/brcobranca) - Página da gem
-- [Issues](https://github.com/kivanio/brcobranca/issues) - Reportar problemas
+- [Issues](https://github.com/Maxwbh/brcobranca/issues) - Reportar problemas
 
 ---
 

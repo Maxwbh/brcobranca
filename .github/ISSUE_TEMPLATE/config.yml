@@ -1,11 +1,11 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📖 Documentação
-    url: https://github.com/kivanio/brcobranca/wiki
+    url: https://github.com/Maxwbh/brcobranca/wiki
     about: Consulte a documentação oficial antes de abrir uma issue
   - name: 💬 Discussões
-    url: https://github.com/kivanio/brcobranca/discussions
+    url: https://github.com/Maxwbh/brcobranca/discussions
     about: Para perguntas gerais, use as Discussões ao invés de Issues
   - name: 🔒 Vulnerabilidade de Segurança
-    url: https://github.com/kivanio/brcobranca/security/policy
+    url: https://github.com/Maxwbh/brcobranca/security/policy
     about: Para reportar vulnerabilidades de segurança (não crie issues públicas)

@@ -18,8 +18,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/kivanio/brcobranca/actions/workflows/main.yml">
-    <img src="https://github.com/kivanio/brcobranca/actions/workflows/main.yml/badge.svg" alt="CI">
+  <a href="https://github.com/Maxwbh/brcobranca/actions/workflows/main.yml">
+    <img src="https://github.com/Maxwbh/brcobranca/actions/workflows/main.yml/badge.svg" alt="CI">
   </a>
   <a href="https://rubygems.org/gems/brcobranca">
     <img src="https://img.shields.io/gem/v/brcobranca.svg" alt="Gem Version">
@@ -184,7 +184,7 @@ end
 
 ### Recursos Online
 
-- [Wiki Oficial](https://github.com/kivanio/brcobranca/wiki)
+- [Wiki Oficial](https://github.com/Maxwbh/brcobranca/wiki)
 - [RubyDoc](http://rubydoc.info/gems/brcobranca)
 - [RubyGems](https://rubygems.org/gems/brcobranca)
 
@@ -210,7 +210,7 @@ Contribuições são bem-vindas! Veja [CONTRIBUTING.md](CONTRIBUTING.md) para de
 
 ```bash
 # Clone o repositório
-git clone https://github.com/kivanio/brcobranca.git
+git clone https://github.com/Maxwbh/brcobranca.git
 
 # Instale dependências
 bundle install
@@ -236,7 +236,7 @@ Distribuído sob a licença BSD-3-Clause. Veja [LICENSE](LICENSE) para mais info
 
 ## Autor
 
-Criado por [Kivanio Barbosa](https://github.com/kivanio) e mantido pela comunidade.
+Criado originalmente por [Kivanio Barbosa](https://github.com/kivanio). Fork mantido por [Maxwell da Silva Oliveira](https://github.com/Maxwbh) - M&S do Brasil LTDA.
 
 ### Contribuidor v12.1.0
 
@@ -296,7 +296,7 @@ File.open('boleto.pdf', 'wb') { |f| f.write(boleto.to(:pdf)) }
 
 - [Quick Start Guide](docs/guia_rapido.md) (Portuguese)
 - [Fields Reference](docs/campos_por_banco.md) (Portuguese)
-- [Official Wiki](https://github.com/kivanio/brcobranca/wiki)
+- [Official Wiki](https://github.com/Maxwbh/brcobranca/wiki)
 
 ## License
 
