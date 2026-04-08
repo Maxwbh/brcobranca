@@ -19,7 +19,7 @@ A segurança do BRCobranca é levada a sério. Se você descobriu uma vulnerabil
 
 **NÃO** crie uma issue pública para vulnerabilidades de segurança.
 
-Em vez disso, envie um e-mail para: **kivanio@gmail.com**
+Em vez disso, envie um e-mail para: **maxwbh@gmail.com**
 
 Inclua as seguintes informações:
 
@@ -189,9 +189,9 @@ Nenhum relato de vulnerabilidade ainda. Seja o primeiro a nos ajudar!
 
 ## Contato
 
-Para questões de segurança: **kivanio@gmail.com**
+Para questões de segurança: **maxwbh@gmail.com**
 
-Para questões gerais: [GitHub Issues](https://github.com/kivanio/brcobranca/issues)
+Para questões gerais: [GitHub Issues](https://github.com/Maxwbh/brcobranca/issues)
 
 ---
 

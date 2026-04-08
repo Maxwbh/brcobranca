@@ -91,7 +91,7 @@ Sugestões de melhorias são bem-vindas! Inclua:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/kivanio/brcobranca.git
+git clone https://github.com/Maxwbh/brcobranca.git
 cd brcobranca
 
 # Instale as dependências
@@ -279,16 +279,16 @@ Este projeto segue [Semantic Versioning](https://semver.org/):
 
 ## Recursos Adicionais
 
-- [Wiki do Projeto](https://github.com/kivanio/brcobranca/wiki)
-- [Issues](https://github.com/kivanio/brcobranca/issues)
-- [Pull Requests](https://github.com/kivanio/brcobranca/pulls)
+- [Wiki do Projeto](https://github.com/Maxwbh/brcobranca/wiki)
+- [Issues](https://github.com/Maxwbh/brcobranca/issues)
+- [Pull Requests](https://github.com/Maxwbh/brcobranca/pulls)
 - [RubyDoc](http://rubydoc.info/gems/brcobranca)
 
 ## Dúvidas?
 
 Sinta-se à vontade para:
-- Abrir uma [issue](https://github.com/kivanio/brcobranca/issues) para discussão
-- Consultar a [Wiki](https://github.com/kivanio/brcobranca/wiki)
+- Abrir uma [issue](https://github.com/Maxwbh/brcobranca/issues) para discussão
+- Consultar a [Wiki](https://github.com/Maxwbh/brcobranca/wiki)
 - Entrar em contato com os mantenedores
 
 ## Licença
