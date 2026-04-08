@@ -24,7 +24,6 @@ jobs:
       fail-fast: false # don't fail all matrix builds if one fails
       matrix:
         ruby:
-          - '2.7'
           - '3.0'
           - '3.1'
           - '3.2'
@@ -44,7 +43,12 @@ jobs:
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-        bundler-cache: true # runs 'bundle install' and caches installed
+        bundler-cache: false # Desabilitado para permitir atualização do lockfile
+
+    - name: Install dependencies
+      run: |
+        bundle config set --local path vendor/bundle
+        bundle install --jobs 4
 
     - name: Run tests
       run: bundle exec rake

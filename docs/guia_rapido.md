@@ -258,7 +258,7 @@ end
 
 ## Referências
 
-- [Documentação Completa](https://github.com/kivanio/brcobranca/wiki)
+- [Documentação Completa](https://github.com/Maxwbh/brcobranca/wiki)
 - [Campos por Banco](campos_por_banco.md)
 - [RubyGems](https://rubygems.org/gems/brcobranca)
 

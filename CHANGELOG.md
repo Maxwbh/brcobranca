@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.6.1] - 2026-04-08
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.6.0] - 2026-01-03
 
 <!-- Adicione novas mudanças aqui -->
@@ -319,7 +323,7 @@ boleto.to_json
 
 ## Links
 
-- [Versões Estáveis](https://github.com/kivanio/brcobranca/releases)
+- [Versões Estáveis](https://github.com/Maxwbh/brcobranca/releases)
 - [Documentação Completa](docs/README.md)
 - [Guia de Início Rápido](docs/getting-started/quick-start.md)
 - [Campos por Banco](docs/banks/fields-reference.md)
@@ -331,7 +335,7 @@ boleto.to_json
 - **MINOR**: Novas funcionalidades compatíveis com versões anteriores
 - **PATCH**: Correções de bugs compatíveis com versões anteriores
 
-**Mantido por:** [Kivanio Barbosa](https://github.com/kivanio/brcobranca)
+**Mantido por:** [Maxwell da Silva Oliveira](https://github.com/Maxwbh/brcobranca) - M&S do Brasil LTDA
 **Contribuidores:** Comunidade BRCobrança
 
 ---

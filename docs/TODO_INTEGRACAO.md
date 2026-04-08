@@ -352,9 +352,9 @@ Response HTTP (JSON/PDF/etc)
 
 ## TODO boleto_cnab_api
 
-### Fase 1: Atualizar Dependências (🔄 A FAZER)
+### Fase 1: Atualizar Dependências (✅ CONCLUÍDO)
 
-- [ ] **1.1** Atualizar brcobranca no Gemfile
+- [x] **1.1** Atualizar brcobranca no Gemfile
   ```ruby
   # Arquivo: Gemfile
 
@@ -367,7 +367,7 @@ Response HTTP (JSON/PDF/etc)
   gem 'brcobranca', github: 'maxwbh/brcobranca', branch: 'master'
   ```
 
-- [ ] **1.2** Remover pin do rghost
+- [x] **1.2** Remover pin do rghost
   ```ruby
   # Arquivo: Gemfile
 
@@ -377,7 +377,7 @@ Response HTTP (JSON/PDF/etc)
   # brcobranca já gerencia a dependência
   ```
 
-- [ ] **1.3** Rodar bundle update
+- [x] **1.3** Rodar bundle update
   ```bash
   bundle update brcobranca
   bundle install
@@ -385,9 +385,9 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 2: Refatorar Endpoints de Boleto (🔄 A FAZER)
+### Fase 2: Refatorar Endpoints de Boleto (✅ CONCLUÍDO)
 
-- [ ] **2.1** Refatorar GET /api/boleto/validate
+- [x] **2.1** Refatorar GET /api/boleto/validate
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -411,7 +411,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **2.2** Refatorar GET /api/boleto/data
+- [x] **2.2** Refatorar GET /api/boleto/data
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -434,7 +434,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **2.3** Refatorar GET /api/boleto/nosso_numero
+- [x] **2.3** Refatorar GET /api/boleto/nosso_numero
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -459,7 +459,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **2.4** Adicionar novo endpoint GET /api/boleto/hash
+- [x] **2.4** Adicionar novo endpoint GET /api/boleto/hash
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -476,16 +476,16 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 3: Refatorar Endpoint de Retorno (🔄 A FAZER)
+### Fase 3: Refatorar Endpoint de Retorno (✅ CONCLUÍDO)
 
-- [ ] **3.1** Remover RETORNO_FIELDS array
+- [x] **3.1** Remover RETORNO_FIELDS array
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
   # Remover constante RETORNO_FIELDS (quando brcobranca tiver to_hash)
   ```
 
-- [ ] **3.2** Refatorar POST /api/retorno
+- [x] **3.2** Refatorar POST /api/retorno
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -510,9 +510,9 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 4: Melhorias de API (🔄 A FAZER)
+### Fase 4: Melhorias de API (✅ CONCLUÍDO)
 
-- [ ] **4.1** Padronizar respostas de erro
+- [x] **4.1** Padronizar respostas de erro
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -532,7 +532,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **4.2** Adicionar suporte a PIX
+- [x] **4.2** Adicionar suporte a PIX
   ```ruby
   # Arquivo: lib/boleto_api.rb
 
@@ -549,7 +549,7 @@ Response HTTP (JSON/PDF/etc)
   end
   ```
 
-- [ ] **4.3** Documentar novos endpoints no README
+- [x] **4.3** Documentar novos endpoints no README
   ```markdown
   ### Novos Endpoints (v2.0)
 
@@ -559,18 +559,18 @@ Response HTTP (JSON/PDF/etc)
 
 ---
 
-### Fase 5: Testes (🔄 A FAZER)
+### Fase 5: Testes (🔄 PENDENTE)
 
 - [ ] **5.1** Atualizar testes para usar nova API
 - [ ] **5.2** Adicionar testes para endpoint /hash
 - [ ] **5.3** Adicionar testes para suporte PIX
-- [ ] **5.4** Testar compatibilidade com brcobranca 12.2.0
+- [ ] **5.4** Testar compatibilidade com brcobranca 12.5.0
 
 ---
 
-### Fase 6: Deploy (🔄 A FAZER)
+### Fase 6: Deploy (🔄 PENDENTE)
 
-- [ ] **6.1** Atualizar Dockerfile
+- [x] **6.1** Atualizar Dockerfile (usar /app e corrigir puma.rb)
 - [ ] **6.2** Testar em ambiente de staging
 - [ ] **6.3** Atualizar documentação de deploy
 - [ ] **6.4** Release v2.0.0
