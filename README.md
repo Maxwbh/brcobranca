@@ -45,6 +45,8 @@
 - **Arquivos CNAB** de remessa e retorno
 - **Validações específicas** por banco
 - **Suporte a PIX** (cobrança híbrida)
+- **Suporte à Carteira 9 do Sicoob** (nova modalidade 2024/2025)
+- **Layout 810 do Sicoob** (CNAB 240 alternativo, sem cálculo automático do DV)
 - **Pronto para produção** - usado por milhares de empresas
 
 ---
@@ -172,6 +174,100 @@ end
 | 748 | Sicredi | ✅ | ✅ | - |
 | 756 | Sicoob | ✅ | ✅ | ✅ |
 
+### Carteiras especiais
+
+- **Sicoob (756)**:
+  - Carteiras tradicionais `1` (boleto) / `01` (remessa) — Simples Com Registro
+  - Carteiras tradicionais `3` / `03` — Garantida Caucionada
+  - **Nova Carteira 9** (2024/2025) — Usa Número do Contrato no código de barras em vez do Código do Cedente. Basta informar `numero_contrato` e `carteira: '9'`.
+  - Versão de layout CNAB 240: `'081'` (padrão) ou `'810'` (cliente calcula o DV do nosso número)
+- **C6 Bank (336)**:
+  - Carteira `10` — Cobrança Simples Emissão Banco
+  - Carteira `20` — Cobrança Simples Emissão Cliente
+
+---
+
+## Exemplos por banco
+
+### Sicoob — Carteira tradicional (1)
+
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(
+  agencia: '4327',
+  convenio: '229385',
+  nosso_numero: '1',
+  carteira: '1',
+  valor: 100.00,
+  data_vencimento: Date.today + 30,
+  cedente: 'Minha Empresa LTDA',
+  documento_cedente: '12345678000100',
+  sacado: 'Cliente',
+  sacado_documento: '12345678900'
+)
+```
+
+### Sicoob — Carteira 9 (nova modalidade com número de contrato)
+
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(
+  agencia: '4327',
+  convenio: '229385',
+  numero_contrato: '1234567',  # fornecido pelo Sicoob
+  carteira: '9',
+  nosso_numero: '1',
+  valor: 100.00,
+  # ... demais campos
+)
+# codigo_barras_segunda_parte usará numero_contrato em vez de convenio
+```
+
+### Sicoob — Remessa CNAB 240 com layout 810
+
+```ruby
+remessa = Brcobranca::Remessa::Cnab240::Sicoob.new(
+  versao_layout_arquivo_opcao: '810',  # cliente calcula o DV
+  agencia: '1234',
+  conta_corrente: '12345678',
+  digito_conta: '1',
+  convenio: '123456789',
+  # ... demais campos
+)
+```
+
+### C6 Bank — Boleto
+
+```ruby
+boleto = Brcobranca::Boleto::BancoC6.new(
+  agencia: '0001',
+  convenio: '000000123456',  # Código do Cedente do C6
+  nosso_numero: '0000000001',
+  carteira: '10',            # ou '20' para Emissão Cliente
+  valor: 100.00,
+  # ... demais campos
+)
+```
+
+### C6 Bank — Remessa CNAB 400
+
+```ruby
+remessa = Brcobranca::Remessa::Cnab400::BancoC6.new(
+  codigo_beneficiario: '000000123456',
+  carteira: '10',
+  empresa_mae: 'Minha Empresa LTDA',
+  documento_cedente: '12345678000100',
+  sequencial_remessa: '1',
+  pagamentos: [pagamento]
+)
+
+# ou via factory:
+Brcobranca::Remessa.criar(
+  banco: :c6,         # ou '336'
+  formato: :cnab400,
+  codigo_beneficiario: '000000123456',
+  # ... demais campos
+)
+```
+
 ---
 
 ## Documentação
@@ -188,6 +284,12 @@ end
 - [Wiki Oficial](https://github.com/Maxwbh/brcobranca/wiki)
 - [RubyDoc](http://rubydoc.info/gems/brcobranca)
 - [RubyGems](https://rubygems.org/gems/brcobranca)
+
+### Referências técnicas
+
+- **Sicoob**: [Validador CNAB oficial](https://www.sicoob.com.br/web/sicoob/validador-cnab) • Manual CNAB 240 (Sicoobnet Empresarial)
+- **C6 Bank**: Layout de Arquivos Cobrança Bancária Padrão CNAB 400 (v2.7 Julho 2025)
+- **FEBRABAN**: padrões CNAB 240 / 400 / 444 para troca de informações bancárias
 
 ---
 
