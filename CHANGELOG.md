@@ -7,8 +7,27 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
-### Added
-- **Suporte ao Banco C6 (código 336)** - CNAB 400:
+### Added — Sicoob (756): atualizações conforme documentação mais recente
+- **Suporte à Carteira 9** (nova modalidade 2024/2025): usa Número do Contrato
+  fornecido pelo Sicoob em vez do Código do Cedente na composição do código de
+  barras e linha digitável.
+  - `Brcobranca::Boleto::Sicoob#numero_contrato` - novo atributo
+  - `Brcobranca::Boleto::Sicoob#carteira_contrato?` - identificador da carteira
+  - `Brcobranca::Remessa::Cnab240::Sicoob#numero_contrato` - disponível na remessa
+  - `Brcobranca::Remessa::Cnab400::Sicoob#numero_contrato` - disponível na remessa
+- **Suporte ao Layout 810** (CNAB 240 Sicoob): versão alternativa onde o
+  Sicoob NÃO calcula o DV do nosso número (cliente já envia calculado).
+  - `Brcobranca::Remessa::Cnab240::Sicoob#versao_layout_arquivo_opcao`
+  - Valores aceitos: `'081'` (padrão, Sicoob calcula DV) ou `'810'` (cliente calcula)
+- **Nome do banco configurável no CNAB 400**: permite definir `'SICOOB'`
+  (nome atual do banco) no lugar de `'BANCOOBCED'` (compatibilidade mantida).
+  - `Brcobranca::Remessa::Cnab400::Sicoob#nome_banco=` agora é configurável
+  - Default continua `'BANCOOBCED'` para compatibilidade retroativa
+- **Retorno CNAB 240 Sicoob**: parsing expandido incluindo
+  `documento_numero` (posições 59-73) e `especie_documento` (112-114) que
+  estavam comentados como "não consegui extrair".
+
+### Added — Suporte ao Banco C6 (código 336) - CNAB 400
   - `Brcobranca::Boleto::BancoC6` - emissão de boletos com layout oficial C6Bank v2.7
   - `Brcobranca::Remessa::Cnab400::BancoC6` - geração de arquivos remessa CNAB 400
   - `Brcobranca::Retorno::Cnab400::BancoC6` - processamento de arquivos retorno CNAB 400

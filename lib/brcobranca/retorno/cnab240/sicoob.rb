@@ -36,63 +36,64 @@ module Brcobranca
 
         # Linha de mapeamento do retorno do arquivo CNAB 240
         # O registro CNAB 240 possui 2 tipos de registros que juntos geram um registro de retorno bancário
-        # O primeiro é do tipo T que retorna dados gerais sobre a transação
-        # O segundo é do tipo U que retorna os valores da transação
+        # O primeiro é do tipo T que retorna dados gerais sobre a transação (segmento T)
+        # O segundo é do tipo U que retorna os valores da transação (segmento U)
+        #
+        # Posições conforme manual oficial Sicoob CNAB 240 (v.26/06/2019, atualização 23/02/2021)
         class Line < Base
           extend ParseLine::FixedWidth # Extendendo parseline
 
-          REGISTRO_T_FIELDS = %w[codigo_registro codigo_ocorrencia agencia_com_dv cedente_com_dv nosso_numero carteira
-                                 data_vencimento valor_titulo banco_recebedor agencia_recebedora_com_dv sequencial valor_tarifa motivo_ocorrencia].freeze
-          REGISTRO_U_FIELDS = %w[desconto_concedito valor_abatimento iof_desconto juros_mora valor_recebido
-                                 outras_despesas outros_recebimento data_credito data_ocorrencia].freeze
+          REGISTRO_T_FIELDS = %w[codigo_registro codigo_ocorrencia agencia_com_dv cedente_com_dv
+                                 nosso_numero carteira documento_numero data_vencimento valor_titulo
+                                 banco_recebedor agencia_recebedora_com_dv especie_documento
+                                 sequencial valor_tarifa motivo_ocorrencia].freeze
+          REGISTRO_U_FIELDS = %w[juros_mora desconto_concedito valor_abatimento iof_desconto
+                                 valor_recebido outras_despesas outros_recebimento
+                                 data_credito data_ocorrencia].freeze
 
           attr_accessor :tipo_registro
 
+          # Layout do Segmento T/U no CNAB 240 Sicoob:
+          # Posições (1-based no manual convertidas para 0-based do Ruby).
+          #
+          # Nota: o `nosso_numero` é mapeado como 10 posições (37..46) para
+          # manter compatibilidade com layouts tradicionais. Layouts mais
+          # recentes usam até 20 posições (37..56) — os 10 dígitos seguintes
+          # são complementares e podem conter zeros, carteira e outros.
           fixed_width_layout do |parse|
             parse.field :codigo_registro, 7..7
             parse.field :tipo_registro, 13..13
             parse.field :sequencial, 8..12
             parse.field :codigo_ocorrencia, 15..16
+
+            # Segmento T
             parse.field :agencia_com_dv, 17..22
             parse.field :cedente_com_dv, 23..35
             parse.field :nosso_numero, 37..46
             parse.field :carteira, 57..57
+            parse.field :documento_numero, 58..72
             parse.field :data_vencimento, 73..80
             parse.field :valor_titulo, 81..95
             parse.field :banco_recebedor, 96..98
             parse.field :agencia_recebedora_com_dv, 99..104
-            parse.field :data_ocorrencia, 137..144
-            parse.field :data_credito, 145..152
-            parse.field :outras_despesas, 107..121
-            parse.field :iof_desconto, 62..76
-            parse.field :valor_abatimento, 47..61
-            parse.field :desconto_concedito, 32..46
-            parse.field :valor_recebido, 77..91
-            parse.field :juros_mora, 17..31
-            parse.field :outros_recebimento, 122..136
+            parse.field :especie_documento, 111..113
             parse.field :valor_tarifa, 198..212
             parse.field :motivo_ocorrencia, 213..222, lambda { |motivos|
               motivos.scan(/.{2}/).reject(&:blank?).reject { |motivo| motivo == '00' }
             }
 
-            # Dados que não consegui extrair dos registros T e U
-            # parse.field :convenio,31..37
-            # parse.field :tipo_cobranca,80..80
-            # parse.field :tipo_cobranca_anterior,81..81
-            # parse.field :natureza_recebimento,86..87
-            # parse.field :carteira_variacao,91..93
-            # parse.field :desconto,95..99
-            # parse.field :iof,100..104
-            # parse.field :comando,108..109
-            # parse.field :data_liquidacao,110..115
-            # parse.field :especie_documento,173..174
-            # parse.field :valor_tarifa,181..187
-            # parse.field :juros_desconto,201..213
-            # parse.field :abatimento_nao_aproveitado,292..304
-            # parse.field :valor_lancamento,305..317
-            # parse.field :indicativo_lancamento,318..318
-            # parse.field :indicador_valor,319..319
-            # parse.field :valor_ajuste,320..331
+            # Segmento U — posições sobrepõem as do T por terem segmentos diferentes.
+            # O parseline usa o mesmo mapa para os dois; como diferenciamos via
+            # `tipo_registro`, apenas os atributos do segmento correto são gravados.
+            parse.field :juros_mora, 17..31
+            parse.field :desconto_concedito, 32..46
+            parse.field :valor_abatimento, 47..61
+            parse.field :iof_desconto, 62..76
+            parse.field :valor_recebido, 77..91
+            parse.field :outras_despesas, 107..121
+            parse.field :outros_recebimento, 122..136
+            parse.field :data_ocorrencia, 137..144
+            parse.field :data_credito, 145..152
           end
         end
       end
