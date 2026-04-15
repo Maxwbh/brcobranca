@@ -115,6 +115,7 @@ module Brcobranca
     autoload :Safra,         'brcobranca/boleto/safra'
     autoload :Citibank,      'brcobranca/boleto/citibank'
     autoload :Ailos,         'brcobranca/boleto/ailos'
+    autoload :BancoC6,       'brcobranca/boleto/banco_c6'
 
     # Módulos para classes de template
     module Template
@@ -283,6 +284,7 @@ module Brcobranca
       autoload :Credisis,      'brcobranca/retorno/cnab400/credisis'
       autoload :Santander,     'brcobranca/retorno/cnab400/santander'
       autoload :BancoBrasil,   'brcobranca/retorno/cnab400/banco_brasil'
+      autoload :BancoC6,       'brcobranca/retorno/cnab400/banco_c6'
     end
 
     module Cnab240
@@ -330,7 +332,10 @@ module Brcobranca
       '070' => { cnab400: 'BancoBrasilia' },
       'banco_brasilia' => { cnab400: 'BancoBrasilia' },
       '097' => { cnab400: 'Credisis' },
-      'credisis' => { cnab400: 'Credisis' }
+      'credisis' => { cnab400: 'Credisis' },
+      '336' => { cnab400: 'BancoC6' },
+      'banco_c6' => { cnab400: 'BancoC6' },
+      'c6' => { cnab400: 'BancoC6' }
     }.freeze
 
     # Lista de formatos suportados
@@ -418,6 +423,7 @@ module Brcobranca
       autoload :BancoBrasilia, 'brcobranca/remessa/cnab400/banco_brasilia'
       autoload :Unicred,       'brcobranca/remessa/cnab400/unicred'
       autoload :Credisis,      'brcobranca/remessa/cnab400/credisis'
+      autoload :BancoC6,       'brcobranca/remessa/cnab400/banco_c6'
     end
 
     module Cnab444

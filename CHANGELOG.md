@@ -7,7 +7,20 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
-<!-- Adicione novas mudanças aqui -->
+### Added
+- **Suporte ao Banco C6 (código 336)** - CNAB 400:
+  - `Brcobranca::Boleto::BancoC6` - emissão de boletos com layout oficial C6Bank v2.7
+  - `Brcobranca::Remessa::Cnab400::BancoC6` - geração de arquivos remessa CNAB 400
+  - `Brcobranca::Retorno::Cnab400::BancoC6` - processamento de arquivos retorno CNAB 400
+  - Suporte às carteiras 10 (Emissão Banco) e 20 (Emissão Cliente)
+  - Cálculo do DV do nosso número via Módulo 11
+  - Campo livre (25 posições): Cedente (12) + Nosso Número (10) + Carteira (2) + Indicador de Layout (1)
+  - Registrado no factory `Brcobranca::Remessa.criar` com aliases: `'336'`, `'c6'`, `'banco_c6'`
+  - Detecção automática no `Brcobranca::Retorno.parse` quando código de banco = 336
+  - Baseado no manual oficial "Layout de Arquivos Cobrança Bancária Padrão CNAB 400 - Versão 2.7 Julho 2025"
+
+### Contributors
+- Maxwell da Silva Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
 
 ## [12.6.0] - 2026-01-03
 
@@ -305,6 +318,7 @@ boleto.to_json
 - 104 - Caixa
 - 136 - Unicred
 - 237 - Bradesco
+- 336 - C6 Bank
 - 341 - Itaú
 - 399 - HSBC
 - 745 - Citibank
