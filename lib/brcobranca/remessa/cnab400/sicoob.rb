@@ -8,6 +8,12 @@ module Brcobranca
         attr_accessor :convenio
 
         attr_accessor :modalidade_carteira, :distribuicao_boleto, :tipo_formulario
+        # <b>OPCIONAL</b>: Número do Contrato fornecido pelo Sicoob, utilizado
+        # como Código de Transmissão para a Carteira 9 em substituição ao código do cedente.
+        attr_accessor :numero_contrato
+        # <b>OPCIONAL</b>: Nome do banco a ser impresso no header (default: "SICOOB").
+        # Para compatibilidade com sistemas legados pode ser definido como "BANCOOBCED".
+        attr_writer :nome_banco
         # identificacao da emissao do boleto (attr na classe base)
         #   opcoes:
         #     ‘1’ = Banco Emite
@@ -56,8 +62,20 @@ module Brcobranca
           '756'
         end
 
+        # Nome do banco utilizado no header do arquivo remessa.
+        # Default: "BANCOOBCED" (compatibilidade com layouts legados).
+        # Pode ser sobrescrito para "SICOOB" em novas implantações.
+        #
+        # @return [String] 15 caracteres.
         def nome_banco
-          'BANCOOBCED'.format_size(15)
+          (@nome_banco || 'BANCOOBCED').to_s.format_size(15)
+        end
+
+        # Identifica se a carteira é a nova carteira baseada em Número do Contrato.
+        #
+        # @return [Boolean]
+        def carteira_contrato?
+          %w[9 09].include?(carteira.to_s)
         end
 
         # Informacoes do Código de Transmissão

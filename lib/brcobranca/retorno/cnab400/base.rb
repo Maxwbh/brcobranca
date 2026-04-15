@@ -25,6 +25,8 @@ module Brcobranca
             Brcobranca::Retorno::Cnab400::Credisis.load_lines(file, options)
           when '237'
             Brcobranca::Retorno::Cnab400::Bradesco.load_lines(file, options)
+          when '336'
+            Brcobranca::Retorno::Cnab400::BancoC6.load_lines(file, options)
           when '341'
             Brcobranca::Retorno::Cnab400::Itau.load_lines(file, options)
           when '033', '353'

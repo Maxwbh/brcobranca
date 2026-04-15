@@ -40,7 +40,7 @@
 
 ### Principais Recursos
 
-- **17 bancos brasileiros** suportados
+- **18 bancos brasileiros** suportados
 - **Geração de boletos** em PDF com código de barras
 - **Arquivos CNAB** de remessa e retorno
 - **Validações específicas** por banco
@@ -164,6 +164,7 @@ end
 | 104 | Caixa Econômica | ✅ | ✅ | - |
 | 136 | Unicred | ✅ | ✅ | ✅ |
 | 237 | Bradesco | ✅ | - | ✅ |
+| 336 | C6 Bank | ✅ | - | ✅ |
 | 341 | Itaú | ✅ | - | ✅ (+ 444) |
 | 399 | HSBC | ✅ | - | - |
 | 422 | Safra | ✅ | - | - |
@@ -285,7 +286,7 @@ File.open('boleto.pdf', 'wb') { |f| f.write(boleto.to(:pdf)) }
 
 ## Features
 
-- **17 Brazilian banks** supported
+- **18 Brazilian banks** supported
 - **PDF generation** with barcode
 - **CNAB files** (240/400/444 bytes)
 - **Bank-specific validations**
