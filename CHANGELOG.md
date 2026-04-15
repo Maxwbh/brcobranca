@@ -7,6 +7,15 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Fixed
+- **Compatibilidade com rghost 0.9.9**: a gem `rghost` na versão 0.9.9
+  (lançada em 2024-03-07) removeu o `require` do arquivo que define a
+  constante `RGhost::VERSION`, causando `NameError: uninitialized constant
+  RGhost::VERSION` ao instanciar qualquer `RGhost::Document` (chamado em
+  `lib/brcobranca/boleto/template/rghost.rb`). Adicionado fallback que
+  define a constante caso não esteja presente, restaurando a geração de
+  boletos em PDF/JPG/PNG/TIF. Afeta 34 specs que falhavam neste cenário.
+
 ### Added — Sicoob (756): atualizações conforme documentação mais recente
 - **Suporte à Carteira 9** (nova modalidade 2024/2025): usa Número do Contrato
   fornecido pelo Sicoob em vez do Código do Cedente na composição do código de
