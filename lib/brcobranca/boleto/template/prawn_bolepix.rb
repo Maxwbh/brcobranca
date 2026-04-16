@@ -122,6 +122,61 @@ module Brcobranca
         end
 
         def draw_boleto(pdf, boleto)
+          # 1) Recibo do Pagador (topo, versão compacta sem código de barras)
+          desenha_recibo_pagador(pdf, boleto)
+
+          # 2) Linha de corte pontilhada
+          desenha_linha_corte(pdf)
+
+          # 3) Ficha de Compensação (abaixo, versão completa com código de barras + PIX)
+          desenha_ficha_compensacao(pdf, boleto)
+        end
+
+        # =================================================================
+        # RECIBO DO PAGADOR (parte superior do boleto)
+        # =================================================================
+        # Layout simplificado, sem "Local de pagamento" e sem código de barras.
+        # Contém: topo, beneficiário, dados do documento, carteira, sacado,
+        # instruções reduzidas e autenticação mecânica (Recibo do Pagador).
+        def desenha_recibo_pagador(pdf, boleto)
+          desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
+          desenha_linha_beneficiario(pdf, boleto)
+          desenha_linha_documento(pdf, boleto)
+          desenha_linha_carteira(pdf, boleto)
+          desenha_linha_totalizadores_recibo(pdf, boleto)
+          desenha_linha_sacado(pdf, boleto)
+          desenha_linha_autenticacao_recibo(pdf)
+        end
+
+        # Linha pontilhada de corte entre o Recibo do Pagador e a Ficha de
+        # Compensação. Inclui um pequeno texto "Corte aqui" no canto.
+        def desenha_linha_corte(pdf)
+          pdf.move_down 6
+          y = pdf.cursor
+          width = pdf.bounds.width
+
+          pdf.stroke_color COR_TEXTO_LABEL
+          pdf.line_width 0.5
+          pdf.dash(2, space: 2)
+          pdf.stroke_horizontal_line 0, width, at: y
+          pdf.undash
+
+          # Texto "Corte aqui"
+          pdf.fill_color COR_TEXTO_LABEL
+          pdf.text_box 'Corte aqui --->',
+                       at: [width - 60, y + 3],
+                       width: 60,
+                       height: 8,
+                       size: 6,
+                       align: :right
+          pdf.fill_color COR_TEXTO_VALOR
+
+          pdf.stroke_color COR_BORDA
+          pdf.move_down 6
+        end
+
+        # Ficha de Compensação (a parte do boleto que é realmente paga).
+        def desenha_ficha_compensacao(pdf, boleto)
           desenha_topo(pdf, boleto)
           desenha_linha_local_pagamento(pdf, boleto)
           desenha_linha_beneficiario(pdf, boleto)
@@ -133,8 +188,62 @@ module Brcobranca
           desenha_codigo_barras_e_pix(pdf, boleto)
         end
 
-        def desenha_topo(pdf, boleto)
+        # Linha única de 5 totalizadores lado-a-lado (para o recibo, mais compacto)
+        def desenha_linha_totalizadores_recibo(pdf, boleto)
+          draw_row(pdf, [
+                     { label: '(-) Desconto / Abatimento', value: boleto.descontos_e_abatimentos&.to_currency || '', width_ratio: 0.20, align: :right },
+                     { label: '(-) Outras deduções', value: '', width_ratio: 0.20, align: :right },
+                     { label: '(+) Mora / Multa', value: '', width_ratio: 0.20, align: :right },
+                     { label: '(+) Outros Acréscimos', value: '', width_ratio: 0.20, align: :right },
+                     { label: '(=) Valor cobrado', value: '', width_ratio: 0.20, align: :right }
+                   ])
+        end
+
+        # Linha de autenticação mecânica do recibo (no canto direito).
+        def desenha_linha_autenticacao_recibo(pdf)
+          y = pdf.cursor
           width = pdf.bounds.width
+          altura = ROW_HEIGHT * 0.85
+
+          pdf.stroke_color COR_BORDA
+          pdf.stroke_rectangle([0, y], width, altura)
+
+          pdf.fill_color COR_TEXTO_LABEL
+          pdf.text_box 'Autenticação mecânica - Recibo do Pagador',
+                       at: [4, y - 4],
+                       width: width - 8,
+                       height: altura - 4,
+                       size: 7,
+                       align: :right,
+                       valign: :top
+          pdf.fill_color COR_TEXTO_VALOR
+
+          pdf.move_down altura
+        end
+
+        # Desenha o topo do boleto: Logo | Código banco-DV | Linha digitável.
+        #
+        # @param titulo_direito [String, nil] Texto pequeno acima da linha
+        #   digitável (ex: "Recibo do Pagador"). Útil para diferenciar recibo
+        #   da ficha de compensação.
+        def desenha_topo(pdf, boleto, titulo_direito: nil)
+          width = pdf.bounds.width
+          y_topo = pdf.cursor
+
+          # Se houver título (ex: "Recibo do Pagador"), reserva 10pt acima para ele
+          if titulo_direito
+            pdf.fill_color COR_TEXTO_LABEL
+            pdf.text_box titulo_direito,
+                         at: [0, y_topo - 1],
+                         width: width - 4,
+                         height: 9,
+                         size: 7,
+                         align: :right,
+                         style: :italic
+            pdf.fill_color COR_TEXTO_VALOR
+            pdf.move_down 10
+          end
+
           y = pdf.cursor
           logo_w = 80
           codigo_w = 55

@@ -211,24 +211,25 @@ if Brcobranca::Boleto::Template::PRAWN_AVAILABLE
     end
   end
 
-  # Boleto com os MESMOS DADOS do PDF de referência
-  # (examples/Boleto_86ae5612b46d4111bce16098bcb48be1.pdf, Sicoob UWBR/Maxwell)
-  puts "\n  >>> Boleto replicando o PDF de referência (Sicoob UWBR):"
+  # Boleto de exemplo baseado no layout do PDF de referência (SICOOB)
+  # Usando DADOS FICTÍCIOS — não utilizar CPF/CNPJ reais em exemplos.
+  #
+  # CNPJ fictício: 11.222.333/0001-81 (estrutura válida, não real)
+  # CPF fictício:  000.000.001-91 (placeholder para exemplos/testes)
+  puts "\n  >>> Boleto baseado no layout SICOOB (dados FICTÍCIOS):"
   boleto_ref = Brcobranca::Boleto::Sicoob.new(
-    # Dados do beneficiário
-    cedente: 'UWBR Vox Telecomunicações S/A',
-    documento_cedente: '12105570000125',
-    cedente_endereco: 'Rua Juca Miranda, 349 Comarca de Montes Claros, MG, sob o nº 66.120, ' \
-                      'no livro C-37 e protocolado sob o nº 137.132 livro A-13 em 14 de maio de 2021. - ' \
-                      'Jardim São Luiz - Montes Claros - MG - 39401-507',
-    # Dados da conta (Cooperativa/Cód. Beneficiário: 4092/834467)
+    # Beneficiário (dados fictícios)
+    cedente: 'Empresa Exemplo de Serviços Ltda',
+    documento_cedente: '11222333000181',
+    cedente_endereco: 'Av. Principal, 1000 - Sala 101 - Centro - Cidade Exemplo - UF - 00000-000',
+    # Conta bancária (Cooperativa/Cód. Beneficiário)
     agencia: '4092',
     convenio: '834467',
     conta_corrente: '834467',
     # Título
     carteira: '1',
     nosso_numero: '374875',
-    documento_numero: '1/FAT250428093704103',
+    documento_numero: 'FATURA-2025-0001',
     # Dados do título
     valor: 51.23,
     data_documento: Date.parse('2025-04-28'),
@@ -238,36 +239,36 @@ if Brcobranca::Boleto::Template::PRAWN_AVAILABLE
     aceite: 'N',
     especie: 'R$',
     quantidade: '001',
-    # Instruções
-    instrucoes: "Após o vencimento cobrar 0,033 mora/dia e 2% Multa.\n\nAbril/2025",
+    instrucoes: "Após o vencimento cobrar 0,033% de juros ao dia e 2% de multa.\n\nAbril/2025",
     local_pagamento: 'Pague em qualquer banco ou correspondente bancário.',
-    # Sacado (Maxwell)
-    sacado: 'MAXWELL DA SILVA OLIVEIRA',
-    sacado_documento: '85076171668',
-    sacado_endereco: 'RUA PRESIDENTE KENNEDY, 126 - PAPAVENTO Sete Lagoas - MG - 35700483'
+    # Pagador (dados fictícios)
+    sacado: 'João Silva Exemplo',
+    sacado_documento: '00000000191',
+    sacado_endereco: 'Rua dos Exemplos, 100 - Bairro Modelo - Cidade Teste - UF - 00000-000'
   )
   boleto_ref.extend(Brcobranca::Boleto::Template::PrawnBolepix)
-  path_ref = File.join(PDF_DIR, 'prawn_sicoob_referencia.pdf')
+  path_ref = File.join(PDF_DIR, 'prawn_sicoob_exemplo.pdf')
   File.open(path_ref, 'wb') { |f| f.write(boleto_ref.to(:pdf)) }
   puts "  ✓ #{path_ref} (#{File.size(path_ref)} bytes) — sem PIX"
 
   # Mesmo boleto COM PIX (QR Code)
   boleto_ref.emv = EMV_EXEMPLO
-  path_ref_pix = File.join(PDF_DIR, 'prawn_sicoob_referencia_pix.pdf')
+  path_ref_pix = File.join(PDF_DIR, 'prawn_sicoob_exemplo_pix.pdf')
   File.open(path_ref_pix, 'wb') { |f| f.write(boleto_ref.to(:pdf)) }
   puts "  ✓ #{path_ref_pix} (#{File.size(path_ref_pix)} bytes) — com QR Code PIX"
 
   # Boleto com 7 linhas de instruções (teste de capacidade máxima)
-  puts "\n  >>> Boleto com 7 linhas de instruções (teste):"
+  puts "\n  >>> Boleto com 7 linhas de instruções (teste, dados FICTÍCIOS):"
   boleto_7linhas = Brcobranca::Boleto::Sicoob.new(
-    cedente: 'UWBR Vox Telecomunicações S/A',
-    documento_cedente: '12105570000125',
+    cedente: 'Empresa Exemplo de Serviços Ltda',
+    documento_cedente: '11222333000181',
+    cedente_endereco: 'Av. Principal, 1000 - Centro - Cidade Exemplo - UF - 00000-000',
     agencia: '4092',
     convenio: '834467',
     conta_corrente: '834467',
     carteira: '1',
     nosso_numero: '374876',
-    documento_numero: '2/FAT250428093704104',
+    documento_numero: 'FATURA-2025-0002',
     valor: 1250.99,
     data_documento: Date.parse('2025-04-28'),
     data_vencimento: Date.parse('2025-05-10'),
@@ -280,13 +281,13 @@ if Brcobranca::Boleto::Template::PRAWN_AVAILABLE
                 "2. Após vencimento cobrar multa de 2% sobre o valor do título.\n" \
                 "3. Conceder desconto de R$ 50,00 para pagamento até 05/05/2025.\n" \
                 "4. Não receber após 30 dias do vencimento - protesto automático.\n" \
-                "5. Serviços prestados em abril/2025 conforme contrato 12345.\n" \
-                "6. Em caso de dúvidas entre em contato: contato@uwbr.com.br\n" \
-                "7. NFS-e série A nº 1234 emitida em 28/04/2025.",
+                "5. Serviços prestados em abril/2025 conforme contrato 0001.\n" \
+                "6. Em caso de dúvidas entre em contato: contato@exemplo.com.br\n" \
+                "7. NFS-e série A nº 0001 emitida em 28/04/2025.",
     local_pagamento: 'Pague em qualquer banco ou correspondente bancário.',
-    sacado: 'MAXWELL DA SILVA OLIVEIRA',
-    sacado_documento: '85076171668',
-    sacado_endereco: 'RUA PRESIDENTE KENNEDY, 126 - PAPAVENTO Sete Lagoas - MG - 35700483',
+    sacado: 'João Silva Exemplo',
+    sacado_documento: '00000000191',
+    sacado_endereco: 'Rua dos Exemplos, 100 - Bairro Modelo - Cidade Teste - UF - 00000-000',
     emv: EMV_EXEMPLO
   )
   boleto_7linhas.extend(Brcobranca::Boleto::Template::PrawnBolepix)
