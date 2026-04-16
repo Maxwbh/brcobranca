@@ -1,0 +1,387 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Script que gera:
+#  1. Boletos PDF tradicionais (todos os 18 bancos) em spec/fixtures/generated/pdf/
+#  2. Boletos PDF híbridos (com PIX/QR Code) para bancos que suportam
+#  3. Arquivos de remessa CNAB 240/400 em spec/fixtures/generated/remessa/
+#  4. Versão Prawn do boleto com PIX (quando disponível)
+#
+# Uso:
+#   bin/generate_fixtures
+
+# NÃO usa bundler/setup para permitir load de gems extras (prawn, rqrcode, etc.)
+# instaladas via `gem install --user-install`.
+
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+require 'brcobranca'
+require 'brcobranca/boleto/template/prawn_bolepix'
+require 'fileutils'
+
+# --- Diretórios de saída ---
+PDF_DIR = File.expand_path('../spec/fixtures/generated/pdf', __dir__)
+REMESSA_DIR = File.expand_path('../spec/fixtures/generated/remessa', __dir__)
+FileUtils.mkdir_p(PDF_DIR)
+FileUtils.mkdir_p(REMESSA_DIR)
+
+# --- Dados comuns ---
+EMV_EXEMPLO = '00020126580014br.gov.bcb.pix0136' \
+              '123e4567-e12b-12d1-a456-4266554400005204000053039865802BR' \
+              '5913EMPRESA TESTE6009SAO PAULO62070503***63049D3E'
+
+sacado_data = {
+  sacado: 'Cliente Teste da Silva',
+  sacado_documento: '12345678900',
+  sacado_endereco: 'Rua Exemplo, 123 - Centro - São Paulo/SP - 01000-000'
+}
+
+# --- Helpers ---
+def gera_pdf(boleto, nome)
+  path = File.join(PDF_DIR, "#{nome}.pdf")
+  File.open(path, 'wb') { |f| f.write(boleto.to(:pdf)) }
+  puts "  ✓ #{path} (#{File.size(path)} bytes)"
+rescue StandardError => e
+  puts "  ✗ #{nome}: #{e.class}: #{e.message}"
+end
+
+def gera_remessa(remessa, nome, ext = 'rem')
+  path = File.join(REMESSA_DIR, "#{nome}.#{ext}")
+  File.open(path, 'wb') { |f| f.write(remessa.gera_arquivo) }
+  puts "  ✓ #{path} (#{File.size(path)} bytes)"
+rescue StandardError => e
+  puts "  ✗ #{nome}: #{e.class}: #{e.message}"
+end
+
+# --- 1. Boletos PDF tradicionais ---
+puts "\n=== 1. Gerando boletos PDF tradicionais ==="
+Brcobranca.setup { |c| c.gerador = :rghost }
+
+bancos_boleto = {
+  'banco_brasil' => {
+    class: Brcobranca::Boleto::BancoBrasil,
+    attrs: { agencia: '1234', conta_corrente: '12345', convenio: '1234567', nosso_numero: '1', carteira: '18', variacao: '019' }
+  },
+  'bradesco' => {
+    class: Brcobranca::Boleto::Bradesco,
+    attrs: { agencia: '1234', conta_corrente: '1234567', nosso_numero: '1', carteira: '06' }
+  },
+  'caixa' => {
+    class: Brcobranca::Boleto::Caixa,
+    attrs: { agencia: '1234', conta_corrente: '123456', convenio: '123456', nosso_numero: '123', carteira: '1' }
+  },
+  'itau' => {
+    class: Brcobranca::Boleto::Itau,
+    attrs: { agencia: '1234', conta_corrente: '12345', carteira: '175', nosso_numero: '12345678', seu_numero: '12345' }
+  },
+  'santander' => {
+    class: Brcobranca::Boleto::Santander,
+    attrs: { agencia: '1234', conta_corrente: '1234567', convenio: '1234567', nosso_numero: '1234567', carteira: '102' }
+  },
+  'sicoob' => {
+    class: Brcobranca::Boleto::Sicoob,
+    attrs: { agencia: '4327', conta_corrente: '417270', convenio: '229385', nosso_numero: '2', carteira: '1' }
+  },
+  'sicoob_carteira_9' => {
+    class: Brcobranca::Boleto::Sicoob,
+    attrs: { agencia: '4327', conta_corrente: '417270', convenio: '229385', numero_contrato: '1234567', nosso_numero: '2', carteira: '9' }
+  },
+  'sicredi' => {
+    class: Brcobranca::Boleto::Sicredi,
+    attrs: { agencia: '1234', conta_corrente: '12345', carteira: '1', byte_idt: '2', posto: '12', nosso_numero: '12345' }
+  },
+  'unicred' => {
+    class: Brcobranca::Boleto::Unicred,
+    attrs: { agencia: '1234', conta_corrente: '1234', convenio: '12345', carteira: '21', nosso_numero: '1234' }
+  },
+  'banco_c6' => {
+    class: Brcobranca::Boleto::BancoC6,
+    attrs: { agencia: '0001', conta_corrente: '0000528', convenio: '000000123456', nosso_numero: '0000000001', carteira: '10' }
+  },
+  'banco_c6_carteira_20' => {
+    class: Brcobranca::Boleto::BancoC6,
+    attrs: { agencia: '0001', conta_corrente: '0000528', convenio: '000000123456', nosso_numero: '0000000001', carteira: '20' }
+  },
+  'banestes' => {
+    class: Brcobranca::Boleto::Banestes,
+    attrs: { agencia: '1234', conta_corrente: '1234567', digito_conta_corrente: '1', carteira: '11', nosso_numero: '12345678' }
+  },
+  'banrisul' => {
+    class: Brcobranca::Boleto::Banrisul,
+    attrs: { agencia: '1234', conta_corrente: '123456', convenio: '1234567', carteira: '1', nosso_numero: '12345678' }
+  },
+  'safra' => {
+    class: Brcobranca::Boleto::Safra,
+    attrs: { agencia: '1234', agencia_dv: '0', conta_corrente: '12345678', conta_corrente_dv: '1', carteira: '1', nosso_numero: '12345678' }
+  },
+  'citibank' => {
+    class: Brcobranca::Boleto::Citibank,
+    attrs: { agencia: '1234', conta_corrente: '1234567', convenio: '0123456789', portfolio: '650', nosso_numero: '12345678901' }
+  },
+  'hsbc' => {
+    class: Brcobranca::Boleto::Hsbc,
+    attrs: { agencia: '1234', conta_corrente: '1234567', convenio: '1234567', carteira: 'CNR', nosso_numero: '1234567890' }
+  },
+  'credisis' => {
+    class: Brcobranca::Boleto::Credisis,
+    attrs: { agencia: '1234', conta_corrente: '12345', convenio: '1234', nosso_numero: '123456' }
+  },
+  'banco_nordeste' => {
+    class: Brcobranca::Boleto::BancoNordeste,
+    attrs: { agencia: '1234', conta_corrente: '1234567', digito_conta_corrente: '1', convenio: '1234567', nosso_numero: '1234567', carteira: '21' }
+  },
+  'ailos' => {
+    class: Brcobranca::Boleto::Ailos,
+    attrs: { agencia: '1234', conta_corrente: '12345', convenio: '1234', nosso_numero: '12345', carteira: '1' }
+  },
+  'banco_brasilia' => {
+    class: Brcobranca::Boleto::BancoBrasilia,
+    attrs: { agencia: '123', conta_corrente: '123456', convenio: '1234567', carteira: '1', nosso_numero: '123456' }
+  }
+}
+
+dados_comuns = {
+  valor: 123.45,
+  data_documento: Date.today,
+  data_vencimento: Date.today + 30,
+  cedente: 'Empresa Exemplo LTDA',
+  documento_cedente: '12345678000100',
+  **sacado_data
+}
+
+bancos_boleto.each do |nome, cfg|
+  attrs = dados_comuns.merge(cfg[:attrs])
+  boleto = cfg[:class].new(attrs)
+  gera_pdf(boleto, nome)
+end
+
+# --- 2. Boletos PDF híbridos (com PIX) ---
+puts "\n=== 2. Gerando boletos híbridos com PIX (Bolepix) ==="
+Brcobranca.setup { |c| c.gerador = :rghost_bolepix }
+
+bancos_bolepix = %w[
+  banco_brasil bradesco caixa itau santander sicoob
+  sicoob_carteira_9 banco_c6 banco_c6_carteira_20
+]
+
+bancos_bolepix.each do |nome|
+  cfg = bancos_boleto[nome]
+  attrs = dados_comuns.merge(cfg[:attrs]).merge(emv: EMV_EXEMPLO)
+  boleto = cfg[:class].new(attrs)
+  gera_pdf(boleto, "#{nome}_pix")
+end
+
+# --- 3. Boletos via Prawn (alternativa sem Ghostscript) ---
+puts "\n=== 3. Gerando boletos via Prawn (alternativa sem Ghostscript) ==="
+
+# Força o load do template Prawn (autoload não é suficiente para expor a constante)
+require 'brcobranca/boleto/template/prawn_bolepix'
+
+if Brcobranca::Boleto::Template::PRAWN_AVAILABLE
+  Brcobranca.setup { |c| c.gerador = :rghost }
+
+  # Boletos tradicionais (sem PIX) via Prawn - para comparação com RGhost
+  %w[bradesco itau caixa sicoob banco_c6].each do |nome|
+    cfg = bancos_boleto[nome]
+    attrs = dados_comuns.merge(cfg[:attrs])
+    boleto = cfg[:class].new(attrs)
+    boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
+
+    path = File.join(PDF_DIR, "prawn_#{nome}.pdf")
+    begin
+      File.open(path, 'wb') { |f| f.write(boleto.to(:pdf)) }
+      puts "  ✓ #{path} (#{File.size(path)} bytes)"
+    rescue StandardError => e
+      puts "  ✗ prawn_#{nome}: #{e.class}: #{e.message}"
+    end
+  end
+
+  # Boletos com PIX/QRCode via Prawn
+  %w[bradesco itau caixa sicoob banco_c6].each do |nome|
+    cfg = bancos_boleto[nome]
+    attrs = dados_comuns.merge(cfg[:attrs]).merge(emv: EMV_EXEMPLO)
+    boleto = cfg[:class].new(attrs)
+    boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
+
+    path = File.join(PDF_DIR, "prawn_#{nome}_pix.pdf")
+    begin
+      File.open(path, 'wb') { |f| f.write(boleto.to(:pdf)) }
+      puts "  ✓ #{path} (#{File.size(path)} bytes)"
+    rescue StandardError => e
+      puts "  ✗ prawn_#{nome}_pix: #{e.class}: #{e.message}"
+    end
+  end
+else
+  puts '  (Prawn não disponível — install: gem install prawn barby rqrcode chunky_png)'
+end
+
+# --- 4. Arquivos de remessa CNAB 400 ---
+puts "\n=== 4. Gerando arquivos de remessa CNAB 400 ==="
+
+pagamento_padrao = Brcobranca::Remessa::Pagamento.new(
+  valor: 123.45,
+  data_vencimento: Date.today + 30,
+  nosso_numero: 1,
+  documento_sacado: '12345678900',
+  nome_sacado: 'Cliente Teste',
+  endereco_sacado: 'Rua Exemplo, 123',
+  bairro_sacado: 'Centro',
+  cep_sacado: '01000000',
+  cidade_sacado: 'São Paulo',
+  uf_sacado: 'SP'
+)
+
+pagamento_pix = Brcobranca::Remessa::PagamentoPix.new(
+  valor: 123.45,
+  data_vencimento: Date.today + 30,
+  nosso_numero: 1,
+  documento_sacado: '12345678900',
+  nome_sacado: 'Cliente Teste',
+  endereco_sacado: 'Rua Exemplo, 123',
+  bairro_sacado: 'Centro',
+  cep_sacado: '01000000',
+  cidade_sacado: 'São Paulo',
+  uf_sacado: 'SP',
+  codigo_chave_dict: '12345678000100',
+  tipo_chave_dict: 'cnpj',
+  valor_maximo_pix: 123.45,
+  valor_minimo_pix: 123.45,
+  txid: 'TXID20260416001'
+)
+
+# Bradesco
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::Bradesco.new(
+    carteira: '09', agencia: '1234', conta_corrente: '1234567',
+    digito_conta: '6', codigo_empresa: '12345',
+    empresa_mae: 'Empresa Exemplo LTDA', documento_cedente: '12345678000100',
+    sequencial_remessa: '1', pagamentos: [pagamento_padrao]
+  ),
+  'bradesco_cnab400'
+)
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::BradescoPix.new(
+    carteira: '09', agencia: '1234', conta_corrente: '1234567',
+    digito_conta: '6', codigo_empresa: '12345',
+    empresa_mae: 'Empresa Exemplo LTDA', documento_cedente: '12345678000100',
+    sequencial_remessa: '1', pagamentos: [pagamento_pix]
+  ),
+  'bradesco_cnab400_pix'
+)
+
+# Itaú
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::Itau.new(
+    carteira: '109', agencia: '1234', conta_corrente: '12345',
+    digito_conta: '6', empresa_mae: 'Empresa Exemplo LTDA',
+    documento_cedente: '12345678000100', pagamentos: [pagamento_padrao]
+  ),
+  'itau_cnab400'
+)
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::ItauPix.new(
+    carteira: '109', agencia: '1234', conta_corrente: '12345',
+    digito_conta: '6', empresa_mae: 'Empresa Exemplo LTDA',
+    documento_cedente: '12345678000100', pagamentos: [pagamento_pix]
+  ),
+  'itau_cnab400_pix'
+)
+
+# Santander
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::SantanderPix.new(
+    codigo_transmissao: '17777751042700080112',
+    empresa_mae: 'Empresa Exemplo LTDA',
+    documento_cedente: '12345678000100',
+    agencia: '1234', conta_corrente: '123456789',
+    digito_conta: '8', pagamentos: [pagamento_pix]
+  ),
+  'santander_cnab400_pix'
+)
+
+# C6 Bank
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::BancoC6.new(
+    codigo_beneficiario: '000000123456', carteira: '10',
+    empresa_mae: 'Empresa Exemplo LTDA', documento_cedente: '12345678000100',
+    sequencial_remessa: '1', pagamentos: [pagamento_padrao]
+  ),
+  'banco_c6_cnab400'
+)
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab400::BancoC6Pix.new(
+    codigo_beneficiario: '000000123456', carteira: '10',
+    empresa_mae: 'Empresa Exemplo LTDA', documento_cedente: '12345678000100',
+    sequencial_remessa: '1', pagamentos: [pagamento_pix]
+  ),
+  'banco_c6_cnab400_pix'
+)
+
+# --- 5. Arquivos de remessa CNAB 240 ---
+puts "\n=== 5. Gerando arquivos de remessa CNAB 240 ==="
+
+# Sicoob
+sicoob_attrs = {
+  empresa_mae: 'Empresa Exemplo LTDA', agencia: '1234',
+  conta_corrente: '12345678', digito_conta: '1',
+  documento_cedente: '12345678000100', convenio: '123456789',
+  modalidade_carteira: '01', tipo_formulario: '4', parcela: '01',
+  sequencial_remessa: '1'
+}
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab240::Sicoob.new(sicoob_attrs.merge(pagamentos: [pagamento_padrao])),
+  'sicoob_cnab240'
+)
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab240::SicoobPix.new(sicoob_attrs.merge(pagamentos: [pagamento_pix])),
+  'sicoob_cnab240_pix'
+)
+
+# Caixa
+caixa_attrs = {
+  empresa_mae: 'Empresa Exemplo LTDA', agencia: '1234', digito_agencia: '0',
+  conta_corrente: '123456', digito_conta: '7',
+  documento_cedente: '12345678000100', convenio: '123456',
+  sequencial_remessa: '1', versao_aplicativo: '1000'
+}
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab240::Caixa.new(caixa_attrs.merge(pagamentos: [pagamento_padrao])),
+  'caixa_cnab240'
+)
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab240::CaixaPix.new(caixa_attrs.merge(pagamentos: [pagamento_pix])),
+  'caixa_cnab240_pix'
+)
+
+# Banco do Brasil
+bb_attrs = {
+  empresa_mae: 'Empresa Exemplo LTDA', agencia: '1234',
+  conta_corrente: '12345', digito_conta: '6',
+  documento_cedente: '12345678000100', convenio: '1234567',
+  carteira: '17', variacao: '019',
+  sequencial_remessa: '1'
+}
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab240::BancoBrasil.new(bb_attrs.merge(pagamentos: [pagamento_padrao])),
+  'banco_brasil_cnab240'
+)
+
+gera_remessa(
+  Brcobranca::Remessa::Cnab240::BancoBrasilPix.new(bb_attrs.merge(pagamentos: [pagamento_pix])),
+  'banco_brasil_cnab240_pix'
+)
+
+# --- Sumário ---
+puts "\n=== Sumário ==="
+pdf_count = Dir.glob("#{PDF_DIR}/*.pdf").size
+rem_count = Dir.glob("#{REMESSA_DIR}/*.rem").size
+puts "  PDFs gerados: #{pdf_count} em #{PDF_DIR}"
+puts "  Remessas geradas: #{rem_count} em #{REMESSA_DIR}"
+puts "\n✅ Geração concluída."

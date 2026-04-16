@@ -7,6 +7,46 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Added — PIX (Boleto Híbrido) expandido para 6 bancos
+- **Novo `PixMixin` para CNAB 400** (`Brcobranca::Remessa::Cnab400::PixMixin`):
+  gera o registro tipo 8 (detalhe PIX) com chave DICT e TXID
+- **Novo `PixMixin` para CNAB 240** (`Brcobranca::Remessa::Cnab240::PixMixin`):
+  gera o Segmento Y-03 (PIX) conforme padrão FEBRABAN
+- **6 novas classes de remessa com PIX** (além do `SantanderPix` existente):
+  - `Brcobranca::Remessa::Cnab400::BradescoPix`
+  - `Brcobranca::Remessa::Cnab400::ItauPix`
+  - `Brcobranca::Remessa::Cnab400::BancoC6Pix`
+  - `Brcobranca::Remessa::Cnab240::SicoobPix`
+  - `Brcobranca::Remessa::Cnab240::CaixaPix`
+  - `Brcobranca::Remessa::Cnab240::BancoBrasilPix`
+- **Integração automática no CNAB 240**: `Base#monta_lote` agora detecta
+  `PagamentoPix` e chama `monta_segmento_y` se a classe suportar
+
+### Added — Template Prawn como alternativa ao RGhost
+- **Novo `Brcobranca::Boleto::Template::PrawnBolepix`**: template de boleto
+  híbrido (com PIX/QR Code) que **não depende de Ghostscript**.
+  - Usa gems puro-Ruby: `prawn`, `prawn-table`, `barby`, `rqrcode`, `chunky_png`
+  - Todas as gems são opcionais: se não estiverem instaladas,
+    `PRAWN_AVAILABLE` é `false` e apenas mensagens informativas são exibidas
+  - Baseado na PR #275 upstream (`kivanio/brcobranca`)
+
+### Changed — Refatoração do `rghost_bolepix.rb`
+- Eliminada duplicação entre `modelo_generico` e `modelo_generico_multipage`
+  extraindo `desenha_pagina`, `desenha_codigo_barras`, `desenha_qrcode_pix`
+- Label PIX agora é configurável via `Brcobranca.configuration.pix_label`
+  ou `boleto.pix_label` (fallback para "Pague com PIX")
+- Validação mínima do EMV (verifica se começa com `0002` conforme padrão
+  BR Code do Banco Central)
+- Novo atributo `Boleto::Base#pix_label` para customização por boleto
+
+### Added — Script `bin/generate_fixtures`
+- Gera automaticamente todos os artefatos de validação:
+  - **34 PDFs** em `spec/fixtures/generated/pdf/` (boletos tradicionais,
+    híbridos com PIX e via Prawn)
+  - **13 arquivos CNAB** em `spec/fixtures/generated/remessa/`
+    (CNAB 240 e CNAB 400 com e sem PIX)
+- Documentação completa dos fixtures em `spec/fixtures/generated/README.md`
+
 ### Fixed
 - **Compatibilidade com rghost 0.9.9**: a gem `rghost` na versão 0.9.9
   (lançada em 2024-03-07) removeu o `require` do arquivo que define a

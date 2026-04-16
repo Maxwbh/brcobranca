@@ -76,12 +76,19 @@ module Brcobranca
     # @param  [String] (Padrão: nil)
     attr_accessor :external_encoding
 
+    # Label exibido ao lado do QR Code PIX no boleto híbrido (Bolepix).
+    # Pode ser sobrescrito por boleto via `boleto.pix_label`.
+    # @return [String]
+    # @param  [String] (Padrão: "Pague com PIX")
+    attr_accessor :pix_label
+
     # Atribui valores padrões de configuração
     def initialize
       self.gerador = :rghost
       self.formato = :pdf
       self.resolucao = 150
       self.external_encoding = 'ascii-8bit'
+      self.pix_label = 'Pague com PIX'
     end
   end
 
@@ -124,6 +131,7 @@ module Brcobranca
       autoload :Rghost2,     'brcobranca/boleto/template/rghost2'
       autoload :RghostCarne, 'brcobranca/boleto/template/rghost_carne'
       autoload :RghostBolepix, 'brcobranca/boleto/template/rghost_bolepix'
+      autoload :PrawnBolepix, 'brcobranca/boleto/template/prawn_bolepix'
     end
   end
 
@@ -411,10 +419,13 @@ module Brcobranca
 
     module Cnab400
       autoload :Base,          'brcobranca/remessa/cnab400/base'
+      autoload :PixMixin,      'brcobranca/remessa/cnab400/pix_mixin'
       autoload :BancoBrasil,   'brcobranca/remessa/cnab400/banco_brasil'
       autoload :Banrisul,      'brcobranca/remessa/cnab400/banrisul'
       autoload :Bradesco,      'brcobranca/remessa/cnab400/bradesco'
+      autoload :BradescoPix,   'brcobranca/remessa/cnab400/bradesco_pix'
       autoload :Itau,          'brcobranca/remessa/cnab400/itau'
+      autoload :ItauPix,       'brcobranca/remessa/cnab400/itau_pix'
       autoload :Citibank,      'brcobranca/remessa/cnab400/citibank'
       autoload :Santander,     'brcobranca/remessa/cnab400/santander'
       autoload :SantanderPix,  'brcobranca/remessa/cnab400/santander_pix'
@@ -424,6 +435,7 @@ module Brcobranca
       autoload :Unicred,       'brcobranca/remessa/cnab400/unicred'
       autoload :Credisis,      'brcobranca/remessa/cnab400/credisis'
       autoload :BancoC6,       'brcobranca/remessa/cnab400/banco_c6'
+      autoload :BancoC6Pix,    'brcobranca/remessa/cnab400/banco_c6_pix'
     end
 
     module Cnab444
@@ -433,10 +445,14 @@ module Brcobranca
     module Cnab240
       autoload :Base,               'brcobranca/remessa/cnab240/base'
       autoload :BaseCorrespondente, 'brcobranca/remessa/cnab240/base_correspondente'
+      autoload :PixMixin,           'brcobranca/remessa/cnab240/pix_mixin'
       autoload :Caixa,              'brcobranca/remessa/cnab240/caixa'
+      autoload :CaixaPix,           'brcobranca/remessa/cnab240/caixa_pix'
       autoload :BancoBrasil,        'brcobranca/remessa/cnab240/banco_brasil'
+      autoload :BancoBrasilPix,     'brcobranca/remessa/cnab240/banco_brasil_pix'
       autoload :Santander,          'brcobranca/remessa/cnab240/santander'
       autoload :Sicoob,             'brcobranca/remessa/cnab240/sicoob'
+      autoload :SicoobPix,          'brcobranca/remessa/cnab240/sicoob_pix'
       autoload :SicoobBancoBrasil,  'brcobranca/remessa/cnab240/sicoob_banco_brasil'
       autoload :Sicredi,            'brcobranca/remessa/cnab240/sicredi'
       autoload :Unicred,            'brcobranca/remessa/cnab240/unicred'
