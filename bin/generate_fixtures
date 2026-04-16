@@ -210,8 +210,91 @@ if Brcobranca::Boleto::Template::PRAWN_AVAILABLE
       puts "  ✗ prawn_#{nome}_pix: #{e.class}: #{e.message}"
     end
   end
+
+  # Boleto com os MESMOS DADOS do PDF de referência
+  # (examples/Boleto_86ae5612b46d4111bce16098bcb48be1.pdf, Sicoob UWBR/Maxwell)
+  puts "\n  >>> Boleto replicando o PDF de referência (Sicoob UWBR):"
+  boleto_ref = Brcobranca::Boleto::Sicoob.new(
+    # Dados do beneficiário
+    cedente: 'UWBR Vox Telecomunicações S/A',
+    documento_cedente: '12105570000125',
+    cedente_endereco: 'Rua Juca Miranda, 349 Comarca de Montes Claros, MG, sob o nº 66.120, ' \
+                      'no livro C-37 e protocolado sob o nº 137.132 livro A-13 em 14 de maio de 2021. - ' \
+                      'Jardim São Luiz - Montes Claros - MG - 39401-507',
+    # Dados da conta (Cooperativa/Cód. Beneficiário: 4092/834467)
+    agencia: '4092',
+    convenio: '834467',
+    conta_corrente: '834467',
+    # Título
+    carteira: '1',
+    nosso_numero: '374875',
+    documento_numero: '1/FAT250428093704103',
+    # Dados do título
+    valor: 51.23,
+    data_documento: Date.parse('2025-04-28'),
+    data_vencimento: Date.parse('2025-05-10'),
+    data_processamento: Date.parse('2025-05-07'),
+    especie_documento: 'DM',
+    aceite: 'N',
+    especie: 'R$',
+    quantidade: '001',
+    # Instruções
+    instrucoes: "Após o vencimento cobrar 0,033 mora/dia e 2% Multa.\n\nAbril/2025",
+    local_pagamento: 'Pague em qualquer banco ou correspondente bancário.',
+    # Sacado (Maxwell)
+    sacado: 'MAXWELL DA SILVA OLIVEIRA',
+    sacado_documento: '85076171668',
+    sacado_endereco: 'RUA PRESIDENTE KENNEDY, 126 - PAPAVENTO Sete Lagoas - MG - 35700483'
+  )
+  boleto_ref.extend(Brcobranca::Boleto::Template::PrawnBolepix)
+  path_ref = File.join(PDF_DIR, 'prawn_sicoob_referencia.pdf')
+  File.open(path_ref, 'wb') { |f| f.write(boleto_ref.to(:pdf)) }
+  puts "  ✓ #{path_ref} (#{File.size(path_ref)} bytes) — sem PIX"
+
+  # Mesmo boleto COM PIX (QR Code)
+  boleto_ref.emv = EMV_EXEMPLO
+  path_ref_pix = File.join(PDF_DIR, 'prawn_sicoob_referencia_pix.pdf')
+  File.open(path_ref_pix, 'wb') { |f| f.write(boleto_ref.to(:pdf)) }
+  puts "  ✓ #{path_ref_pix} (#{File.size(path_ref_pix)} bytes) — com QR Code PIX"
+
+  # Boleto com 7 linhas de instruções (teste de capacidade máxima)
+  puts "\n  >>> Boleto com 7 linhas de instruções (teste):"
+  boleto_7linhas = Brcobranca::Boleto::Sicoob.new(
+    cedente: 'UWBR Vox Telecomunicações S/A',
+    documento_cedente: '12105570000125',
+    agencia: '4092',
+    convenio: '834467',
+    conta_corrente: '834467',
+    carteira: '1',
+    nosso_numero: '374876',
+    documento_numero: '2/FAT250428093704104',
+    valor: 1250.99,
+    data_documento: Date.parse('2025-04-28'),
+    data_vencimento: Date.parse('2025-05-10'),
+    data_processamento: Date.parse('2025-05-07'),
+    especie_documento: 'DM',
+    aceite: 'N',
+    especie: 'R$',
+    quantidade: '001',
+    instrucoes: "1. Após vencimento cobrar juros de mora de 0,033% ao dia sobre o valor do título.\n" \
+                "2. Após vencimento cobrar multa de 2% sobre o valor do título.\n" \
+                "3. Conceder desconto de R$ 50,00 para pagamento até 05/05/2025.\n" \
+                "4. Não receber após 30 dias do vencimento - protesto automático.\n" \
+                "5. Serviços prestados em abril/2025 conforme contrato 12345.\n" \
+                "6. Em caso de dúvidas entre em contato: contato@uwbr.com.br\n" \
+                "7. NFS-e série A nº 1234 emitida em 28/04/2025.",
+    local_pagamento: 'Pague em qualquer banco ou correspondente bancário.',
+    sacado: 'MAXWELL DA SILVA OLIVEIRA',
+    sacado_documento: '85076171668',
+    sacado_endereco: 'RUA PRESIDENTE KENNEDY, 126 - PAPAVENTO Sete Lagoas - MG - 35700483',
+    emv: EMV_EXEMPLO
+  )
+  boleto_7linhas.extend(Brcobranca::Boleto::Template::PrawnBolepix)
+  path_7linhas = File.join(PDF_DIR, 'prawn_sicoob_7_linhas_instrucoes_pix.pdf')
+  File.open(path_7linhas, 'wb') { |f| f.write(boleto_7linhas.to(:pdf)) }
+  puts "  ✓ #{path_7linhas} (#{File.size(path_7linhas)} bytes) — 7 linhas de instruções + PIX"
 else
-  puts '  (Prawn não disponível — install: gem install prawn barby rqrcode chunky_png)'
+  puts '  (Prawn não disponível — install: gem install prawn prawn-table barby rqrcode chunky_png)'
 end
 
 # --- 4. Arquivos de remessa CNAB 400 ---
