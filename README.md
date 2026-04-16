@@ -40,13 +40,18 @@
 
 ### Principais Recursos
 
-- **18 bancos brasileiros** suportados
+- **18 bancos brasileiros** suportados (inclusive novo **Banco C6** — código 336)
 - **Geração de boletos** em PDF com código de barras
-- **Arquivos CNAB** de remessa e retorno
+- **Arquivos CNAB** de remessa e retorno (formatos 240, 400 e 444)
 - **Validações específicas** por banco
-- **Suporte a PIX** (cobrança híbrida)
+- **Suporte a PIX** (cobrança híbrida) em **7 bancos**:
+  Santander, Bradesco, Itaú, C6 (CNAB 400) + Sicoob, Caixa, Banco do Brasil (CNAB 240)
+- **2 templates de renderização**:
+  - **RGhost** (padrão, requer GhostScript)
+  - **Prawn** (alternativa puro-Ruby, sem GhostScript)
 - **Suporte à Carteira 9 do Sicoob** (nova modalidade 2024/2025)
 - **Layout 810 do Sicoob** (CNAB 240 alternativo, sem cálculo automático do DV)
+- **API de serialização** (to_hash/as_json/to_json) para integração REST
 - **Pronto para produção** - usado por milhares de empresas
 
 ---
@@ -185,6 +190,21 @@ end
   - Carteira `10` — Cobrança Simples Emissão Banco
   - Carteira `20` — Cobrança Simples Emissão Cliente
 
+### Bancos com PIX em remessa
+
+| Banco | Classe com PIX | Formato | Registro PIX |
+|---|---|:---:|---|
+| Santander (033) | `Cnab400::SantanderPix` | 400 | Registro tipo 8 |
+| Bradesco (237) | `Cnab400::BradescoPix` | 400 | Registro tipo 8 |
+| Itaú (341) | `Cnab400::ItauPix` | 400 | Registro tipo 8 |
+| C6 Bank (336) | `Cnab400::BancoC6Pix` | 400 | Registro tipo 8 |
+| Banco do Brasil (001) | `Cnab240::BancoBrasilPix` | 240 | Segmento Y-03 |
+| Caixa (104) | `Cnab240::CaixaPix` | 240 | Segmento Y-03 |
+| Sicoob (756) | `Cnab240::SicoobPix` | 240 | Segmento Y-03 |
+
+O registro/segmento PIX é gerado automaticamente quando o pagamento é um
+`Brcobranca::Remessa::PagamentoPix` contendo chave DICT e TXID.
+
 ---
 
 ## Exemplos por banco
@@ -268,6 +288,80 @@ Brcobranca::Remessa.criar(
 )
 ```
 
+### Remessa com PIX (Boleto Híbrido)
+
+```ruby
+pagamento_pix = Brcobranca::Remessa::PagamentoPix.new(
+  valor: 100.00,
+  data_vencimento: Date.today + 30,
+  nosso_numero: '001',
+  documento_sacado: '12345678900',
+  nome_sacado: 'Cliente Exemplo',
+  endereco_sacado: 'Rua Exemplo, 100',
+  bairro_sacado: 'Centro',
+  cep_sacado: '00000000',
+  cidade_sacado: 'Cidade',
+  uf_sacado: 'UF',
+  # Dados PIX:
+  codigo_chave_dict: '12345678000100',
+  tipo_chave_dict: 'cnpj',          # cpf, cnpj, email, telefone, chave_aleatoria
+  valor_maximo_pix: 100.00,
+  valor_minimo_pix: 100.00,
+  txid: 'TXID20250101001'
+)
+
+# CNAB 400 com registro PIX tipo 8
+remessa = Brcobranca::Remessa::Cnab400::BradescoPix.new(
+  carteira: '09', agencia: '1234', conta_corrente: '12345678',
+  digito_conta: '1', empresa_mae: 'Empresa LTDA',
+  documento_cedente: '12345678000100', codigo_empresa: '12345',
+  pagamentos: [pagamento_pix]
+)
+
+# CNAB 240 com Segmento Y-03 (Sicoob, Caixa, Banco do Brasil)
+remessa = Brcobranca::Remessa::Cnab240::SicoobPix.new(
+  empresa_mae: 'Empresa LTDA', agencia: '1234', conta_corrente: '12345678',
+  digito_conta: '1', documento_cedente: '12345678000100',
+  convenio: '123456789', modalidade_carteira: '01',
+  tipo_formulario: '4', parcela: '01',
+  pagamentos: [pagamento_pix]
+)
+```
+
+### Boleto com QR Code PIX (Bolepix)
+
+Informe a string EMV (BR Code) no boleto e use o template `:rghost_bolepix`:
+
+```ruby
+Brcobranca.setup { |c| c.gerador = :rghost_bolepix }
+
+boleto = Brcobranca::Boleto::Sicoob.new(
+  # ... campos padrão
+  emv: '00020126580014br.gov.bcb.pix0136...'
+)
+
+File.write('boleto_pix.pdf', boleto.to(:pdf))
+```
+
+### Template Prawn (alternativa sem GhostScript)
+
+Use o template Prawn para gerar PDFs sem depender do GhostScript:
+
+```ruby
+# Instale: gem install prawn prawn-table barby rqrcode chunky_png
+require 'brcobranca/boleto/template/prawn_bolepix'
+
+boleto = Brcobranca::Boleto::Sicoob.new(
+  # ... campos padrão
+  emv: '00020126580014br.gov.bcb.pix0136...'  # opcional para QR Code
+)
+boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
+
+File.write('boleto.pdf', boleto.to(:pdf))
+```
+
+O layout Prawn inclui **Recibo do Pagador** + **Ficha de Compensação** + QR Code PIX, seguindo o padrão FEBRABAN com cores e sombreados. Veja exemplos em `spec/fixtures/generated/pdf/prawn_*.pdf`.
+
 ---
 
 ## Documentação
@@ -276,8 +370,20 @@ Brcobranca::Remessa.criar(
 |-----------|-----------|
 | [Guia Rápido](docs/guia_rapido.md) | Tutorial de início rápido |
 | [Campos por Banco](docs/campos_por_banco.md) | Referência de campos obrigatórios |
+| [API de Serialização](docs/api_referencia.md) | `to_hash`, `as_json`, factory methods |
+| [Integração boleto_cnab_api](docs/BOLETO_CNAB_API_INTEGRATION.md) | Como consumir a gem via HTTP |
+| [TODO Integração](docs/TODO_INTEGRACAO.md) | Roadmap de integração brcobranca + boleto_cnab_api |
 | [CHANGELOG](CHANGELOG.md) | Histórico de versões |
 | [CONTRIBUTING](CONTRIBUTING.md) | Guia de contribuição |
+
+### Fixtures visuais
+
+PDFs de exemplo e arquivos CNAB pré-gerados em:
+
+- `spec/fixtures/generated/pdf/` — 41 PDFs (boletos de todos os 18 bancos, com/sem PIX, via RGhost e Prawn)
+- `spec/fixtures/generated/remessa/` — 13 arquivos CNAB 240/400 de exemplo
+
+Para regenerar: `bin/generate_fixtures`
 
 ### Recursos Online
 

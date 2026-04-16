@@ -3,8 +3,25 @@
 > Plano detalhado para simplificar e integrar os dois projetos
 >
 > **Autor:** Maxwell Oliveira (@maxwbh)
-> **Data:** 2026-01-03 (Atualizado)
-> **Versão brcobranca:** 12.5.0
+> **Última atualização:** consulte o CHANGELOG
+>
+> ## Status recente
+>
+> ### 🆕 Fase 7 (concluída neste ciclo)
+>
+> - ✅ **Banco C6 (336)** — implementação completa (boleto, remessa/retorno CNAB 400)
+> - ✅ **Sicoob Carteira 9** — nova modalidade 2024/2025 com `numero_contrato`
+> - ✅ **Sicoob Layout 810** — opção sem cálculo de DV
+> - ✅ **PIX em 7 bancos** — Santander + Bradesco + Itaú + C6 (CNAB 400) + BB + Caixa + Sicoob (CNAB 240)
+> - ✅ **Template Prawn** — alternativa ao RGhost (sem GhostScript)
+> - ✅ **Bug RGhost 0.9.9** — fix de compatibilidade do `RGhost::VERSION`
+> - ✅ **Fixtures visuais** — 41 PDFs + 13 arquivos CNAB gerados
+> - ✅ **Documentação** — guia de integração `BOLETO_CNAB_API_INTEGRATION.md`
+>
+> ### 🟡 Próximos passos no boleto_cnab_api
+>
+> Veja [BOLETO_CNAB_API_INTEGRATION.md](./BOLETO_CNAB_API_INTEGRATION.md) para
+> o checklist completo de migração.
 
 ---
 
