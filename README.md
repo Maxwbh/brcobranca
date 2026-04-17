@@ -371,8 +371,7 @@ O layout Prawn inclui **Recibo do Pagador** + **Ficha de Compensação** + QR Co
 | [Guia Rápido](docs/guia_rapido.md) | Tutorial de início rápido |
 | [Campos por Banco](docs/campos_por_banco.md) | Referência de campos obrigatórios |
 | [API de Serialização](docs/api_referencia.md) | `to_hash`, `as_json`, factory methods |
-| [Integração boleto_cnab_api](docs/BOLETO_CNAB_API_INTEGRATION.md) | Como consumir a gem via HTTP |
-| [TODO Integração](docs/TODO_INTEGRACAO.md) | Roadmap de integração brcobranca + boleto_cnab_api |
+| [Roadmap](docs/TODO_INTEGRACAO.md) | Status das entregas e versões |
 | [CHANGELOG](CHANGELOG.md) | Histórico de versões |
 | [CONTRIBUTING](CONTRIBUTING.md) | Guia de contribuição |
 
