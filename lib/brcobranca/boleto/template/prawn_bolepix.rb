@@ -1,39 +1,40 @@
 # frozen_string_literal: true
 
-# Template alternativo para geração de boletos híbridos (com PIX) usando Prawn.
+# Template alternativo para geracao de boletos hibridos (com PIX) usando Prawn.
 #
-# Layout espelhado do padrão FEBRABAN observado em boletos SICOOB e demais bancos,
+# Layout espelhado do padrao FEBRABAN observado em boletos SICOOB e demais bancos,
 # com:
-#   - Topo: Logo | Código do banco | Linha digitável
+#   - Topo: Logo | Codigo do banco | Linha digitavel
 #   - Local de pagamento | Vencimento
-#   - Beneficiário (com endereço) | Valor do Documento
-#   - Data Doc | Nº Doc | Espécie | Aceite | Data Processamento | Cooperativa/Cód. Beneficiário
-#   - Uso do banco | Carteira | Espécie | Quantidade | Valor | Nosso Número
-#   - Instruções (coluna esquerda) + Totalizadores empilhados (coluna direita)
-#   - Sacado (nome + endereço)
-#   - Sacador/Avalista | Cód. Baixa
-#   - Código de barras + [QR Code PIX se aplicável] + Autenticação mecânica
+#   - Beneficiario (com endereco) | Valor do Documento
+#   - Data Doc | No. Doc | Especie | Aceite | Data Processamento | Cooperativa/Cod. Beneficiario
+#   - Uso do banco | Carteira | Especie | Quantidade | Valor | Nosso Numero
+#   - Instrucoes (coluna esquerda) + Totalizadores empilhados (coluna direita)
+#   - Sacado (nome + endereco)
+#   - Sacador/Avalista | Cod. Baixa
+#   - Codigo de barras + [QR Code PIX se aplicavel] + Autenticacao mecanica
 #
 # Requer as gems: prawn, prawn-table, barby, rqrcode, chunky_png.
 module Brcobranca
   module Boleto
     module Template
-      # Indica se as gems necessárias para este template estão disponíveis.
+      # Indica se as gems necessarias para este template estao disponiveis.
       begin
-        require 'prawn'
-        require 'prawn/measurement_extensions'
-        require 'prawn/table'
-        require 'barby'
-        require 'barby/barcode/code_25_interleaved'
-        require 'barby/outputter/prawn_outputter'
-        require 'rqrcode'
-        require 'chunky_png'
+        require "prawn"
+        require "prawn/measurement_extensions"
+        require "prawn/table"
+        require "barby"
+        require "barby/barcode/code_25_interleaved"
+        require "barby/outputter/prawn_outputter"
+        require "rqrcode"
+        require "chunky_png"
+        require "stringio"
         PRAWN_AVAILABLE = true
       rescue LoadError
         PRAWN_AVAILABLE = false
       end
 
-      # Template Prawn para boletos híbridos com PIX - layout FEBRABAN.
+      # Template Prawn para boletos hibridos com PIX - layout FEBRABAN.
       module PrawnBolepix
         extend self
 
@@ -47,7 +48,7 @@ module Brcobranca
         ROW_BENEF_HEIGHT = 34
         TOTALIZADORES_HEIGHT = 16
         # Altura do bloco suporta 7 linhas de 11pt = 77pt, + margem = ~80pt
-        # Isso é igual a 5 totalizadores de 16pt = 80pt (permite alinhamento perfeito)
+        # Isso e igual a 5 totalizadores de 16pt = 80pt (permite alinhamento perfeito)
         BLOCO_INSTRUCOES_ALTURA = TOTALIZADORES_HEIGHT * 5
         INSTRUCOES_LINHA_ALTURA = 10
         INSTRUCOES_LINHAS_MAX = 7
@@ -55,9 +56,9 @@ module Brcobranca
         QRCODE_SIZE = 85
 
         # ==================== CORES ====================
-        # Cinza muito claro para fundos de cabeçalhos/labels
+        # Cinza muito claro para fundos de cabecalhos/labels
         COR_FUNDO_LABEL = 'F5F5F5'
-        # Cinza claro para cabeçalho principal (barra de topo)
+        # Cinza claro para cabecalho principal (barra de topo)
         COR_FUNDO_CABECALHO = 'EEEEEE'
         # Cinza para texto de labels
         COR_TEXTO_LABEL = '555555'
@@ -69,27 +70,25 @@ module Brcobranca
         COR_PIX = '006B3F'
 
         def to(formato, _options = {})
-          raise 'Prawn não está disponível. Instale: gem install prawn prawn-table barby rqrcode chunky_png' unless PRAWN_AVAILABLE
-          raise ArgumentError, "Formato #{formato} não suportado pelo PrawnBolepix (apenas :pdf)" unless formato.to_sym == :pdf
+          unless PRAWN_AVAILABLE
+            raise "Prawn nao esta disponivel. Instale: " \
+                  "gem install prawn prawn-table barby rqrcode chunky_png"
+          end
+          unless formato.to_sym == :pdf
+            raise ArgumentError, "Formato #{formato} nao suportado (apenas :pdf)"
+          end
 
           render_boleto(self)
         end
 
         def lote(boletos, _options = {})
-          raise 'Prawn não está disponível.' unless PRAWN_AVAILABLE
+          raise "Prawn nao esta disponivel." unless PRAWN_AVAILABLE
 
           render_boletos(boletos)
         end
 
-        def method_missing(m, *args)
-          method = m.to_s
-          return to(:pdf, args.first || {}) if method == 'to_pdf'
-
-          super
-        end
-
-        def respond_to_missing?(method_name, include_private = false)
-          method_name.to_s == 'to_pdf' || super
+        def to_pdf(options = {})
+          to(:pdf, options)
         end
 
         private
@@ -111,10 +110,10 @@ module Brcobranca
 
         def new_document
           Prawn::Document.new(
-            page_size: 'A4',
+            page_size: "A4",
             margin: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN],
             info: {
-              Title: 'Boleto Bancário (Bolepix)',
+              Title: 'Boleto Bancario (Bolepix)',
               Creator: 'brcobranca',
               Producer: 'Prawn + RQRCode + Barby'
             }
@@ -122,22 +121,22 @@ module Brcobranca
         end
 
         def draw_boleto(pdf, boleto)
-          # 1) Recibo do Pagador (topo, versão compacta sem código de barras)
+          # 1) Recibo do Pagador (topo, versao compacta sem codigo de barras)
           desenha_recibo_pagador(pdf, boleto)
 
           # 2) Linha de corte pontilhada
           desenha_linha_corte(pdf)
 
-          # 3) Ficha de Compensação (abaixo, versão completa com código de barras + PIX)
+          # 3) Ficha de Compensacao (abaixo, versao completa com codigo de barras + PIX)
           desenha_ficha_compensacao(pdf, boleto)
         end
 
         # =================================================================
         # RECIBO DO PAGADOR (parte superior do boleto)
         # =================================================================
-        # Layout simplificado, sem "Local de pagamento" e sem código de barras.
-        # Contém: topo, beneficiário, dados do documento, carteira, sacado,
-        # instruções reduzidas e autenticação mecânica (Recibo do Pagador).
+        # Layout simplificado, sem "Local de pagamento" e sem codigo de barras.
+        # Contem: topo, beneficiario, dados do documento, carteira, sacado,
+        # instrucoes reduzidas e autenticacao mecanica (Recibo do Pagador).
         def desenha_recibo_pagador(pdf, boleto)
           desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
           desenha_linha_beneficiario(pdf, boleto)
@@ -149,7 +148,7 @@ module Brcobranca
         end
 
         # Linha pontilhada de corte entre o Recibo do Pagador e a Ficha de
-        # Compensação. Inclui um pequeno texto "Corte aqui" no canto.
+        # Compensacao. Inclui um pequeno texto "Corte aqui" no canto.
         def desenha_linha_corte(pdf)
           pdf.move_down 6
           y = pdf.cursor
@@ -175,7 +174,7 @@ module Brcobranca
           pdf.move_down 6
         end
 
-        # Ficha de Compensação (a parte do boleto que é realmente paga).
+        # Ficha de Compensacao (a parte do boleto que e realmente paga).
         def desenha_ficha_compensacao(pdf, boleto)
           desenha_topo(pdf, boleto)
           desenha_linha_local_pagamento(pdf, boleto)
@@ -188,18 +187,24 @@ module Brcobranca
           desenha_codigo_barras_e_pix(pdf, boleto)
         end
 
-        # Linha única de 5 totalizadores lado-a-lado (para o recibo, mais compacto)
+        # Linha unica de 5 totalizadores lado-a-lado (para o recibo, mais compacto)
         def desenha_linha_totalizadores_recibo(pdf, boleto)
+          desconto = boleto.descontos_e_abatimentos&.to_currency || ""
           draw_row(pdf, [
-                     { label: '(-) Desconto / Abatimento', value: boleto.descontos_e_abatimentos&.to_currency || '', width_ratio: 0.20, align: :right },
-                     { label: '(-) Outras deduções', value: '', width_ratio: 0.20, align: :right },
-                     { label: '(+) Mora / Multa', value: '', width_ratio: 0.20, align: :right },
-                     { label: '(+) Outros Acréscimos', value: '', width_ratio: 0.20, align: :right },
-                     { label: '(=) Valor cobrado', value: '', width_ratio: 0.20, align: :right }
-                   ])
+            { label: "(-) Desconto / Abatimento", value: desconto,
+              width_ratio: 0.20, align: :right },
+            { label: "(-) Outras deducoes", value: "",
+              width_ratio: 0.20, align: :right },
+            { label: "(+) Mora / Multa", value: "",
+              width_ratio: 0.20, align: :right },
+            { label: "(+) Outros Acrescimos", value: "",
+              width_ratio: 0.20, align: :right },
+            { label: "(=) Valor cobrado", value: "",
+              width_ratio: 0.20, align: :right }
+          ])
         end
 
-        # Linha de autenticação mecânica do recibo (no canto direito).
+        # Linha de autenticacao mecanica do recibo (no canto direito).
         def desenha_linha_autenticacao_recibo(pdf)
           y = pdf.cursor
           width = pdf.bounds.width
@@ -209,7 +214,7 @@ module Brcobranca
           pdf.stroke_rectangle([0, y], width, altura)
 
           pdf.fill_color COR_TEXTO_LABEL
-          pdf.text_box 'Autenticação mecânica - Recibo do Pagador',
+          pdf.text_box 'Autenticacao mecanica - Recibo do Pagador',
                        at: [4, y - 4],
                        width: width - 8,
                        height: altura - 4,
@@ -221,16 +226,16 @@ module Brcobranca
           pdf.move_down altura
         end
 
-        # Desenha o topo do boleto: Logo | Código banco-DV | Linha digitável.
+        # Desenha o topo do boleto: Logo | Codigo banco-DV | Linha digitavel.
         #
         # @param titulo_direito [String, nil] Texto pequeno acima da linha
-        #   digitável (ex: "Recibo do Pagador"). Útil para diferenciar recibo
-        #   da ficha de compensação.
+        #   digitavel (ex: "Recibo do Pagador"). Util para diferenciar recibo
+        #   da ficha de compensacao.
         def desenha_topo(pdf, boleto, titulo_direito: nil)
           width = pdf.bounds.width
           y_topo = pdf.cursor
 
-          # Se houver título (ex: "Recibo do Pagador"), reserva 10pt acima para ele
+          # Se houver titulo (ex: "Recibo do Pagador"), reserva 10pt acima para ele
           if titulo_direito
             pdf.fill_color COR_TEXTO_LABEL
             pdf.text_box titulo_direito,
@@ -259,7 +264,7 @@ module Brcobranca
           # Logo do banco (se houver PNG) ou texto como fallback
           desenha_logo_banco(pdf, boleto, 0, y, logo_w, HEADER_HEIGHT)
 
-          # Código do banco - DV (centro, destaque)
+          # Codigo do banco - DV (centro, destaque)
           pdf.fill_color 'FFFFFF'
           pdf.fill_rectangle([logo_w, y], codigo_w, HEADER_HEIGHT)
           pdf.fill_color COR_TEXTO_VALOR
@@ -273,7 +278,7 @@ module Brcobranca
                        valign: :center,
                        style: :bold
 
-          # Linha digitável (direita, fundo branco)
+          # Linha digitavel (direita, fundo branco)
           pdf.fill_color 'FFFFFF'
           pdf.fill_rectangle([logo_w + codigo_w, y], width - logo_w - codigo_w, HEADER_HEIGHT)
           pdf.fill_color COR_TEXTO_VALOR
@@ -325,7 +330,7 @@ module Brcobranca
                        style: :bold
         end
 
-        # Nome do banco para fallback do logo (quando não há PNG).
+        # Nome do banco para fallback do logo (quando nao ha PNG).
         def nome_banco_para_logo(boleto)
           if boleto.respond_to?(:banco_nome) && boleto.banco_nome
             boleto.banco_nome.to_s.upcase
@@ -336,17 +341,27 @@ module Brcobranca
 
         def desenha_linha_local_pagamento(pdf, boleto)
           draw_row(pdf, [
-                     { label: 'Local de pagamento', value: boleto.local_pagamento.to_s, width_ratio: 0.75, value_style: :bold },
-                     { label: 'Vencimento', value: boleto.data_vencimento.to_s_br, width_ratio: 0.25, value_style: :bold, destaque: true }
-                   ])
+            { label: "Local de pagamento",
+              value: boleto.local_pagamento.to_s,
+              width_ratio: 0.75, value_style: :bold },
+            { label: "Vencimento",
+              value: boleto.data_vencimento.to_s_br,
+              width_ratio: 0.25, value_style: :bold,
+              destaque: true }
+          ])
         end
 
         def desenha_linha_beneficiario(pdf, boleto)
           benef_texto = montar_beneficiario(boleto)
           draw_row(pdf, [
-                     { label: 'Beneficiário', value: benef_texto, width_ratio: 0.75, value_style: :bold, multiline: true },
-                     { label: 'Valor do Documento', value: boleto.valor_documento.to_currency, width_ratio: 0.25, value_style: :bold, destaque: true }
-                   ], height: ROW_BENEF_HEIGHT)
+            { label: "Beneficiario", value: benef_texto,
+              width_ratio: 0.75, value_style: :bold,
+              multiline: true },
+            { label: "Valor do Documento",
+              value: boleto.valor_documento.to_currency,
+              width_ratio: 0.25, value_style: :bold,
+              destaque: true }
+          ], height: ROW_BENEF_HEIGHT)
         end
 
         def montar_beneficiario(boleto)
@@ -364,16 +379,19 @@ module Brcobranca
           draw_row(pdf, [
                      { label: 'Data do documento', value: boleto.data_documento&.to_s_br || '', width_ratio: 0.14 },
                      { label: 'N. do Documento', value: boleto.documento_numero.to_s, width_ratio: 0.22 },
-                     { label: 'Espécie', value: boleto.especie_documento.to_s, width_ratio: 0.08 },
+                     { label: 'Especie', value: boleto.especie_documento.to_s, width_ratio: 0.08 },
                      { label: 'Aceite', value: boleto.aceite.to_s, width_ratio: 0.07 },
                      { label: 'Data Processamento', value: boleto.data_processamento&.to_s_br || '', width_ratio: 0.14 },
-                     { label: 'Cooperativa contratante/Cód. Beneficiário', value: (boleto.agencia_conta_boleto || '').to_s.gsub(/\s+\/\s+/, '/'), width_ratio: 0.35 }
+                     { label: "Cooperativa/Cod. Beneficiario",
+                       value: (boleto.agencia_conta_boleto || "")
+                         .to_s.gsub(%r{\s+/\s+}, "/"),
+                       width_ratio: 0.35 }
                    ])
         end
 
         def desenha_linha_carteira(pdf, boleto)
-          # Mostra apenas "carteira" quando a variacao é "01" (default comum),
-          # ou "carteira/variacao" quando a variacao é explicitamente outra.
+          # Mostra apenas "carteira" quando a variacao e "01" (default comum),
+          # ou "carteira/variacao" quando a variacao e explicitamente outra.
           carteira_txt = if boleto.variacao && boleto.variacao.to_s != '01'
                            "#{boleto.carteira}/#{boleto.variacao}"
                          else
@@ -382,10 +400,13 @@ module Brcobranca
           draw_row(pdf, [
                      { label: 'Uso do banco', value: '', width_ratio: 0.14 },
                      { label: 'Carteira', value: carteira_txt, width_ratio: 0.22 },
-                     { label: 'Espécie', value: boleto.especie.to_s, width_ratio: 0.08 },
+                     { label: 'Especie', value: boleto.especie.to_s, width_ratio: 0.08 },
                      { label: 'Quantidade', value: boleto.quantidade.to_s, width_ratio: 0.07 },
-                     { label: 'Valor', value: (boleto.valor.to_f.positive? ? boleto.valor.to_f.to_currency : ''), width_ratio: 0.14 },
-                     { label: 'Nosso número', value: boleto.nosso_numero_boleto.to_s, width_ratio: 0.35 }
+                     { label: "Valor",
+                       value: (boleto.valor.to_f.positive? ?
+                         boleto.valor.to_f.to_currency : ""),
+                       width_ratio: 0.14 },
+                     { label: 'Nosso numero', value: boleto.nosso_numero_boleto.to_s, width_ratio: 0.35 }
                    ])
         end
 
@@ -406,19 +427,19 @@ module Brcobranca
           pdf.stroke_color COR_BORDA
           pdf.stroke_rectangle([0, y], width, altura)
 
-          # Label da coluna de instruções
+          # Label da coluna de instrucoes
           pdf.fill_color COR_TEXTO_LABEL
-          pdf.text_box 'Instruções (Texto de responsabilidade do beneficiário)',
+          pdf.text_box 'Instrucoes (Texto de responsabilidade do beneficiario)',
                        at: [4, y - 3],
                        width: left_width - 8,
                        height: 8,
                        size: LABEL_SIZE
           pdf.fill_color COR_TEXTO_VALOR
 
-          # Área de instruções: suporta até INSTRUCOES_LINHAS_MAX (7) linhas de texto
+          # Area de instrucoes: suporta ate INSTRUCOES_LINHAS_MAX (7) linhas de texto
           instrucoes = montar_instrucoes(boleto)
           area_instrucoes_altura = INSTRUCOES_LINHA_ALTURA * INSTRUCOES_LINHAS_MAX
-          # Garante que a área não exceda o bloco
+          # Garante que a area nao exceda o bloco
           area_instrucoes_altura = [area_instrucoes_altura, altura - 14].min
 
           pdf.text_box instrucoes,
@@ -435,9 +456,9 @@ module Brcobranca
           # Coluna direita: 5 totalizadores empilhados
           totalizadores = [
             ['(-) Desconto / Abatimento', boleto.descontos_e_abatimentos&.to_currency || ''],
-            ['(-) Outras deduções', ''],
+            ['(-) Outras deducoes', ''],
             ['(+) Mora / Multa', ''],
-            ['(+) Outros Acréscimos', ''],
+            ['(+) Outros Acrescimos', ''],
             ['(=) Valor cobrado', '']
           ]
           totalizadores.each_with_index do |(label, valor), i|
@@ -457,7 +478,7 @@ module Brcobranca
                          size: LABEL_SIZE
             pdf.fill_color COR_TEXTO_VALOR
 
-            # Valor (alinhado à direita)
+            # Valor (alinhado a direita)
             pdf.text_box valor,
                          at: [left_width + 4, top - 12],
                          width: right_width - 8,
@@ -465,7 +486,7 @@ module Brcobranca
                          size: VALUE_SIZE,
                          align: :right
 
-            # Separador horizontal entre totalizadores (exceto último)
+            # Separador horizontal entre totalizadores (exceto ultimo)
             pdf.stroke_horizontal_line left_width, width, at: top - TOTALIZADORES_HEIGHT if i < totalizadores.length - 1
           end
 
@@ -501,7 +522,7 @@ module Brcobranca
                      end
           draw_row(pdf, [
                      { label: 'Sacador/Avalista', value: avalista, width_ratio: 0.80 },
-                     { label: 'Cód. baixa', value: '', width_ratio: 0.20 }
+                     { label: 'Cod. baixa', value: '', width_ratio: 0.20 }
                    ], height: ROW_HEIGHT * 0.85)
         end
 
@@ -510,14 +531,14 @@ module Brcobranca
           y = pdf.cursor
           x_cursor = 0
 
-          # Faixa cinza clara na parte superior de cada célula (onde fica o label)
-          # Dá o efeito visual de "cabeçalho de campo" característico do boleto
+          # Faixa cinza clara na parte superior de cada celula (onde fica o label)
+          # Da o efeito visual de "cabecalho de campo" caracteristico do boleto
           label_stripe_height = 10
           pdf.fill_color COR_FUNDO_LABEL
           pdf.fill_rectangle([0, y], width, label_stripe_height)
           pdf.fill_color COR_TEXTO_VALOR
 
-          # Borda externa do retângulo
+          # Borda externa do retangulo
           pdf.stroke_color COR_BORDA
           pdf.stroke_rectangle([0, y], width, height)
 
@@ -560,7 +581,7 @@ module Brcobranca
 
             pdf.text_box col[:value].to_s, **text_opts
 
-            # Separador vertical entre colunas (exceto a última)
+            # Separador vertical entre colunas (exceto a ultima)
             pdf.stroke_vertical_line y, y - height, at: x_cursor + col_width unless index == columns.length - 1
 
             x_cursor += col_width
@@ -605,10 +626,10 @@ module Brcobranca
                          style: :bold
             pdf.fill_color COR_TEXTO_VALOR
 
-            # Autenticação mecânica (direita do QR Code)
+            # Autenticacao mecanica (direita do QR Code)
             autent_x = qr_x + QRCODE_SIZE + 10
             pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box 'Autenticação mecânica - Ficha de Compensação',
+            pdf.text_box 'Autenticacao mecanica - Ficha de Compensacao',
                          at: [autent_x, y_start - 5],
                          width: width - autent_x,
                          height: 15,
@@ -617,9 +638,9 @@ module Brcobranca
                          valign: :top
             pdf.fill_color COR_TEXTO_VALOR
           else
-            # Autenticação mecânica (toda a direita)
+            # Autenticacao mecanica (toda a direita)
             pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box 'Autenticação mecânica - Ficha de Compensação',
+            pdf.text_box 'Autenticacao mecanica - Ficha de Compensacao',
                          at: [direita_x, y_start - 5],
                          width: width - direita_x,
                          height: 15,
@@ -636,13 +657,13 @@ module Brcobranca
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
-          config_label || 'Pague com PIX'
+          config_label || "Pague com PIX"
         end
 
         def emv_valido?(emv)
           return false if emv.nil? || emv.to_s.strip.empty?
 
-          emv.to_s.start_with?('0002')
+          emv.to_s.start_with?("0002")
         end
       end
     end

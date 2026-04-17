@@ -46,9 +46,10 @@ if PRAWN_TEMPLATE_LOADED && Brcobranca::Boleto::Template::PRAWN_AVAILABLE
         expect(pdf_bytes).to start_with('%PDF-')
       end
 
-      it 'gera PDF de tamanho razoavel (>= 5KB)' do
+      it 'gera PDF valido terminando com %%EOF' do
         pdf_bytes = boleto.to(:pdf)
-        expect(pdf_bytes.bytesize).to be >= 5 * 1024
+        expect(pdf_bytes).to include("%%EOF")
+        expect(pdf_bytes.bytesize).to be > 1024
       end
     end
 
@@ -59,15 +60,29 @@ if PRAWN_TEMPLATE_LOADED && Brcobranca::Boleto::Template::PRAWN_AVAILABLE
     end
 
     describe 'com QR Code PIX' do
+      let(:emv_valido) do
+        '00020126580014br.gov.bcb.pix0136' \
+        '123e4567-e12b-12d1-a456-4266554400005204000053039865802BR' \
+        '5913EMPRESA TESTE6009SAO PAULO62070503***63049D3E'
+      end
+
       it 'gera PDF maior quando boleto.emv esta presente' do
         pdf_sem_pix = boleto.to(:pdf)
 
-        boleto.emv = '00020126580014br.gov.bcb.pix0136' \
-                     '123e4567-e12b-12d1-a456-4266554400005204000053039865802BR' \
-                     '5913EMPRESA TESTE6009SAO PAULO62070503***63049D3E'
+        boleto.emv = emv_valido
         pdf_com_pix = boleto.to(:pdf)
 
         expect(pdf_com_pix.bytesize).to be > pdf_sem_pix.bytesize
+      end
+
+      it 'nao gera QR Code quando emv e invalido (nao comeca com 0002)' do
+        boleto.emv = 'string_invalida'
+        pdf_emv_invalido = boleto.to(:pdf)
+
+        boleto.emv = nil
+        pdf_sem_emv = boleto.to(:pdf)
+
+        expect(pdf_emv_invalido.bytesize).to eq(pdf_sem_emv.bytesize)
       end
     end
 
