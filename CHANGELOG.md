@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.6.2] - 2026-04-17
+
 ### Added — PIX (Boleto Híbrido) expandido para 6 bancos
 - **Novo `PixMixin` para CNAB 400** (`Brcobranca::Remessa::Cnab400::PixMixin`):
   gera o registro tipo 8 (detalhe PIX) com chave DICT e TXID
