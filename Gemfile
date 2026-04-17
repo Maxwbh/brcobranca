@@ -14,7 +14,7 @@ group :development do
 end
 
 # Gems opcionais para o template PrawnBolepix (alternativa ao RGhost).
-# Não requer GhostScript. Usuários devem adicioná-las ao próprio Gemfile.
+# Nao requer GhostScript. Usuarios devem adiciona-las ao proprio Gemfile.
 group :development, :test do
   gem 'barby'
   gem 'chunky_png'

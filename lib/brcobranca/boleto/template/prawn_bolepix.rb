@@ -57,17 +57,17 @@ module Brcobranca
 
         # ==================== CORES ====================
         # Cinza muito claro para fundos de cabecalhos/labels
-        COR_FUNDO_LABEL = 'F5F5F5'
+        COR_FUNDO_LABEL = "F5F5F5"
         # Cinza claro para cabecalho principal (barra de topo)
-        COR_FUNDO_CABECALHO = 'EEEEEE'
+        COR_FUNDO_CABECALHO = "EEEEEE"
         # Cinza para texto de labels
-        COR_TEXTO_LABEL = '555555'
+        COR_TEXTO_LABEL = "555555"
         # Preto para valores
-        COR_TEXTO_VALOR = '000000'
+        COR_TEXTO_VALOR = "000000"
         # Cinza para bordas
-        COR_BORDA = '333333'
+        COR_BORDA = "333333"
         # Verde escuro (tipo Sicoob) para destaque do PIX
-        COR_PIX = '006B3F'
+        COR_PIX = "006B3F"
 
         def to(formato, _options = {})
           unless PRAWN_AVAILABLE
@@ -113,9 +113,9 @@ module Brcobranca
             page_size: "A4",
             margin: [PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN, PAGE_MARGIN],
             info: {
-              Title: 'Boleto Bancario (Bolepix)',
-              Creator: 'brcobranca',
-              Producer: 'Prawn + RQRCode + Barby'
+              Title: "Boleto Bancario (Bolepix)",
+              Creator: "brcobranca",
+              Producer: "Prawn + RQRCode + Barby"
             }
           )
         end
@@ -138,7 +138,7 @@ module Brcobranca
         # Contem: topo, beneficiario, dados do documento, carteira, sacado,
         # instrucoes reduzidas e autenticacao mecanica (Recibo do Pagador).
         def desenha_recibo_pagador(pdf, boleto)
-          desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
+          desenha_topo(pdf, boleto, titulo_direito: "Recibo do Pagador")
           desenha_linha_beneficiario(pdf, boleto)
           desenha_linha_documento(pdf, boleto)
           desenha_linha_carteira(pdf, boleto)
@@ -162,7 +162,7 @@ module Brcobranca
 
           # Texto "Corte aqui"
           pdf.fill_color COR_TEXTO_LABEL
-          pdf.text_box 'Corte aqui --->',
+          pdf.text_box "Corte aqui --->" ,
                        at: [width - 60, y + 3],
                        width: 60,
                        height: 8,
@@ -214,7 +214,7 @@ module Brcobranca
           pdf.stroke_rectangle([0, y], width, altura)
 
           pdf.fill_color COR_TEXTO_LABEL
-          pdf.text_box 'Autenticacao mecanica - Recibo do Pagador',
+          pdf.text_box "Autenticacao mecanica - Recibo do Pagador",
                        at: [4, y - 4],
                        width: width - 8,
                        height: altura - 4,
@@ -265,7 +265,7 @@ module Brcobranca
           desenha_logo_banco(pdf, boleto, 0, y, logo_w, HEADER_HEIGHT)
 
           # Codigo do banco - DV (centro, destaque)
-          pdf.fill_color 'FFFFFF'
+          pdf.fill_color "FFFFFF"
           pdf.fill_rectangle([logo_w, y], codigo_w, HEADER_HEIGHT)
           pdf.fill_color COR_TEXTO_VALOR
 
@@ -279,7 +279,7 @@ module Brcobranca
                        style: :bold
 
           # Linha digitavel (direita, fundo branco)
-          pdf.fill_color 'FFFFFF'
+          pdf.fill_color "FFFFFF"
           pdf.fill_rectangle([logo_w + codigo_w, y], width - logo_w - codigo_w, HEADER_HEIGHT)
           pdf.fill_color COR_TEXTO_VALOR
 
@@ -305,13 +305,17 @@ module Brcobranca
           pdf.move_down HEADER_HEIGHT
         end
 
-        def desenha_logo_banco(pdf, boleto, x, y, col_width, altura)
-          png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
+        def desenha_logo_banco(pdf, boleto, pos_x, pos_y,
+                               col_width, altura)
+          png_path = boleto.logotipo.sub(/\.eps\z/, ".png")
           if File.exist?(png_path)
-            pdf.image png_path, at: [x + 2, y - 2], height: altura - 6, width: col_width - 4
+            pdf.image png_path,
+                      at: [pos_x + 2, pos_y - 2],
+                      height: altura - 6,
+                      width: col_width - 4
           else
             pdf.text_box nome_banco_para_logo(boleto),
-                         at: [x, y - 6],
+                         at: [pos_x, pos_y - 6],
                          width: col_width,
                          height: altura,
                          size: 8,
@@ -321,7 +325,7 @@ module Brcobranca
           end
         rescue StandardError
           pdf.text_box nome_banco_para_logo(boleto),
-                       at: [x, y - 6],
+                       at: [pos_x, pos_y - 6],
                        width: col_width,
                        height: altura,
                        size: 8,
@@ -377,14 +381,13 @@ module Brcobranca
 
         def desenha_linha_documento(pdf, boleto)
           draw_row(pdf, [
-                     { label: 'Data do documento', value: boleto.data_documento&.to_s_br || '', width_ratio: 0.14 },
-                     { label: 'N. do Documento', value: boleto.documento_numero.to_s, width_ratio: 0.22 },
-                     { label: 'Especie', value: boleto.especie_documento.to_s, width_ratio: 0.08 },
-                     { label: 'Aceite', value: boleto.aceite.to_s, width_ratio: 0.07 },
-                     { label: 'Data Processamento', value: boleto.data_processamento&.to_s_br || '', width_ratio: 0.14 },
+                     { label: "Data do documento", value: boleto.data_documento&.to_s_br || "", width_ratio: 0.14 },
+                     { label: "N. do Documento", value: boleto.documento_numero.to_s, width_ratio: 0.22 },
+                     { label: "Especie", value: boleto.especie_documento.to_s, width_ratio: 0.08 },
+                     { label: "Aceite", value: boleto.aceite.to_s, width_ratio: 0.07 },
+                     { label: "Data Processamento", value: boleto.data_processamento&.to_s_br || "", width_ratio: 0.14 },
                      { label: "Cooperativa/Cod. Beneficiario",
-                       value: (boleto.agencia_conta_boleto || "")
-                         .to_s.gsub(%r{\s+/\s+}, "/"),
+                       value: cooperativa_cod(boleto),
                        width_ratio: 0.35 }
                    ])
         end
@@ -392,21 +395,20 @@ module Brcobranca
         def desenha_linha_carteira(pdf, boleto)
           # Mostra apenas "carteira" quando a variacao e "01" (default comum),
           # ou "carteira/variacao" quando a variacao e explicitamente outra.
-          carteira_txt = if boleto.variacao && boleto.variacao.to_s != '01'
+          carteira_txt = if boleto.variacao && boleto.variacao.to_s != "01"
                            "#{boleto.carteira}/#{boleto.variacao}"
                          else
                            boleto.carteira.to_s
                          end
           draw_row(pdf, [
-                     { label: 'Uso do banco', value: '', width_ratio: 0.14 },
-                     { label: 'Carteira', value: carteira_txt, width_ratio: 0.22 },
-                     { label: 'Especie', value: boleto.especie.to_s, width_ratio: 0.08 },
-                     { label: 'Quantidade', value: boleto.quantidade.to_s, width_ratio: 0.07 },
+                     { label: "Uso do banco", value: "", width_ratio: 0.14 },
+                     { label: "Carteira", value: carteira_txt, width_ratio: 0.22 },
+                     { label: "Especie", value: boleto.especie.to_s, width_ratio: 0.08 },
+                     { label: "Quantidade", value: boleto.quantidade.to_s, width_ratio: 0.07 },
                      { label: "Valor",
-                       value: (boleto.valor.to_f.positive? ?
-                         boleto.valor.to_f.to_currency : ""),
+                       value: valor_formatado(boleto),
                        width_ratio: 0.14 },
-                     { label: 'Nosso numero', value: boleto.nosso_numero_boleto.to_s, width_ratio: 0.35 }
+                     { label: "Nosso numero", value: boleto.nosso_numero_boleto.to_s, width_ratio: 0.35 }
                    ])
         end
 
@@ -429,7 +431,7 @@ module Brcobranca
 
           # Label da coluna de instrucoes
           pdf.fill_color COR_TEXTO_LABEL
-          pdf.text_box 'Instrucoes (Texto de responsabilidade do beneficiario)',
+          pdf.text_box "Instrucoes (Texto de responsabilidade do beneficiario)",
                        at: [4, y - 3],
                        width: left_width - 8,
                        height: 8,
@@ -455,11 +457,11 @@ module Brcobranca
 
           # Coluna direita: 5 totalizadores empilhados
           totalizadores = [
-            ['(-) Desconto / Abatimento', boleto.descontos_e_abatimentos&.to_currency || ''],
-            ['(-) Outras deducoes', ''],
-            ['(+) Mora / Multa', ''],
-            ['(+) Outros Acrescimos', ''],
-            ['(=) Valor cobrado', '']
+            ["(-) Desconto / Abatimento", boleto.descontos_e_abatimentos&.to_currency || ""],
+            ["(-) Outras deducoes", ""],
+            ["(+) Mora / Multa", ""],
+            ["(+) Outros Acrescimos", ""],
+            ["(=) Valor cobrado", ""]
           ]
           totalizadores.each_with_index do |(label, valor), i|
             top = y - (i * TOTALIZADORES_HEIGHT)
@@ -494,10 +496,19 @@ module Brcobranca
         end
 
         def montar_instrucoes(boleto)
-          return boleto.instrucoes.to_s if boleto.instrucoes && !boleto.instrucoes.to_s.strip.empty?
+          if boleto.instrucoes &&
+             !boleto.instrucoes.to_s.strip.empty?
+            return boleto.instrucoes.to_s
+          end
 
-          [boleto.instrucao1, boleto.instrucao2, boleto.instrucao3,
-           boleto.instrucao4, boleto.instrucao5, boleto.instrucao6].compact.reject { |l| l.to_s.strip.empty? }.join("\n")
+          [
+            boleto.instrucao1, boleto.instrucao2,
+            boleto.instrucao3, boleto.instrucao4,
+            boleto.instrucao5, boleto.instrucao6,
+            boleto.instrucao7
+          ].compact.
+            reject { |l| l.to_s.strip.empty? }.
+            join("\n")
         end
 
         def desenha_linha_sacado(pdf, boleto)
@@ -510,7 +521,7 @@ module Brcobranca
           partes << boleto.sacado_endereco.to_s if boleto.sacado_endereco
 
           draw_row(pdf, [
-                     { label: 'Sacado', value: partes.join("\n"), width_ratio: 1.0, value_style: :bold, multiline: true }
+                     { label: "Sacado", value: partes.join("\n"), width_ratio: 1.0, value_style: :bold, multiline: true }
                    ], height: ROW_BENEF_HEIGHT)
         end
 
@@ -518,11 +529,11 @@ module Brcobranca
           avalista = if boleto.avalista && boleto.avalista_documento
                        "#{boleto.avalista} - #{boleto.avalista_documento}"
                      else
-                       ''
+                       ""
                      end
           draw_row(pdf, [
-                     { label: 'Sacador/Avalista', value: avalista, width_ratio: 0.80 },
-                     { label: 'Cod. baixa', value: '', width_ratio: 0.20 }
+                     { label: "Sacador/Avalista", value: avalista, width_ratio: 0.80 },
+                     { label: "Cod. baixa", value: "", width_ratio: 0.20 }
                    ], height: ROW_HEIGHT * 0.85)
         end
 
@@ -531,7 +542,7 @@ module Brcobranca
           y = pdf.cursor
           x_cursor = 0
 
-          # Faixa cinza clara na parte superior de cada celula (onde fica o label)
+          # Gray stripe on top of each cell (label area)
           # Da o efeito visual de "cabecalho de campo" caracteristico do boleto
           label_stripe_height = 10
           pdf.fill_color COR_FUNDO_LABEL
@@ -543,51 +554,66 @@ module Brcobranca
           pdf.stroke_rectangle([0, y], width, height)
 
           columns.each_with_index do |col, index|
-            col_width = (width * col[:width_ratio]).round(2)
-
-            # Destaque especial: fundo leve para campos destacados (ex.: Vencimento, Valor)
-            if col[:destaque]
-              pdf.fill_color COR_FUNDO_CABECALHO
-              pdf.fill_rectangle([x_cursor, y], col_width, height)
-              pdf.fill_color COR_TEXTO_VALOR
-              # Redesenha a faixa do label por cima do destaque
-              pdf.fill_color COR_FUNDO_LABEL
-              pdf.fill_rectangle([x_cursor, y], col_width, label_stripe_height)
-              pdf.fill_color COR_TEXTO_VALOR
+            col_w = (width * col[:width_ratio]).round(2)
+            draw_column(pdf, col, x_cursor, y,
+                        col_w, height, label_stripe_height)
+            unless index == columns.length - 1
+              pdf.stroke_vertical_line(
+                y, y - height, at: x_cursor + col_w
+              )
             end
-
-            # Label (topo, pequeno, cinza escuro)
-            pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box col[:label].to_s,
-                         at: [x_cursor + 4, y - 3],
-                         width: col_width - 8,
-                         height: 8,
-                         size: LABEL_SIZE,
-                         overflow: :shrink_to_fit
-            pdf.fill_color COR_TEXTO_VALOR
-
-            # Valor
-            align = col[:align] || :left
-            value_style = col[:value_style]
-            text_opts = {
-              at: [x_cursor + 4, y - 12],
-              width: col_width - 8,
-              height: height - 14,
-              size: VALUE_SIZE,
-              align: align,
-              overflow: :shrink_to_fit
-            }
-            text_opts[:style] = value_style if value_style
-
-            pdf.text_box col[:value].to_s, **text_opts
-
-            # Separador vertical entre colunas (exceto a ultima)
-            pdf.stroke_vertical_line y, y - height, at: x_cursor + col_width unless index == columns.length - 1
-
-            x_cursor += col_width
+            x_cursor += col_w
           end
 
           pdf.move_down height
+        end
+
+        def draw_column(pdf, col, pos_x, pos_y,
+                        col_width, height, stripe_h)
+          if col[:destaque]
+            draw_column_bg(pdf, pos_x, pos_y,
+                           col_width, height, stripe_h)
+          end
+
+          draw_column_label(pdf, col, pos_x, pos_y,
+                            col_width)
+          draw_column_value(pdf, col, pos_x, pos_y,
+                            col_width, height)
+        end
+
+        def draw_column_bg(pdf, pos_x, pos_y,
+                           col_width, height, stripe_h)
+          pdf.fill_color COR_FUNDO_CABECALHO
+          pdf.fill_rectangle([pos_x, pos_y], col_width, height)
+          pdf.fill_color COR_FUNDO_LABEL
+          pdf.fill_rectangle([pos_x, pos_y], col_width, stripe_h)
+          pdf.fill_color COR_TEXTO_VALOR
+        end
+
+        def draw_column_label(pdf, col, pos_x, pos_y,
+                              col_width)
+          pdf.fill_color COR_TEXTO_LABEL
+          pdf.text_box col[:label].to_s,
+                       at: [pos_x + 4, pos_y - 3],
+                       width: col_width - 8, height: 8,
+                       size: LABEL_SIZE,
+                       overflow: :shrink_to_fit
+          pdf.fill_color COR_TEXTO_VALOR
+        end
+
+        def draw_column_value(pdf, col, pos_x, pos_y,
+                              col_width, height)
+          opts = {
+            at: [pos_x + 4, pos_y - 12],
+            width: col_width - 8,
+            height: height - 14,
+            size: VALUE_SIZE,
+            align: col[:align] || :left,
+            overflow: :shrink_to_fit
+          }
+          style = col[:value_style]
+          opts[:style] = style if style
+          pdf.text_box col[:value].to_s, **opts
         end
 
         def desenha_codigo_barras_e_pix(pdf, boleto)
@@ -607,7 +633,6 @@ module Brcobranca
 
           if tem_pix
             qr_x = direita_x
-            # Renderiza QR Code diretamente sem usar bounding_box (evita double-move)
             qrcode = RQRCode::QRCode.new(boleto.emv.to_s, level: :h)
             png = qrcode.as_png(size: 300, module_size: 6, border_modules: 1)
 
@@ -615,7 +640,6 @@ module Brcobranca
                       at: [qr_x, y_start],
                       width: QRCODE_SIZE
 
-            # Label "Pague com PIX" em verde, centralizado abaixo do QR Code
             pdf.fill_color COR_PIX
             pdf.text_box pix_label(boleto),
                          at: [qr_x, y_start - QRCODE_SIZE - 2],
@@ -624,31 +648,27 @@ module Brcobranca
                          size: 8,
                          align: :center,
                          style: :bold
-            pdf.fill_color COR_TEXTO_VALOR
 
-            # Autenticacao mecanica (direita do QR Code)
             autent_x = qr_x + QRCODE_SIZE + 10
             pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box 'Autenticacao mecanica - Ficha de Compensacao',
+            pdf.text_box "Autenticacao mecanica - Ficha de Compensacao",
                          at: [autent_x, y_start - 5],
                          width: width - autent_x,
                          height: 15,
                          size: 7,
                          align: :right,
                          valign: :top
-            pdf.fill_color COR_TEXTO_VALOR
           else
-            # Autenticacao mecanica (toda a direita)
             pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box 'Autenticacao mecanica - Ficha de Compensacao',
+            pdf.text_box "Autenticacao mecanica - Ficha de Compensacao",
                          at: [direita_x, y_start - 5],
                          width: width - direita_x,
                          height: 15,
                          size: 7,
                          align: :right,
                          valign: :top
-            pdf.fill_color COR_TEXTO_VALOR
           end
+          pdf.fill_color COR_TEXTO_VALOR
 
           pdf.move_down BARCODE_HEIGHT + 8
         end
@@ -658,6 +678,16 @@ module Brcobranca
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
           config_label || "Pague com PIX"
+        end
+
+        def valor_formatado(boleto)
+          v = boleto.valor.to_f
+          v.positive? ? v.to_currency : ""
+        end
+
+        def cooperativa_cod(boleto)
+          (boleto.agencia_conta_boleto || "").
+            to_s.gsub(%r{\s+/\s+}, "/")
         end
 
         def emv_valido?(emv)
