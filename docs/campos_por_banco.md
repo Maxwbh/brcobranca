@@ -10,8 +10,10 @@ Este documento detalha os campos obrigatórios e opcionais para cada banco supor
 - [Itaú (341)](#itaú-341)
 - [Santander (033)](#santander-033)
 - [Caixa Econômica Federal (104)](#caixa-econômica-federal-104)
-- [Sicoob (756)](#sicoob-756)
+- [Sicoob (756)](#sicoob-756) — inclui **Carteira 9** (2024/2025)
 - [Sicredi (748)](#sicredi-748)
+- [Banco C6 (336)](#banco-c6-336) — novo banco, CNAB 400
+- [Campos PIX (PagamentoPix)](#campos-pix-pagamentopix)
 
 ---
 
@@ -234,13 +236,21 @@ boleto = Brcobranca::Boleto::Caixa.new(
 
 | Campo | Tamanho | Obrigatório | Descrição |
 |-------|---------|-------------|-----------|
-| `convenio` | 7 dígitos | Sim | Código do cliente |
-| `carteira` | 1 dígito | Sim | Modalidade (1, 2, 3) |
+| `convenio` | 7 dígitos | Sim | Código do cliente (cedente) |
+| `carteira` | 1 dígito | Sim | `'1'`, `'3'` ou `'9'` (nova) |
 | `nosso_numero` | 7 dígitos | Sim | Número do título |
 | `agencia` | 4 dígitos | Sim | Código cooperativa |
 | `conta_corrente` | 8 dígitos | Sim | Conta corrente |
+| `numero_contrato` | 7 dígitos | ⚠️ (só Carteira 9) | Número do contrato fornecido pelo Sicoob |
 
-### Exemplo
+### Carteiras suportadas
+
+- **Carteira 1** — Cobrança Simples Com Registro (tradicional)
+- **Carteira 3** — Cobrança Garantida Caucionada
+- **Carteira 9** — Nova modalidade (2024/2025): usa `numero_contrato`
+  no código de barras em vez do `convenio`
+
+### Exemplo (carteira tradicional)
 
 ```ruby
 boleto = Brcobranca::Boleto::Sicoob.new(
@@ -253,6 +263,43 @@ boleto = Brcobranca::Boleto::Sicoob.new(
   cedente: 'Empresa LTDA',
   sacado: 'Cliente da Silva',
   sacado_documento: '12345678901'
+)
+```
+
+### Exemplo (Carteira 9, nova modalidade)
+
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(
+  convenio: '229385',
+  carteira: '9',                # Ativa a nova composição
+  numero_contrato: '1234567',   # Fornecido pelo Sicoob
+  nosso_numero: '1',
+  agencia: '4327',
+  # ... demais campos
+)
+```
+
+### CNAB 240 — Layout 810 (opcional)
+
+Na remessa CNAB 240, é possível indicar que o cliente já envia o DV do
+nosso número calculado (Sicoob não recalcula):
+
+```ruby
+remessa = Brcobranca::Remessa::Cnab240::Sicoob.new(
+  versao_layout_arquivo_opcao: '810',  # '081' (padrão) ou '810'
+  # ... demais campos
+)
+```
+
+### CNAB 400 — Nome do banco configurável
+
+Desde 2018 o banco usa o nome **SICOOB** oficialmente. Por padrão, a remessa
+ainda usa `'BANCOOBCED'` para compatibilidade. Para atualizar:
+
+```ruby
+remessa = Brcobranca::Remessa::Cnab400::Sicoob.new(
+  nome_banco: 'SICOOB',  # default: 'BANCOOBCED'
+  # ... demais campos
 )
 ```
 
@@ -289,6 +336,105 @@ boleto = Brcobranca::Boleto::Sicredi.new(
   sacado_documento: '12345678901'
 )
 ```
+
+---
+
+## Banco C6 (336)
+
+Novo banco adicionado nesta versão. CNAB 400, versão de layout 2.7 (Jul/2025).
+
+### Campos Obrigatórios
+
+| Campo | Tipo | Tamanho | Descrição |
+|-------|------|---------|-----------|
+| `agencia` | String | 4 | Número da agência |
+| `convenio` | String | 12 | Código do Cedente fornecido pelo C6 |
+| `carteira` | String | 2 | `'10'` (Emissão Banco) ou `'20'` (Emissão Cliente) |
+| `nosso_numero` | String | 10 | Número do título (preenchido com zeros à esquerda) |
+
+### Campo Livre (25 posições)
+
+```
+Posição | Tamanho | Conteúdo
+20 a 31 |   12    | Código do Cedente (convenio)
+32 a 41 |   10    | Nosso Número (sem DV)
+42 a 43 |   2     | Código da Carteira ('10' ou '20')
+44      |   1     | Indicador de Layout (3 = Emissão Banco, 4 = Emissão Cliente)
+```
+
+### Exemplo
+
+```ruby
+boleto = Brcobranca::Boleto::BancoC6.new(
+  agencia: '0001',
+  convenio: '000000123456',
+  carteira: '10',
+  nosso_numero: '0000000001',
+  valor: 100.00,
+  data_vencimento: Date.today + 30,
+  cedente: 'Minha Empresa LTDA',
+  documento_cedente: '12345678000100',
+  sacado: 'Cliente',
+  sacado_documento: '12345678900'
+)
+```
+
+### Remessa CNAB 400
+
+Campo adicional obrigatório: `codigo_beneficiario` (12 dígitos).
+
+```ruby
+remessa = Brcobranca::Remessa::Cnab400::BancoC6.new(
+  codigo_beneficiario: '000000123456',
+  carteira: '10',
+  empresa_mae: 'Minha Empresa LTDA',
+  documento_cedente: '12345678000100',
+  sequencial_remessa: '1',
+  pagamentos: [pagamento]
+)
+```
+
+---
+
+## Campos PIX (PagamentoPix)
+
+Para gerar remessa com registro/segmento PIX, use `Brcobranca::Remessa::PagamentoPix`
+em vez de `Pagamento`. Campos adicionais:
+
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|:-:|-----------|
+| `tipo_chave_dict` | String | ✅ | `'cpf'`, `'cnpj'`, `'email'`, `'telefone'`, `'chave_aleatoria'` |
+| `codigo_chave_dict` | String | ✅ | Chave PIX do recebedor |
+| `tipo_pagamento_pix` | String | - | `'00'` (padrão), `'01'`, `'02'`, `'03'` |
+| `quantidade_pagamentos_pix` | String | - | `'01'` (padrão) |
+| `tipo_valor_pix` | String | - | `'1'` (padrão) |
+| `valor_maximo_pix` | Float | - | Valor máximo do PIX |
+| `valor_minimo_pix` | Float | - | Valor mínimo do PIX |
+| `percentual_maximo_pix` | Float | - | Percentual máximo (default: 100.0) |
+| `percentual_minimo_pix` | Float | - | Percentual mínimo (default: 100.0) |
+| `txid` | String | - | Código de identificação do QR Code |
+
+### Validações por tipo de chave
+
+| Tipo | Formato esperado |
+|---|---|
+| `cpf` | 11 dígitos numéricos |
+| `cnpj` | 14 caracteres (12 alfanuméricos + 2 numéricos) |
+| `email` | RFC de email |
+| `telefone` | `+DDDNNNNNNNNN` (12 a 13 caracteres) |
+| `chave_aleatoria` | 1 a 77 caracteres |
+
+### Classes com suporte a PIX
+
+| Banco | Formato | Classe |
+|---|:---:|---|
+| Santander (033) | CNAB 400 | `Brcobranca::Remessa::Cnab400::SantanderPix` |
+| Bradesco (237) | CNAB 400 | `Brcobranca::Remessa::Cnab400::BradescoPix` |
+| Itaú (341) | CNAB 400 | `Brcobranca::Remessa::Cnab400::ItauPix` |
+| C6 Bank (336) | CNAB 400 | `Brcobranca::Remessa::Cnab400::BancoC6Pix` |
+| Banco do Brasil (001) | CNAB 240 | `Brcobranca::Remessa::Cnab240::BancoBrasilPix` |
+| Caixa (104) | CNAB 240 | `Brcobranca::Remessa::Cnab240::CaixaPix` |
+| Sicoob (756) | CNAB 240 | `Brcobranca::Remessa::Cnab240::SicoobPix` |
 
 ---
 
