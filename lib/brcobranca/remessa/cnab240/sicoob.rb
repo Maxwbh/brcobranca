@@ -5,6 +5,13 @@ module Brcobranca
     module Cnab240
       class Sicoob < Brcobranca::Remessa::Cnab240::Base
         attr_accessor :modalidade_carteira, :tipo_formulario, :parcela, :posto
+        # <b>OPCIONAL</b>: Versão do layout do arquivo.
+        # - '081' (padrão): Sicoob calcula o DV do nosso número
+        # - '810': Sicoob NÃO calcula o DV do nosso número (cliente já envia calculado)
+        attr_accessor :versao_layout_arquivo_opcao
+        # <b>OPCIONAL</b>: Número do Contrato fornecido pelo Sicoob, utilizado
+        # como Código de Transmissão para a Carteira 9 em substituição ao código do cedente.
+        attr_accessor :numero_contrato
 
         # identificacao da emissao do boleto (attr na classe base)
         #   opcoes:
@@ -31,6 +38,9 @@ module Brcobranca
         validates_length_of :conta_corrente, maximum: 8, message: 'deve ter 8 dígitos.'
         validates_length_of :agencia, is: 4, message: 'deve ter 4 dígitos.'
         validates_length_of :modalidade_carteira, is: 2, message: 'deve ter 2 dígitos.'
+        validates_inclusion_of :versao_layout_arquivo_opcao, in: %w[081 810],
+                                                             message: 'deve ser 081 ou 810.',
+                                                             allow_nil: true
 
         def initialize(campos = {})
           campos = { emissao_boleto: '2',
@@ -40,6 +50,7 @@ module Brcobranca
                      parcela: '01',
                      modalidade_carteira: '01',
                      forma_cadastramento: '0',
+                     versao_layout_arquivo_opcao: '081',
                      posto: '00' }.merge!(campos)
           super(campos)
         end
@@ -53,7 +64,7 @@ module Brcobranca
         end
 
         def versao_layout_arquivo
-          '081'
+          versao_layout_arquivo_opcao || '081'
         end
 
         def versao_layout_lote

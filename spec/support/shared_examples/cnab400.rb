@@ -105,6 +105,15 @@ shared_examples_for 'cnab400' do
         sequencial_remessa: '1',
         pagamentos: [pagamento]
       }
+    elsif subject.instance_of?(Brcobranca::Remessa::Cnab400::BancoC6)
+      {
+        carteira: '10',
+        codigo_beneficiario: '000000123456',
+        empresa_mae: 'SOCIEDADE BRASILEIRA DE ZOOLOGIA LTDA',
+        documento_cedente: '12345678910',
+        sequencial_remessa: '1',
+        pagamentos: [pagamento]
+      }
     else
       { carteira: '123',
         agencia: '1234',

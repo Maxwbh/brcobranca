@@ -326,13 +326,24 @@ module Brcobranca
             contador += 1
             lote << monta_segmento_q(pagamento, nro_lote, contador)
             contador += 1
-            next unless respond_to?(:monta_segmento_r)
 
-            seg_r = monta_segmento_r(pagamento, nro_lote, contador)
+            if respond_to?(:monta_segmento_r)
+              seg_r = monta_segmento_r(pagamento, nro_lote, contador)
+              unless seg_r.blank?
+                lote << seg_r
+                contador += 1
+              end
+            end
 
-            unless seg_r.blank?
-              lote << seg_r
-              contador += 1
+            # Segmento Y-03 (PIX) - gerado apenas quando:
+            #  1. A classe inclui o PixMixin (responde a monta_segmento_y)
+            #  2. O pagamento é um PagamentoPix válido
+            if pagamento.is_a?(Brcobranca::Remessa::PagamentoPix) && respond_to?(:monta_segmento_y)
+              seg_y = monta_segmento_y(pagamento, nro_lote, contador)
+              unless seg_y.blank?
+                lote << seg_y
+                contador += 1
+              end
             end
           end
           contador += 1 # trailer

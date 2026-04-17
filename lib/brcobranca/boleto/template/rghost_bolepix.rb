@@ -16,15 +16,37 @@ rescue LoadError
   require 'rghost_barcode'
 end
 
+# Garante compatibilidade com rghost >= 0.9.9 (ver rghost.rb)
+unless defined?(RGhost::VERSION)
+  module RGhost
+    module VERSION
+      MAJOR = 0
+      MINOR = 9
+      TINY  = 9
+      DATE  = 1_709_769_600
+      STRING = [MAJOR, MINOR, TINY].join('.')
+    end
+  end
+end
+
 module Brcobranca
   module Boleto
     module Template
-      # Templates para usar com Rghost
+      # Templates para usar com Rghost - versão híbrida com suporte a PIX/QR Code
+      #
+      # Gera boletos no formato padrão FEBRABAN incluindo QR Code PIX quando o
+      # atributo `boleto.emv` está presente (string BR Code conforme padrão EMV
+      # do Banco Central).
       module RghostBolepix
         extend self
         include RGhost unless include?(RGhost)
         RGhost::Config::GS[:external_encoding] = Brcobranca.configuration.external_encoding
         RGhost::Config::GS[:default_params] << '-dNOSAFER'
+
+        # Label padrão exibido ao lado do QR Code PIX.
+        # Pode ser sobrescrito pelo boleto através do atributo `pix_label`
+        # ou globalmente via `Brcobranca.configuration.pix_label` (se configurado).
+        DEFAULT_PIX_LABEL = 'Pague com PIX'
 
         # Gera o boleto em usando o formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
         #
@@ -35,11 +57,10 @@ module Brcobranca
           modelo_generico(self, options.merge!(formato: formato))
         end
 
-        # Gera o boleto em usando o formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
+        # Gera multiplos boletos em um único arquivo.
         #
         # @return [Stream]
-        # @see http://wiki.github.com/shairontoledo/rghost/supported-devices-drivers-and-formats Veja mais formatos na documentação do rghost.
-        # @see Rghost#modelo_generico Recebe os mesmos parâmetros do Rghost#modelo_generico.
+        # @see http://wiki.github.com/shairontoledo/rghost/supported-devices-drivers-and-formats
         def lote(boletos, options = {})
           modelo_generico_multipage(boletos, options)
         end
@@ -47,7 +68,6 @@ module Brcobranca
         #  Cria o métodos dinâmicos (to_pdf, to_gif e etc) com todos os fomátos válidos.
         #
         # @return [Stream]
-        # @see Rghost#modelo_generico Recebe os mesmos parâmetros do Rghost#modelo_generico.
         # @example
         #  @boleto.to_pdf #=> boleto gerado no formato pdf
         def method_missing(m, *args)
@@ -61,87 +81,120 @@ module Brcobranca
 
         private
 
-        # Retorna um stream pronto para gravação em arquivo.
+        # Retorna o template path padrão.
+        def template_path
+          @template_path ||= File.join(
+            File.dirname(__FILE__), '..', '..', '..', '..',
+            'assets', 'templates', 'modelo_generico.eps'
+          )
+        end
+
+        # Stream de um boleto único.
         #
         # @return [Stream]
-        # @param [Boleto] Instância de uma classe de boleto.
-        # @param [Hash] options Opção para a criação do boleto.
-        # @option options [Symbol] :resolucao Resolução em pixels.
-        # @option options [Symbol] :formato Formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
+        # @param [Boleto] boleto
+        # @param [Hash] options opções de renderização
+        # @option options [Symbol] :resolucao Resolução em pixels
+        # @option options [Symbol] :formato Formato desejado [:pdf, :jpg, ...]
         def modelo_generico(boleto, options = {})
           doc = Document.new paper: :A4 # 210x297
 
-          template_path = File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'assets', 'templates', 'modelo_generico.eps')
-
           raise 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
 
-          modelo_generico_template(doc, boleto, template_path)
-          modelo_generico_cabecalho(doc, boleto)
-          modelo_generico_rodape(doc, boleto)
+          desenha_pagina(doc, boleto)
 
-          # Gerando codigo de barra com rghost_barcode
-          if boleto.codigo_barras
-            doc.barcode_interleaved2of5(boleto.codigo_barras, width: '10.3 cm', height: '1.3 cm', x: "#{@x - 1.7} cm",
-                                                              y: "#{@y - 1.67} cm")
-          end
-
-          # Gerando QRCode a partir de um emv
-          if boleto.emv
-            doc.barcode_qrcode(boleto.emv, width: '2.5 cm',
-                                           height: '2.5 cm',
-                                           eclevel: 'H',
-                                           x: "#{@x + 12.9} cm",
-                                           y: "#{@y - 2.50} cm")
-            move_more(doc, @x + 12.9, @y - 3.70)
-            doc.show 'Pague com PIX'
-          end
-
-          # Gerando stream
-          formato = options.delete(:formato) || Brcobranca.configuration.formato
-          resolucao = options.delete(:resolucao) || Brcobranca.configuration.resolucao
-          doc.render_stream(formato.to_sym, resolution: resolucao)
+          finaliza_documento(doc, options)
         end
 
-        # Retorna um stream para multiplos boletos pronto para gravação em arquivo.
+        # Stream com múltiplos boletos.
         #
         # @return [Stream]
-        # @param [Array] Instâncias de classes de boleto.
-        # @param [Hash] options Opção para a criação do boleto.
-        # @option options [Symbol] :resolucao Resolução em pixels.
-        # @option options [Symbol] :formato Formato desejado [:pdf, :jpg, :tif, :png, :ps, :laserjet, ... etc]
+        # @param [Array<Boleto>] boletos
+        # @param [Hash] options opções de renderização
         def modelo_generico_multipage(boletos, options = {})
           doc = Document.new paper: :A4 # 210x297
-
-          template_path = File.join(File.dirname(__FILE__), '..', '..', '..', '..', 'assets', 'templates', 'modelo_generico.eps')
 
           raise 'Não foi possível encontrar o template. Verifique o caminho' unless File.exist?(template_path)
 
           boletos.each_with_index do |boleto, index|
-            modelo_generico_template(doc, boleto, template_path)
-            modelo_generico_cabecalho(doc, boleto)
-            modelo_generico_rodape(doc, boleto)
-
-            # Gerando codigo de barra com rghost_barcode
-            if boleto.codigo_barras
-              doc.barcode_interleaved2of5(boleto.codigo_barras, width: '10.3 cm', height: '1.3 cm', x: "#{@x - 1.7} cm",
-                                                                y: "#{@y - 1.67} cm")
-            end
-
-            # Gerando QRCode a partir de um emv
-            if boleto.emv
-              doc.barcode_qrcode(boleto.emv, width: '2.5 cm',
-                                             height: '2.5 cm',
-                                             eclevel: 'H',
-                                             x: "#{@x + 12.9} cm",
-                                             y: "#{@y - 2.50} cm")
-              move_more(doc, @x + 12.9, @y - 3.70)
-              doc.show 'Pague com PIX'
-            end
-
-            # Cria nova página se não for o último boleto
+            desenha_pagina(doc, boleto)
             doc.next_page unless index == boletos.length - 1
           end
-          # Gerando stream
+
+          finaliza_documento(doc, options)
+        end
+
+        # Desenha uma página completa do boleto com cabeçalho, rodapé,
+        # código de barras e QR Code PIX (se aplicável).
+        #
+        # @param doc [RGhost::Document]
+        # @param boleto [Brcobranca::Boleto::Base]
+        def desenha_pagina(doc, boleto)
+          modelo_generico_template(doc, boleto, template_path)
+          modelo_generico_cabecalho(doc, boleto)
+          modelo_generico_rodape(doc, boleto)
+          desenha_codigo_barras(doc, boleto)
+          desenha_qrcode_pix(doc, boleto)
+        end
+
+        # Desenha o código de barras Interleaved 2 of 5.
+        def desenha_codigo_barras(doc, boleto)
+          return unless boleto.codigo_barras
+
+          doc.barcode_interleaved2of5(
+            boleto.codigo_barras,
+            width: '10.3 cm',
+            height: '1.3 cm',
+            x: "#{@x - 1.7} cm",
+            y: "#{@y - 1.67} cm"
+          )
+        end
+
+        # Desenha o QR Code PIX a partir da string EMV do boleto.
+        #
+        # Só gera se `boleto.emv` estiver presente e for válido.
+        # O label exibido pode ser customizado via:
+        #  - Brcobranca.configuration.pix_label (se configurado)
+        #  - boleto.pix_label (se o boleto responder ao método)
+        #  - DEFAULT_PIX_LABEL como fallback
+        def desenha_qrcode_pix(doc, boleto)
+          return unless boleto.emv
+          return unless emv_valido?(boleto.emv)
+
+          doc.barcode_qrcode(
+            boleto.emv,
+            width: '2.5 cm',
+            height: '2.5 cm',
+            eclevel: 'H',
+            x: "#{@x + 12.9} cm",
+            y: "#{@y - 2.50} cm"
+          )
+          move_more(doc, @x + 12.9, @y - 3.70)
+          doc.show pix_label(boleto)
+        end
+
+        # Obtém o label exibido ao lado do QR Code PIX.
+        def pix_label(boleto)
+          return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
+
+          config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
+          config_label || DEFAULT_PIX_LABEL
+        end
+
+        # Validação mínima do EMV BR Code.
+        #
+        # Verifica se o EMV começa com "0002" (Payload Format Indicator)
+        # que é o primeiro campo obrigatório de um BR Code válido.
+        # Não faz validação completa de CRC16 (complexa e pouco útil aqui).
+        def emv_valido?(emv)
+          return false if emv.nil? || emv.to_s.strip.empty?
+
+          # BR Code válido sempre começa com "0002" seguido do tamanho e valor
+          emv.to_s.start_with?('0002')
+        end
+
+        # Finaliza o documento e retorna o stream no formato solicitado.
+        def finaliza_documento(doc, options)
           formato = options.delete(:formato) || Brcobranca.configuration.formato
           resolucao = options.delete(:resolucao) || Brcobranca.configuration.resolucao
           doc.render_stream(formato.to_sym, resolution: resolucao)
@@ -167,12 +220,9 @@ module Brcobranca
         # Monta o cabeçalho do layout do boleto
         def modelo_generico_cabecalho(doc, boleto)
           # INICIO Primeira parte do BOLETO
-          # Pontos iniciais em x e y
           @x = 0.50
           @y = 27.42
-          # LOGOTIPO do BANCO
           doc.image boleto.logotipo, x: "#{@x} cm", y: "#{@y} cm"
-          # Dados
 
           move_more(doc, 4.84, 0.02)
           doc.show "#{boleto.banco}-#{boleto.banco_dv}", tag: :maior
@@ -221,17 +271,12 @@ module Brcobranca
 
           doc.text_area boleto.demonstrativo, width: '18.5 cm', text_align: :left, x: "#{@x - 0.8} cm",
                                               y: "#{@y - 0.9} cm", row_height: '0.4 cm'
-
-          # FIM Primeira parte do BOLETO
         end
 
         # Monta o corpo e rodapé do layout do boleto
         def modelo_generico_rodape(doc, boleto)
-          # INICIO Segunda parte do BOLETO BB
-          # Pontos iniciais em x e y
           @x = 0.50
           @y = 12.22
-          # LOGOTIPO do BANCO
           doc.image boleto.logotipo, x: "#{@x} cm", y: "#{@y} cm"
 
           move_more(doc, 4.84, 0.01)
@@ -332,7 +377,6 @@ module Brcobranca
 
           move_more(doc, 1.2, -0.93)
           doc.show "#{boleto.avalista} - #{boleto.avalista_documento}" if boleto.avalista && boleto.avalista_documento
-          # FIM Segunda parte do BOLETO
         end
       end
     end

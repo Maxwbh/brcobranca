@@ -16,6 +16,23 @@ rescue LoadError
   require 'rghost_barcode'
 end
 
+# Workaround para bug na gem rghost >= 0.9.9 (lançada em 2024-03-07):
+# a versão removeu a linha `require 'rghost/ruby_ghost_version'` do arquivo
+# principal lib/rghost.rb, mas o arquivo lib/rghost/document.rb ainda referencia
+# `RGhost::VERSION::STRING`. Isso causa NameError em qualquer chamada que
+# instancie um Document. Definimos a constante caso ela não exista.
+unless defined?(RGhost::VERSION)
+  module RGhost
+    module VERSION
+      MAJOR = 0
+      MINOR = 9
+      TINY  = 9
+      DATE  = 1_709_769_600 # 2024-03-07
+      STRING = [MAJOR, MINOR, TINY].join('.')
+    end
+  end
+end
+
 module Brcobranca
   module Boleto
     module Template

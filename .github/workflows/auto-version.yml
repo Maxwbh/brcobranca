@@ -30,7 +30,12 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
+          bundler-cache: false
+
+      - name: Install dependencies
+        run: |
+          bundle config set --local frozen false
+          bundle install --jobs 4
 
       - name: Configurar Git
         run: |
