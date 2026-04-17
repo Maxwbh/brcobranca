@@ -12,8 +12,7 @@ cobrança híbrida com PIX, e arquivos CNAB 240/400/444.
 | [Guia Rápido](guia_rapido.md) | Instalação, configuração e primeiros passos |
 | [Campos por Banco](campos_por_banco.md) | Campos obrigatórios/opcionais por banco |
 | [API de Serialização](api_referencia.md) | `to_hash`, `as_json`, factory methods |
-| [Integração boleto_cnab_api](BOLETO_CNAB_API_INTEGRATION.md) | Como consumir a gem via HTTP |
-| [TODO de Integração](TODO_INTEGRACAO.md) | Roadmap de integração com API server |
+| [Roadmap](TODO_INTEGRACAO.md) | Status das entregas e versões |
 
 ### Arquivos do projeto
 

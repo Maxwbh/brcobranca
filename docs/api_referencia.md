@@ -5,8 +5,6 @@
 
 Este documento descreve a API de serialização do BRCobranca, que permite extrair dados de boletos, remessas e retornos em formatos estruturados (Hash, JSON) — ideal para integração com APIs REST.
 
-Para um guia completo de como usar essa API em uma aplicação web (HTTP), consulte o [Guia de Integração com boleto_cnab_api](BOLETO_CNAB_API_INTEGRATION.md).
-
 ---
 
 ## Índice
