@@ -13,6 +13,16 @@ group :development do
   gem 'rubocop-rspec'
 end
 
+# Gems opcionais para o template PrawnBolepix (alternativa ao RGhost).
+# Não requer GhostScript. Usuários devem adicioná-las ao próprio Gemfile.
+group :development, :test do
+  gem 'barby'
+  gem 'chunky_png'
+  gem 'prawn'
+  gem 'prawn-table'
+  gem 'rqrcode'
+end
+
 group :test do
   gem 'code-scanning-rubocop'
   gem 'json'

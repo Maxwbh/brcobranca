@@ -123,6 +123,7 @@ module Brcobranca
       autoload :Rghost2,     'brcobranca/boleto/template/rghost2'
       autoload :RghostCarne, 'brcobranca/boleto/template/rghost_carne'
       autoload :RghostBolepix, 'brcobranca/boleto/template/rghost_bolepix'
+      autoload :PrawnBolepix, 'brcobranca/boleto/template/prawn_bolepix'
     end
   end
 
