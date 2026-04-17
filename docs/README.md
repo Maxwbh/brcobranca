@@ -1,70 +1,84 @@
 # Documentação BRCobranca
 
-Documentação completa da biblioteca BRCobranca para geração de boletos e arquivos CNAB.
+Índice da documentação da biblioteca BRCobranca para geração de boletos,
+cobrança híbrida com PIX, e arquivos CNAB 240/400/444.
 
-## Índice
+## 📚 Documentos
 
-### Guias
+### Guias de uso
 
 | Documento | Descrição |
 |-----------|-----------|
 | [Guia Rápido](guia_rapido.md) | Instalação, configuração e primeiros passos |
-| [Campos por Banco](campos_por_banco.md) | Referência de campos obrigatórios e opcionais |
+| [Campos por Banco](campos_por_banco.md) | Campos obrigatórios/opcionais por banco |
+| [API de Serialização](api_referencia.md) | `to_hash`, `as_json`, factory methods |
+| [Integração boleto_cnab_api](BOLETO_CNAB_API_INTEGRATION.md) | Como consumir a gem via HTTP |
+| [TODO de Integração](TODO_INTEGRACAO.md) | Roadmap de integração com API server |
 
-### Arquivos do Projeto
+### Arquivos do projeto
 
 | Documento | Descrição |
 |-----------|-----------|
 | [README](../README.md) | Visão geral do projeto |
 | [CHANGELOG](../CHANGELOG.md) | Histórico de versões |
-| [CONTRIBUTING](../CONTRIBUTING.md) | Como contribuir |
+| [CONTRIBUTING](../CONTRIBUTING.md) | Guia de contribuição |
 | [SECURITY](../SECURITY.md) | Política de segurança |
 | [LICENSE](../LICENSE) | Licença BSD-3-Clause |
 
----
+### Fixtures visuais
 
-## Estrutura da Documentação
+| Diretório | Conteúdo |
+|-----------|----------|
+| [spec/fixtures/generated/pdf/](../spec/fixtures/generated/pdf/) | 41 PDFs de boletos (todos os bancos, com/sem PIX, via RGhost e Prawn) |
+| [spec/fixtures/generated/remessa/](../spec/fixtures/generated/remessa/) | 13 arquivos CNAB 240/400 de exemplo |
 
-```
-docs/
-├── README.md           # Este arquivo (índice)
-├── guia_rapido.md      # Tutorial de início rápido
-└── campos_por_banco.md # Referência de campos
-```
+Para regenerar os fixtures: `bin/generate_fixtures`
 
 ---
 
-## Recursos Online
+## 🏦 Bancos suportados (18)
 
-- [Wiki Oficial](https://github.com/Maxwbh/brcobranca/wiki) - Documentação colaborativa
-- [RubyDoc](http://rubydoc.info/gems/brcobranca) - API Reference
-- [RubyGems](https://rubygems.org/gems/brcobranca) - Página da gem
-- [Issues](https://github.com/Maxwbh/brcobranca/issues) - Reportar problemas
+### Boleto
 
----
+001 Banco do Brasil · 004 Banco do Nordeste · 021 Banestes · 033 Santander
+041 Banrisul · 070 Banco de Brasília · 085 AILOS · 097 CREDISIS
+104 Caixa · 136 Unicred · 237 Bradesco · **336 C6 Bank** · 341 Itaú
+399 HSBC · 422 Safra · 745 Citibank · 748 Sicredi · 756 Sicoob
 
-## Suporte
+### CNAB (Remessa/Retorno)
 
-### Bancos Suportados
+- **CNAB 240**: 9 bancos (Banco do Brasil, Caixa, Santander, Sicoob, Sicredi, Unicred, AILOS, + PIX em 3)
+- **CNAB 400**: 13 bancos (todos os que suportam retorno, + PIX em 4)
+- **CNAB 444**: Itaú
 
-- **Boletos:** 17 bancos (BB, Bradesco, Itaú, Santander, Caixa, etc.)
-- **CNAB 240:** 9 bancos
-- **CNAB 400:** 13 bancos
-- **CNAB 444:** Itaú
+### PIX (Boleto Híbrido)
 
-### Versões Ruby
-
-- Ruby 2.7+
-- Ruby 3.0, 3.1, 3.2, 3.3
-
----
-
-## Contribuindo
-
-Veja [CONTRIBUTING.md](../CONTRIBUTING.md) para informações sobre como contribuir.
+| Banco | Formato | Classe |
+|---|:---:|---|
+| Santander (033) | CNAB 400 | `Cnab400::SantanderPix` |
+| Bradesco (237) | CNAB 400 | `Cnab400::BradescoPix` |
+| Itaú (341) | CNAB 400 | `Cnab400::ItauPix` |
+| C6 Bank (336) | CNAB 400 | `Cnab400::BancoC6Pix` |
+| Banco do Brasil (001) | CNAB 240 | `Cnab240::BancoBrasilPix` |
+| Caixa (104) | CNAB 240 | `Cnab240::CaixaPix` |
+| Sicoob (756) | CNAB 240 | `Cnab240::SicoobPix` |
 
 ---
 
-**Versão:** 12.1.0
-**Última atualização:** 2025-12-31
-**Mantido por:** Comunidade BRCobranca
+## 🔗 Recursos online
+
+- [Wiki oficial](https://github.com/Maxwbh/brcobranca/wiki) — Documentação colaborativa
+- [RubyDoc](http://rubydoc.info/gems/brcobranca) — Referência da API
+- [RubyGems](https://rubygems.org/gems/brcobranca) — Página da gem
+- [Issues](https://github.com/Maxwbh/brcobranca/issues) — Reportar problemas
+
+---
+
+## 💡 Versões Ruby suportadas
+
+- Ruby 3.0, 3.1, 3.2, 3.3, 3.4+
+
+---
+
+**Mantido por:** [Maxwell da Silva Oliveira](https://github.com/Maxwbh) — M&S do Brasil LTDA
+**Fork de:** [kivanio/brcobranca](https://github.com/kivanio/brcobranca) (autor original)

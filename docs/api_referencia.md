@@ -1,9 +1,11 @@
 # API de Serialização - Referência Completa
 
-> **Versão:** 12.5.0
-> **Autor:** Maxwell Oliveira (@maxwbh) - M&S do Brasil LTDA
+> **Disponível desde:** v12.2.0 (Boleto) / v12.3.0 (validação segura) / v12.4.0 (Remessa) / v12.5.0 (Retorno)
+> **Mantenedor do fork:** Maxwell Oliveira (@maxwbh) — M&S do Brasil LTDA
 
-Este documento descreve a API de serialização do BRCobranca, que permite extrair dados de boletos, remessas e retornos em formatos estruturados (Hash, JSON).
+Este documento descreve a API de serialização do BRCobranca, que permite extrair dados de boletos, remessas e retornos em formatos estruturados (Hash, JSON) — ideal para integração com APIs REST.
+
+Para um guia completo de como usar essa API em uma aplicação web (HTTP), consulte o [Guia de Integração com boleto_cnab_api](BOLETO_CNAB_API_INTEGRATION.md).
 
 ---
 
