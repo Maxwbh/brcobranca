@@ -12,8 +12,9 @@ Este documento descreve a API de serialização do BRCobranca, que permite extra
 1. [Boleto API](#boleto-api)
 2. [Remessa API](#remessa-api)
 3. [Retorno API](#retorno-api)
-4. [Tratamento de Erros](#tratamento-de-erros)
-5. [Integração REST](#integração-rest)
+4. [API de Bancos](#api-de-bancos)
+5. [Tratamento de Erros](#tratamento-de-erros)
+6. [Integração REST](#integração-rest)
 
 ---
 
@@ -307,6 +308,161 @@ end
 
 ---
 
+## API de Bancos
+
+> **Disponível desde:** v12.6.0
+
+O módulo `Brcobranca::Bancos` é um registro central com os metadados dos 18 bancos suportados — uma fonte única de verdade sobre quais bancos, CNAB e PIX estão implementados. Projetado para alimentar endpoints de descoberta em APIs REST (ex.: `boleto_cnab_api`).
+
+### Métodos Disponíveis
+
+| Método | Retorno | Descrição |
+|--------|---------|-----------|
+| `Bancos.todos` | `Array<Hash>` | Todos os bancos do registro |
+| `Bancos.find(codigo)` | `Hash, nil` | Banco por código (string `"756"`) |
+| `Bancos.codigos` | `Array<String>` | Apenas os códigos |
+| `Bancos.com_boleto` | `Array<Hash>` | Bancos com suporte a boleto |
+| `Bancos.com_remessa(formato=nil)` | `Array<Hash>` | Bancos com remessa (opcional: `"240"`, `"400"`, `"444"`) |
+| `Bancos.com_retorno(formato=nil)` | `Array<Hash>` | Bancos com retorno |
+| `Bancos.com_pix` | `Array<Hash>` | 7 bancos com PIX em remessa |
+| `Bancos.formatos_cnab` | `Array<String>` | Formatos CNAB disponíveis (`["240","400","444"]`) |
+| `Bancos.as_json` | `Hash` | Hash pronto para serialização JSON |
+| `Bancos.to_json` | `String` | String JSON |
+
+### Estrutura de um banco
+
+```ruby
+Brcobranca::Bancos.find("756")
+# =>
+# {
+#   codigo: "756",
+#   nome: "Sicoob",
+#   boleto: "Sicoob",                                     # nome da classe Boleto
+#   cnab: {
+#     "240" => { remessa: "Cnab240::Sicoob",
+#                retorno: "Cnab240::Sicoob" },
+#     "400" => { remessa: "Cnab400::Sicoob",
+#                retorno: nil }                            # formato suportado apenas para envio
+#   },
+#   pix: { "240" => "Cnab240::SicoobPix" },                # classes PIX disponíveis
+#   carteiras: ["1", "3", "9"],
+#   extras: {                                              # notas específicas do banco
+#     carteira_9: "Usa numero_contrato no codigo de barras",
+#     layout_810: "Versao alternativa CNAB 240 (cliente calcula DV)"
+#   }
+# }
+```
+
+### Exemplos
+
+#### Listar todos os bancos
+
+```ruby
+Brcobranca::Bancos.todos.each do |banco|
+  puts "#{banco[:codigo]} - #{banco[:nome]}"
+end
+# 001 - Banco do Brasil
+# 004 - Banco do Nordeste
+# ... (18 bancos)
+```
+
+#### Filtrar por capacidade
+
+```ruby
+# Bancos com PIX (7)
+Brcobranca::Bancos.com_pix.map { |b| b[:codigo] }
+#=> ["001", "033", "104", "237", "336", "341", "756"]
+
+# Bancos com CNAB 240 (remessa)
+Brcobranca::Bancos.com_remessa("240").map { |b| b[:codigo] }
+#=> ["001", "085", "104", "136", "756", "748"]
+
+# Bancos com retorno CNAB 400
+Brcobranca::Bancos.com_retorno("400").map { |b| b[:codigo] }
+```
+
+#### Serialização JSON (para API REST)
+
+```ruby
+Brcobranca::Bancos.as_json
+# =>
+# {
+#   total_bancos: 18,
+#   total_com_remessa: 14,
+#   total_com_retorno: 12,
+#   total_com_pix: 7,
+#   formatos_cnab: ["240", "400", "444"],
+#   bancos: [
+#     {
+#       codigo: "756",
+#       nome: "Sicoob",
+#       boleto: true,
+#       cnab: [
+#         { formato: "240", remessa: true, retorno: true },
+#         { formato: "400", remessa: true, retorno: false }
+#       ],
+#       pix: [{ formato: "240" }],
+#       carteiras: ["1", "3", "9"],
+#       extras: { carteira_9: "...", layout_810: "..." }
+#     },
+#     ...
+#   ]
+# }
+
+Brcobranca::Bancos.to_json
+# => '{"total_bancos":18,"total_com_remessa":14,...}'
+```
+
+### Endpoints sugeridos (Rails / boleto_cnab_api)
+
+```ruby
+# config/routes.rb
+namespace :api do
+  resources :bancos, only: %i[index show] do
+    collection do
+      get :com_pix
+      get :com_remessa
+      get :formatos_cnab
+    end
+  end
+end
+
+# app/controllers/api/bancos_controller.rb
+class Api::BancosController < ApplicationController
+  def index
+    render json: Brcobranca::Bancos.as_json
+  end
+
+  def show
+    banco = Brcobranca::Bancos.find(params[:id])
+    banco ? render(json: banco) : head(:not_found)
+  end
+
+  def com_pix
+    render json: { bancos: Brcobranca::Bancos.com_pix }
+  end
+
+  def com_remessa
+    render json: { bancos: Brcobranca::Bancos.com_remessa(params[:formato]) }
+  end
+
+  def formatos_cnab
+    render json: { formatos: Brcobranca::Bancos.formatos_cnab }
+  end
+end
+```
+
+Respostas típicas:
+
+```
+GET /api/bancos            → { total_bancos: 18, bancos: [...] }
+GET /api/bancos/756        → { codigo: "756", nome: "Sicoob", ... }
+GET /api/bancos/com_pix    → { bancos: [7 bancos com PIX] }
+GET /api/bancos/com_remessa?formato=240 → { bancos: [bancos com CNAB 240] }
+```
+
+---
+
 ## Tratamento de Erros
 
 ### Classe Errors
@@ -439,6 +595,7 @@ end
 | 12.3.0 | Validação segura (valido?, to_hash_seguro), melhorias em Errors |
 | 12.4.0 | Remessa API (Pagamento#to_hash, Remessa::Base#to_hash, Factory Remessa.criar) |
 | 12.5.0 | Retorno API (Retorno::Base#to_hash, Factory Retorno.parse, auto-detecção) |
+| 12.6.0 | API de Bancos (`Brcobranca::Bancos` — registro central, `todos/find/com_pix/as_json`) |
 
 ---
 

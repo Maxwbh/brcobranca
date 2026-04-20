@@ -12,6 +12,7 @@ cobrança híbrida com PIX, e arquivos CNAB 240/400/444.
 | [Guia Rápido](guia_rapido.md) | Instalação, configuração e primeiros passos |
 | [Campos por Banco](campos_por_banco.md) | Campos obrigatórios/opcionais por banco |
 | [API de Serialização](api_referencia.md) | `to_hash`, `as_json`, factory methods |
+| [API de Bancos](api_referencia.md#api-de-bancos) | `Brcobranca::Bancos` — registro de bancos/CNAB/PIX suportados |
 | [Roadmap](TODO_INTEGRACAO.md) | Status das entregas e versões |
 
 ### Arquivos do projeto
@@ -61,6 +62,23 @@ Para regenerar os fixtures: `bin/generate_fixtures`
 | Banco do Brasil (001) | CNAB 240 | `Cnab240::BancoBrasilPix` |
 | Caixa (104) | CNAB 240 | `Cnab240::CaixaPix` |
 | Sicoob (756) | CNAB 240 | `Cnab240::SicoobPix` |
+
+---
+
+## 🧩 Descoberta programática (`Brcobranca::Bancos`)
+
+Todos os metadados acima (bancos, CNAB, PIX, carteiras) também ficam
+disponíveis em tempo de execução via o módulo `Brcobranca::Bancos`:
+
+```ruby
+Brcobranca::Bancos.todos.size           #=> 18
+Brcobranca::Bancos.find("756")[:nome]   #=> "Sicoob"
+Brcobranca::Bancos.com_pix.size         #=> 7
+Brcobranca::Bancos.formatos_cnab        #=> ["240", "400", "444"]
+Brcobranca::Bancos.to_json              # JSON para APIs REST
+```
+
+Referência completa: [API de Bancos](api_referencia.md#api-de-bancos).
 
 ---
 
