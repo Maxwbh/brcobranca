@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.7.0] - 2026-04-20
+
 ### Added — `Brcobranca::Bancos` (registro/API de bancos suportados)
 - **Novo módulo `Brcobranca::Bancos`** (`lib/brcobranca/bancos.rb`):
   fonte única de verdade sobre capacidades de cada banco (boleto,
