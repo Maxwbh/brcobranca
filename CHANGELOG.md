@@ -108,6 +108,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 ### Contributors
 - Maxwell da Silva Oliveira (@maxwbh) - M&S do Brasil LTDA - www.msbrasil.inf.br
 
+## [12.6.1] - 2026-04-08
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.6.0] - 2026-01-03
 
 <!-- Adicione novas mudanças aqui -->
