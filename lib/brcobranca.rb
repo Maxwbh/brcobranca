@@ -466,4 +466,7 @@ module Brcobranca
     autoload :Errors, 'brcobranca/util/errors'
     autoload :FormatacaoCampos, 'brcobranca/util/formatacao_campos'
   end
+
+  # Registry de bancos suportados e suas capacidades
+  autoload :Bancos, 'brcobranca/bancos'
 end
