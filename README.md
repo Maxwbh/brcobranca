@@ -52,6 +52,7 @@
 - **Suporte à Carteira 9 do Sicoob** (nova modalidade 2024/2025)
 - **Layout 810 do Sicoob** (CNAB 240 alternativo, sem cálculo automático do DV)
 - **API de serialização** (to_hash/as_json/to_json) para integração REST
+- **Registro de bancos** (`Brcobranca::Bancos`) — metadados dos 18 bancos, CNAB e PIX disponíveis, prontos para expor via API
 - **Pronto para produção** - usado por milhares de empresas
 
 ---
@@ -204,6 +205,51 @@ end
 
 O registro/segmento PIX é gerado automaticamente quando o pagamento é um
 `Brcobranca::Remessa::PagamentoPix` contendo chave DICT e TXID.
+
+---
+
+## API de Bancos (`Brcobranca::Bancos`)
+
+Registro central com os metadados dos 18 bancos suportados — útil para
+integrações REST que precisam descobrir dinamicamente quais bancos, formatos
+CNAB e classes PIX estão disponíveis.
+
+```ruby
+require 'brcobranca'
+
+Brcobranca::Bancos.todos          # => lista completa (18 bancos)
+Brcobranca::Bancos.codigos        # => ["001", "004", ..., "756"]
+
+Brcobranca::Bancos.find("756")
+# => { codigo: "756", nome: "Sicoob", boleto: "Sicoob",
+#      cnab: { "240" => {...}, "400" => {...} },
+#      pix: { "240" => "Cnab240::SicoobPix" },
+#      carteiras: ["1", "3", "9"],
+#      extras: { carteira_9: "...", layout_810: "..." } }
+
+Brcobranca::Bancos.com_pix                 # 7 bancos com PIX
+Brcobranca::Bancos.com_remessa("240")      # bancos com CNAB 240
+Brcobranca::Bancos.com_retorno("400")      # bancos com retorno CNAB 400
+Brcobranca::Bancos.formatos_cnab           # ["240", "400", "444"]
+
+# JSON pronto para expor via API REST
+Brcobranca::Bancos.to_json
+# => '{"total_bancos":18,"total_com_pix":7,"formatos_cnab":[...],"bancos":[...]}'
+```
+
+Exemplo de endpoint Rails:
+
+```ruby
+# GET /api/bancos
+render json: Brcobranca::Bancos.as_json
+
+# GET /api/bancos/:codigo
+banco = Brcobranca::Bancos.find(params[:codigo])
+banco ? render(json: banco) : head(:not_found)
+```
+
+Veja a [referência completa](docs/api_referencia.md#api-de-bancos) e o
+[guia rápido](docs/guia_rapido.md) para mais exemplos.
 
 ---
 

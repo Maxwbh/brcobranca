@@ -7,6 +7,24 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Added — `Brcobranca::Bancos` (registro/API de bancos suportados)
+- **Novo módulo `Brcobranca::Bancos`** (`lib/brcobranca/bancos.rb`):
+  fonte única de verdade sobre capacidades de cada banco (boleto,
+  CNAB 240/400/444, PIX, carteiras e notas específicas).
+- **API pública** (class methods):
+  - `Bancos.todos` — lista completa dos 18 bancos registrados
+  - `Bancos.find("756")` — busca por código
+  - `Bancos.codigos` — apenas os códigos (`["001", "004", ...]`)
+  - `Bancos.com_boleto` / `com_remessa(formato=nil)` / `com_retorno(formato=nil)`
+    — filtros por capacidade
+  - `Bancos.com_pix` — 7 bancos com PIX na remessa
+  - `Bancos.formatos_cnab` — formatos disponíveis (`["240", "400", "444"]`)
+  - `Bancos.as_json` / `Bancos.to_json` — serialização pronta para APIs REST
+- **Ideal para boleto_cnab_api** e integrações externas que precisam
+  descobrir dinamicamente quais bancos/CNAB/PIX estão disponíveis.
+- **20 specs** em `spec/brcobranca/bancos_spec.rb`.
+- Autoload adicionado em `lib/brcobranca.rb`.
+
 ### Added — PIX (Boleto Híbrido) expandido para 6 bancos
 - **Novo `PixMixin` para CNAB 400** (`Brcobranca::Remessa::Cnab400::PixMixin`):
   gera o registro tipo 8 (detalhe PIX) com chave DICT e TXID

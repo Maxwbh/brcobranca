@@ -315,6 +315,35 @@ remessa = Brcobranca::Remessa::Cnab240::Sicoob.new(
 
 ---
 
+## Registro de Bancos (`Brcobranca::Bancos`)
+
+Registro central com metadados dos 18 bancos suportados — útil para montar
+seletores dinâmicos na UI ou expor um endpoint de descoberta (`boleto_cnab_api`).
+
+```ruby
+# Listar todos os bancos
+Brcobranca::Bancos.todos.map { |b| "#{b[:codigo]} - #{b[:nome]}" }
+#=> ["001 - Banco do Brasil", "004 - Banco do Nordeste", ..., "756 - Sicoob"]
+
+# Buscar por código
+banco = Brcobranca::Bancos.find('756')
+banco[:boleto]       #=> "Sicoob"
+banco[:carteiras]    #=> ["1", "3", "9"]
+banco[:pix]          #=> { "240" => "Cnab240::SicoobPix" }
+
+# Filtrar por capacidade
+Brcobranca::Bancos.com_pix.size           #=> 7
+Brcobranca::Bancos.com_remessa('240')     # bancos com CNAB 240
+Brcobranca::Bancos.formatos_cnab          #=> ["240", "400", "444"]
+
+# JSON pronto para API REST
+Brcobranca::Bancos.to_json
+```
+
+Referência completa: [API de Bancos](api_referencia.md#api-de-bancos).
+
+---
+
 ## Integração com Rails
 
 ### Controller
@@ -350,6 +379,27 @@ end
 
 ```ruby
 resources :boletos, only: [:show]
+```
+
+### Endpoint de descoberta de bancos
+
+```ruby
+# app/controllers/api/bancos_controller.rb
+class Api::BancosController < ApplicationController
+  def index
+    render json: Brcobranca::Bancos.as_json
+  end
+
+  def show
+    banco = Brcobranca::Bancos.find(params[:id])
+    banco ? render(json: banco) : head(:not_found)
+  end
+end
+
+# config/routes.rb
+namespace :api do
+  resources :bancos, only: %i[index show]
+end
 ```
 
 ---
