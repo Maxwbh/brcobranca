@@ -48,28 +48,23 @@ Detalhes completos no [CHANGELOG](../CHANGELOG.md).
 
 ### Alta prioridade
 
-- [ ] **PR upstream** — abrir PR consolidado para `kivanio/brcobranca` com as
-  melhorias da Fase 7 + 8 (Prawn, PIX, C6, Bancos)
+- [ ] **Retorno CNAB 400 Sicoob** — atualmente só tem remessa 400
+- [ ] **Webhook/callback** no `Bancos` — permitir registrar bancos custom via `Bancos.registrar`
+- [ ] **Validação cruzada** — `Bancos.find` retornando instâncias de classe em vez de strings
+- [ ] **i18n** — mensagens de erro e labels em inglês/português
+- [ ] **Geração de QR Code estático** — BR Code EMV sem necessidade de remessa
+
+### Baixa prioridade / futuro
+
 - [ ] **CNAB 240 para Bradesco** — remessa e retorno no formato 240
 - [ ] **CNAB 240 para Itaú** — complementar o CNAB 400/444 existente
 - [ ] **Retorno CNAB 240 Banco do Brasil** — atualmente só tem remessa 240
-- [ ] **Retorno CNAB 400 Sicoob** — atualmente só tem remessa 400
-
-### Média prioridade
-
 - [ ] **Retorno CNAB 400 Citibank** — atualmente só tem remessa
 - [ ] **Retorno CNAB 240 Unicred** — atualmente só tem remessa 240
 - [ ] **Retorno CNAB 444 Itaú** — atualmente só tem remessa 444
 - [ ] **PIX para Sicredi** — CNAB 240 com Segmento Y-03
 - [ ] **PIX para Banrisul** — avaliar formato suportado pelo banco
 - [ ] **Template Prawn para boleto tradicional** (sem PIX) — complementar o `PrawnBolepix`
-
-### Baixa prioridade / futuro
-
-- [ ] **Webhook/callback** no `Bancos` — permitir registrar bancos custom via `Bancos.registrar`
-- [ ] **Validação cruzada** — `Bancos.find` retornando instâncias de classe em vez de strings
-- [ ] **i18n** — mensagens de erro e labels em inglês/português
-- [ ] **Geração de QR Code estático** — BR Code EMV sem necessidade de remessa
 
 ---
 
