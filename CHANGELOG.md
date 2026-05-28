@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.7.1] - 2026-05-28
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.7.0] - 2026-04-20
 
 ### Added — `Brcobranca::Bancos` (registro/API de bancos suportados)
