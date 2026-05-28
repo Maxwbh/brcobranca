@@ -1,7 +1,7 @@
 # Dockerfile para BRCobranca
 # Utilizado para testes e CI/CD no Render.com e outras plataformas
 
-FROM ruby:3.3-slim
+FROM ruby:3.4-slim
 
 # Metadados
 LABEL maintainer="Maxwell Oliveira <maxwbh@gmail.com>"
