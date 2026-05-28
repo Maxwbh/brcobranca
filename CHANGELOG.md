@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.7.1] - 2026-05-28
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.7.0] - 2026-04-20
 
 ### Added — `Brcobranca::Bancos` (registro/API de bancos suportados)
@@ -63,7 +67,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ### Added — Script `bin/generate_fixtures`
 - Gera automaticamente todos os artefatos de validação:
-  - **34 PDFs** em `spec/fixtures/generated/pdf/` (boletos tradicionais,
+  - **42 PDFs** em `spec/fixtures/generated/pdf/` (boletos tradicionais,
     híbridos com PIX e via Prawn)
   - **13 arquivos CNAB** em `spec/fixtures/generated/remessa/`
     (CNAB 240 e CNAB 400 com e sem PIX)

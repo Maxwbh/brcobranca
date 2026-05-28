@@ -195,4 +195,4 @@ Para questões gerais: [GitHub Issues](https://github.com/Maxwbh/brcobranca/issu
 
 ---
 
-**Última atualização**: 2025-11-27
+**Última atualização**: 2026-05-28
