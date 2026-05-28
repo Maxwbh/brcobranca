@@ -189,10 +189,19 @@ end
 
 boleto = Brcobranca::Boleto::Santander.new(
   # ... campos normais
-  emv: '00020126580014br.gov.bcb.pix0136...' # BR Code EMV
+  chave_pix: '12345678000100',               # chave PIX do recebedor
+  tipo_chave_pix: 'cnpj',                    # cpf, cnpj, email, telefone, chave_aleatoria
+  txid: 'TXID20260528001',                   # identificador da transação
+  emv: '00020126580014br.gov.bcb.pix0136...' # BR Code EMV (para QR Code)
 )
 
 File.write('boleto.pdf', boleto.to(:pdf))
+
+# Dados PIX disponíveis via API
+boleto.dados_pix
+#=> { emv: '0002...', chave_pix: '12345678000100',
+#     tipo_chave_pix: 'cnpj', txid: 'TXID20260528001',
+#     qrcode_disponivel: true }
 ```
 
 ### Com Prawn (alternativa sem GhostScript)
