@@ -58,6 +58,31 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
       expect(resultado.keys).not_to include(:convenio, :valor, :cedente)
     end
 
+    it 'inclui campos PIX quando preenchidos' do
+      boleto_pix = Brcobranca::Boleto::Sicoob.new(
+        valid_attributes.merge(
+          chave_pix: '12345678000100',
+          tipo_chave_pix: 'cnpj',
+          txid: 'TXID20260528001'
+        )
+      )
+
+      resultado = boleto_pix.to_hash
+
+      expect(resultado[:chave_pix]).to eq('12345678000100')
+      expect(resultado[:tipo_chave_pix]).to eq('cnpj')
+      expect(resultado[:txid]).to eq('TXID20260528001')
+      expect(resultado[:pix][:chave_pix]).to eq('12345678000100')
+    end
+
+    it 'omite campos PIX quando nao preenchidos' do
+      resultado = boleto.to_hash
+
+      expect(resultado).not_to have_key(:chave_pix)
+      expect(resultado).not_to have_key(:tipo_chave_pix)
+      expect(resultado).not_to have_key(:txid)
+    end
+
     it 'lança exceção para boleto inválido' do
       boleto_invalido = Brcobranca::Boleto::Sicoob.new
 
@@ -152,11 +177,11 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
   end
 
   describe '#dados_pix' do
-    it 'retorna nil quando emv não está definido' do
+    it 'retorna nil quando nenhum dado PIX esta definido' do
       expect(boleto.dados_pix).to be_nil
     end
 
-    it 'retorna dados do PIX quando emv está definido' do
+    it 'retorna dados do PIX quando emv esta definido' do
       boleto_pix = Brcobranca::Boleto::Sicoob.new(
         valid_attributes.merge(emv: '00020126580014br.gov.bcb.pix...')
       )
@@ -165,6 +190,40 @@ RSpec.describe 'Brcobranca::Boleto::Base API' do
 
       expect(resultado).to be_a(Hash)
       expect(resultado[:emv]).to start_with('00020126')
+      expect(resultado[:qrcode_disponivel]).to be true
+    end
+
+    it 'retorna dados quando apenas chave_pix esta definida' do
+      boleto_pix = Brcobranca::Boleto::Sicoob.new(
+        valid_attributes.merge(
+          chave_pix: '12345678000100',
+          tipo_chave_pix: 'cnpj'
+        )
+      )
+
+      resultado = boleto_pix.dados_pix
+
+      expect(resultado[:chave_pix]).to eq('12345678000100')
+      expect(resultado[:tipo_chave_pix]).to eq('cnpj')
+      expect(resultado[:qrcode_disponivel]).to be false
+    end
+
+    it 'retorna todos os campos PIX quando completo' do
+      boleto_pix = Brcobranca::Boleto::Sicoob.new(
+        valid_attributes.merge(
+          emv: '00020126580014br.gov.bcb.pix...',
+          chave_pix: '12345678000100',
+          tipo_chave_pix: 'cnpj',
+          txid: 'TXID20260528001'
+        )
+      )
+
+      resultado = boleto_pix.dados_pix
+
+      expect(resultado[:emv]).to start_with('00020126')
+      expect(resultado[:chave_pix]).to eq('12345678000100')
+      expect(resultado[:tipo_chave_pix]).to eq('cnpj')
+      expect(resultado[:txid]).to eq('TXID20260528001')
       expect(resultado[:qrcode_disponivel]).to be true
     end
   end

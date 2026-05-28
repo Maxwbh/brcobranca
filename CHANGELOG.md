@@ -7,6 +7,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Added — Campos PIX no Boleto (`chave_pix`, `tipo_chave_pix`, `txid`)
+- **Novos atributos opcionais** em `Brcobranca::Boleto::Base`:
+  - `chave_pix` — chave PIX do recebedor (CPF, CNPJ, email, telefone, aleatória)
+  - `tipo_chave_pix` — tipo da chave (`'cpf'`, `'cnpj'`, `'email'`, `'telefone'`, `'chave_aleatoria'`)
+  - `txid` — código de identificação da transação PIX
+- **`dados_pix` expandido**: retorna `chave_pix`, `tipo_chave_pix`, `txid`,
+  `emv` e `qrcode_disponivel` (true se EMV presente, false caso contrário)
+- **`dados_entrada` e `to_hash`** incluem os novos campos (omitidos quando nil)
+- Pensado para integração com Gestao-Contrato: mesma fonte de dados PIX
+  alimenta boleto (PDF) e remessa (CNAB via `PagamentoPix`)
+
 ### Added — `Brcobranca::Bancos` (registro/API de bancos suportados)
 - **Novo módulo `Brcobranca::Bancos`** (`lib/brcobranca/bancos.rb`):
   fonte única de verdade sobre capacidades de cada banco (boleto,

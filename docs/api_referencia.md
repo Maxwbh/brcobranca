@@ -30,7 +30,7 @@ Este documento descreve a API de serialização do BRCobranca, que permite extra
 | `dados_entrada` | Campos informados pelo usuário | 12.2.0 |
 | `dados_calculados` | Campos gerados (código de barras, etc) | 12.2.0 |
 | `banco_nome` | Nome do banco | 12.2.0 |
-| `dados_pix` | Dados PIX/EMV | 12.2.0 |
+| `dados_pix` | Dados PIX (chave, tipo, txid, emv, qrcode) | 12.2.0 |
 | `valido?` | Validação sem exceção | 12.3.0 |
 | `to_hash_seguro` | Hash com status de validação | 12.3.0 |
 | `as_json_seguro` | JSON-ready com validação | 12.3.0 |
@@ -82,6 +82,41 @@ boleto.to_hash(somente_calculados: true)
 # JSON para APIs REST
 boleto.to_json
 #=> '{"cedente":"Empresa LTDA","codigo_barras":"75691234...",...}'
+```
+
+#### Boleto com dados PIX
+
+```ruby
+boleto = Brcobranca::Boleto::Sicoob.new(
+  # ... campos obrigatórios
+  chave_pix: '12345678000100',
+  tipo_chave_pix: 'cnpj',
+  txid: 'TXID20260528001',
+  emv: '00020126580014br.gov.bcb.pix...'  # opcional, para QR Code
+)
+
+boleto.dados_pix
+#=> {
+#     emv: '00020126580014br.gov.bcb.pix...',
+#     chave_pix: '12345678000100',
+#     tipo_chave_pix: 'cnpj',
+#     txid: 'TXID20260528001',
+#     qrcode_disponivel: true
+#   }
+
+# to_hash inclui os campos PIX em dois níveis:
+hash = boleto.to_hash
+hash[:chave_pix]         #=> '12345678000100'  (dados_entrada)
+hash[:pix][:chave_pix]   #=> '12345678000100'  (dados_calculados)
+hash[:pix][:txid]        #=> 'TXID20260528001'
+
+# Sem EMV, apenas chave_pix — qrcode_disponivel fica false
+boleto_sem_emv = Brcobranca::Boleto::Sicoob.new(
+  # ... campos obrigatórios
+  chave_pix: '12345678000100',
+  tipo_chave_pix: 'cnpj'
+)
+boleto_sem_emv.dados_pix[:qrcode_disponivel] #=> false
 ```
 
 #### Validação Segura (sem exceções)
