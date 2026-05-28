@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.8.0] - 2026-05-28
+
 ### Added — Campos PIX no Boleto (`chave_pix`, `tipo_chave_pix`, `txid`)
 - **Novos atributos opcionais** em `Brcobranca::Boleto::Base`:
   - `chave_pix` — chave PIX do recebedor (CPF, CNPJ, email, telefone, aleatória)
