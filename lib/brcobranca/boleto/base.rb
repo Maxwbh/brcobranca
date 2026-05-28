@@ -93,6 +93,12 @@ module Brcobranca
       attr_accessor :emv
       # <b>OPCIONAL</b>: Label exibido ao lado do QR Code PIX (default: "Pague com PIX")
       attr_accessor :pix_label
+      # <b>OPCIONAL</b>: Chave PIX do recebedor (CPF, CNPJ, email, telefone ou aleatória)
+      attr_accessor :chave_pix
+      # <b>OPCIONAL</b>: Tipo da chave PIX ('cpf', 'cnpj', 'email', 'telefone', 'chave_aleatoria')
+      attr_accessor :tipo_chave_pix
+      # <b>OPCIONAL</b>: Código de identificação da transação PIX
+      attr_accessor :txid
       # <b>OPCIONAL</b>: Descontos e abatimentos
       attr_accessor :descontos_e_abatimentos
 
@@ -337,8 +343,11 @@ module Brcobranca
           avalista: avalista,
           avalista_documento: avalista_documento,
           cedente_endereco: cedente_endereco,
-          emv: emv
-        }
+          emv: emv,
+          chave_pix: chave_pix,
+          tipo_chave_pix: tipo_chave_pix,
+          txid: txid
+        }.compact
       end
 
       # Dados calculados do boleto (campos gerados automaticamente)
@@ -377,12 +386,15 @@ module Brcobranca
       #
       # @return [Hash, nil] dados do PIX ou nil se não disponível
       def dados_pix
-        return nil unless emv
+        return nil unless emv || chave_pix
 
         {
           emv: emv,
-          qrcode_disponivel: true
-        }
+          chave_pix: chave_pix,
+          tipo_chave_pix: tipo_chave_pix,
+          txid: txid,
+          qrcode_disponivel: !emv.nil?
+        }.compact
       end
 
       # Verifica se o boleto é válido sem levantar exceção

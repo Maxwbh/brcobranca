@@ -51,6 +51,9 @@ Todos os boletos herdam os seguintes campos da classe `Brcobranca::Boleto::Base`
 | `sacado_endereco` | String | Endereço do pagador | - |
 | `instrucoes` | String | Instruções de pagamento | - |
 | `emv` | String | EMV para QRCode PIX | - |
+| `chave_pix` | String | Chave PIX do recebedor (CPF, CNPJ, email, telefone ou aleatória) | - |
+| `tipo_chave_pix` | String | Tipo da chave: `'cpf'`, `'cnpj'`, `'email'`, `'telefone'`, `'chave_aleatoria'` | - |
+| `txid` | String | Código de identificação da transação PIX | - |
 
 ---
 
