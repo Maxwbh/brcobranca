@@ -28,7 +28,7 @@ Detalhes completos no [CHANGELOG](../CHANGELOG.md).
 - ✅ **PIX em 7 bancos** — `PixMixin` CNAB 400 e 240, classes `BradescoPix`, `ItauPix`, `BancoC6Pix`, `SicoobPix`, `CaixaPix`, `BancoBrasilPix` (+ `SantanderPix` existente)
 - ✅ **Template Prawn** — alternativa ao RGhost sem GhostScript
 - ✅ **Fix RGhost 0.9.9** — compatibilidade com `RGhost::VERSION`
-- ✅ **Fixtures visuais** — 41 PDFs + 13 arquivos CNAB gerados
+- ✅ **Fixtures visuais** — 42 PDFs + 13 arquivos CNAB gerados
 - ✅ **Documentação** — guia rápido, campos por banco, API de serialização
 
 ---

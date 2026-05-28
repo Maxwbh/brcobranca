@@ -29,7 +29,7 @@ cobrança híbrida com PIX, e arquivos CNAB 240/400/444.
 
 | Diretório | Conteúdo |
 |-----------|----------|
-| [spec/fixtures/generated/pdf/](../spec/fixtures/generated/pdf/) | 41 PDFs de boletos (todos os bancos, com/sem PIX, via RGhost e Prawn) |
+| [spec/fixtures/generated/pdf/](../spec/fixtures/generated/pdf/) | 42 PDFs de boletos (todos os bancos, com/sem PIX, via RGhost e Prawn) |
 | [spec/fixtures/generated/remessa/](../spec/fixtures/generated/remessa/) | 13 arquivos CNAB 240/400 de exemplo |
 
 Para regenerar os fixtures: `bin/generate_fixtures`

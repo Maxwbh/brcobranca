@@ -103,7 +103,7 @@ bundle exec rake spec
 
 ### Requisitos
 
-- Ruby >= 2.7.0
+- Ruby >= 3.0.0
 - GhostScript > 9.0 (para geração de PDF e código de barras)
 - Bundler
 
@@ -214,20 +214,21 @@ brcobranca/
 ├── docs/                # Documentação
 │   ├── README.md        # Índice da documentação
 │   ├── guia_rapido.md   # Tutorial de início rápido
-│   └── campos_por_banco.md  # Referência de campos
+│   ├── campos_por_banco.md  # Referência de campos
+│   ├── api_referencia.md    # API de serialização e Bancos
+│   └── TODO_INTEGRACAO.md   # Roadmap
 ├── lib/
 │   └── brcobranca/
+│       ├── bancos.rb    # Registro central dos 18 bancos suportados
 │       ├── boleto/      # Classes de boleto por banco
-│       ├── remessa/     # Classes de remessa (CNAB)
+│       ├── remessa/     # Classes de remessa (CNAB 240/400/444 + PIX)
 │       ├── retorno/     # Classes de retorno (CNAB)
 │       └── util/        # Utilitários (cálculo, formatação, validações)
 ├── spec/                # Testes RSpec
 ├── CHANGELOG.md         # Histórico de versões
 ├── CONTRIBUTING.md      # Este arquivo
-├── Dockerfile           # Container Docker
 ├── README.md            # Documentação principal
-├── SECURITY.md          # Política de segurança
-└── render.yaml          # Deploy Render.com
+└── SECURITY.md          # Política de segurança
 ```
 
 ### Adicionando Suporte a um Novo Banco
@@ -236,8 +237,8 @@ brcobranca/
 2. Herde de `Brcobranca::Boleto::Base`
 3. Implemente os métodos necessários
 4. Adicione testes em `spec/brcobranca/boleto/`
-5. Adicione documentação em `docs/banks/`
-6. Atualize o README.md
+5. Adicione o banco em `lib/brcobranca/bancos.rb` (registro central)
+6. Atualize o README.md e `docs/campos_por_banco.md`
 
 **Exemplo básico:**
 

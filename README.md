@@ -425,7 +425,7 @@ O layout Prawn inclui **Recibo do Pagador** + **Ficha de Compensação** + QR Co
 
 PDFs de exemplo e arquivos CNAB pré-gerados em:
 
-- `spec/fixtures/generated/pdf/` — 41 PDFs (boletos de todos os 18 bancos, com/sem PIX, via RGhost e Prawn)
+- `spec/fixtures/generated/pdf/` — 42 PDFs (boletos de todos os 18 bancos, com/sem PIX, via RGhost e Prawn)
 - `spec/fixtures/generated/remessa/` — 13 arquivos CNAB 240/400 de exemplo
 
 Para regenerar: `bin/generate_fixtures`

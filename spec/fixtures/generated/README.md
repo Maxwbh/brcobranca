@@ -16,7 +16,7 @@ bin/generate_fixtures
 
 ## Conteúdo
 
-### `pdf/` — Boletos renderizados em PDF (34 arquivos)
+### `pdf/` — Boletos renderizados em PDF (42 arquivos)
 
 #### Boletos tradicionais (RGhost)
 Um PDF por banco suportado, gerado com o template padrão `RGhost`:
