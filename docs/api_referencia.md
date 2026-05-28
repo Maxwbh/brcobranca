@@ -603,8 +603,8 @@ end
 
 - [GitHub](https://github.com/Maxwbh/brcobranca)
 - [CHANGELOG](../CHANGELOG.md)
-- [Guia de Início Rápido](getting-started/quick-start.md)
-- [Campos por Banco](banks/fields-reference.md)
+- [Guia de Início Rápido](guia_rapido.md)
+- [Campos por Banco](campos_por_banco.md)
 
 ---
 

@@ -63,7 +63,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ### Added — Script `bin/generate_fixtures`
 - Gera automaticamente todos os artefatos de validação:
-  - **34 PDFs** em `spec/fixtures/generated/pdf/` (boletos tradicionais,
+  - **42 PDFs** em `spec/fixtures/generated/pdf/` (boletos tradicionais,
     híbridos com PIX e via Prawn)
   - **13 arquivos CNAB** em `spec/fixtures/generated/remessa/`
     (CNAB 240 e CNAB 400 com e sem PIX)

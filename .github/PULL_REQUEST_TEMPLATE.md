@@ -50,8 +50,10 @@
 - [ ] 104 - Caixa
 - [ ] 136 - Unicred
 - [ ] 237 - Bradesco
+- [ ] 336 - C6 Bank
 - [ ] 341 - Itaú
 - [ ] 399 - HSBC
+- [ ] 422 - Safra
 - [ ] 745 - Citibank
 - [ ] 748 - Sicredi
 - [ ] 756 - Sicoob
