@@ -24,6 +24,9 @@ tmp
 .rvmrc
 .idea
 
+## BUNDLER
+vendor/bundle
+
 ## PROJECT::SPECIFIC
 config
 config/*.*
