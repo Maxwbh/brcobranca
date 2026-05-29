@@ -95,8 +95,8 @@ RSpec.describe 'PIX — cenarios por banco' do
     let(:boleto) do
       Brcobranca::Boleto::Caixa.new(
         agencia: '0001', conta_corrente: '00000000001',
-        convenio: '123456', carteira: 'SR',
-        nosso_numero: '24000000000000001', valor: 100.00,
+        convenio: '123456', carteira: '1',
+        nosso_numero: '000000000000001', valor: 100.00,
         cedente: 'Empresa LTDA', sacado: 'Cliente',
         sacado_documento: '12345678901',
         **pix_attrs
@@ -123,7 +123,8 @@ RSpec.describe 'PIX — cenarios por banco' do
   describe 'C6 Bank (336)' do
     let(:boleto) do
       Brcobranca::Boleto::BancoC6.new(
-        agencia: '0001', convenio: '000000123456',
+        agencia: '0001', conta_corrente: '0000528',
+        convenio: '000000123456',
         carteira: '10', nosso_numero: '0000000001',
         valor: 100.00, cedente: 'Empresa LTDA',
         sacado: 'Cliente', sacado_documento: '12345678901',

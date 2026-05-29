@@ -14,6 +14,7 @@ RSpec.describe 'C6 Bank (336) — cenarios completos por carteira' do
       sacado_documento: '12345678901',
       sacado_endereco: 'Rua das Flores, 123 - Centro - Sao Paulo/SP',
       agencia: '0001',
+      conta_corrente: '0000528',
       convenio: '000000123456',
       nosso_numero: '0000000042'
     }
@@ -200,8 +201,8 @@ RSpec.describe 'C6 Bank (336) — cenarios completos por carteira' do
       expect(boleto).not_to be_valid
     end
 
-    it 'rejeita carteira nil' do
-      boleto = Brcobranca::Boleto::BancoC6.new(valid_boleto_attrs.merge(carteira: nil))
+    it 'carteira vazia e invalida' do
+      boleto = Brcobranca::Boleto::BancoC6.new(valid_boleto_attrs.merge(carteira: ''))
       expect(boleto).not_to be_valid
     end
   end
