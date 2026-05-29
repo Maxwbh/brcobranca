@@ -38,6 +38,36 @@ shared_examples_for 'cnab400 PIX' do
         digito_conta: '8',
         pagamentos: [pagamento]
       }
+    elsif subject.instance_of?(Brcobranca::Remessa::Cnab400::BancoC6Pix)
+      {
+        carteira: '10',
+        codigo_beneficiario: '000000123456',
+        empresa_mae: 'SOCIEDADE BRASILEIRA DE ZOOLOGIA LTDA',
+        documento_cedente: '12345678910',
+        sequencial_remessa: '1',
+        pagamentos: [pagamento]
+      }
+    elsif subject.instance_of?(Brcobranca::Remessa::Cnab400::BradescoPix)
+      {
+        carteira: '01',
+        agencia: '12345',
+        conta_corrente: '1234567',
+        digito_conta: '1',
+        empresa_mae: 'SOCIEDADE BRASILEIRA DE ZOOLOGIA LTDA',
+        sequencial_remessa: '1',
+        codigo_empresa: '123',
+        pagamentos: [pagamento]
+      }
+    elsif subject.instance_of?(Brcobranca::Remessa::Cnab400::ItauPix)
+      {
+        carteira: '123',
+        agencia: '1234',
+        conta_corrente: '12345',
+        digito_conta: '1',
+        empresa_mae: 'SOCIEDADE BRASILEIRA DE ZOOLOGIA LTDA',
+        documento_cedente: '12345678910',
+        pagamentos: [pagamento]
+      }
     else
       { carteira: '123',
         agencia: '1234',
