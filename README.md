@@ -78,11 +78,12 @@ boleto = Brcobranca::Boleto::Bradesco.new(
   carteira: '06',
   nosso_numero: '00000004042',
   valor: 135.00,
-  data_vencimento: Date.today + 30,
-  cedente: 'Minha Empresa LTDA',
-  documento_cedente: '12345678000190',
-  sacado: 'Cliente da Silva',
-  sacado_documento: '12345678901'
+  documento_sacado: '12345678901',
+  nome_sacado: 'João da Silva',
+  endereco_sacado: 'Rua das Flores, 123',
+  cidade_sacado: 'São Paulo',
+  uf_sacado: 'SP',
+  cep_sacado: '01234567'
 )
 
 File.write('boleto.pdf', boleto.to(:pdf))
