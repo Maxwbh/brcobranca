@@ -17,11 +17,11 @@
   <a href="https://github.com/Maxwbh/brcobranca/actions/workflows/ci.yml">
     <img src="https://github.com/Maxwbh/brcobranca/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>
-  <a href="https://rubygems.org/gems/brcobranca">
-    <img src="https://img.shields.io/gem/v/brcobranca.svg" alt="Gem Version">
+  <a href="https://github.com/Maxwbh/brcobranca/releases">
+    <img src="https://img.shields.io/github/v/tag/Maxwbh/brcobranca?label=version&sort=semver" alt="Version">
   </a>
-  <a href="https://rubygems.org/gems/brcobranca">
-    <img src="https://img.shields.io/gem/dt/brcobranca.svg" alt="Downloads">
+  <a href="https://github.com/Maxwbh/brcobranca/releases">
+    <img src="https://img.shields.io/github/release-date/Maxwbh/brcobranca?label=release" alt="Release Date">
   </a>
   <a href="https://opensource.org/licenses/BSD-3-Clause">
     <img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License">
