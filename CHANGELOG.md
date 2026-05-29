@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.8.1] - 2026-05-29
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.8.0] - 2026-05-28
 
 ### Added — Campos PIX no Boleto (`chave_pix`, `tipo_chave_pix`, `txid`)
