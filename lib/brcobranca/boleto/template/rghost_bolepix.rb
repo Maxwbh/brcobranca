@@ -132,9 +132,33 @@ module Brcobranca
         def desenha_pagina(doc, boleto)
           modelo_generico_template(doc, boleto, template_path)
           modelo_generico_cabecalho(doc, boleto)
+          desenha_qrcode_pix_recibo(doc, boleto)
           modelo_generico_rodape(doc, boleto)
           desenha_codigo_barras(doc, boleto)
           desenha_qrcode_pix(doc, boleto)
+        end
+
+        # Desenha o QR Code PIX no Recibo do Pagador, na área livre à
+        # direita do demonstrativo (abaixo do quadro do Pagador).
+        # Posições absolutas — o recibo usa coordenadas fixas no template.
+        def desenha_qrcode_pix_recibo(doc, boleto)
+          return unless boleto.emv
+          return unless emv_valido?(boleto.emv)
+
+          qr_x = 15.6
+          qr_y = 19.4
+
+          doc.barcode_qrcode(
+            boleto.emv,
+            width: '3.2 cm',
+            height: '3.2 cm',
+            eclevel: 'M',
+            x: "#{qr_x} cm",
+            y: "#{qr_y} cm"
+          )
+          # Label centralizado abaixo do QR Code
+          doc.moveto x: "#{qr_x + 0.55} cm", y: "#{qr_y - 0.45} cm"
+          doc.show resolve_pix_label(boleto)
         end
 
         # Desenha o código de barras Interleaved 2 of 5.
