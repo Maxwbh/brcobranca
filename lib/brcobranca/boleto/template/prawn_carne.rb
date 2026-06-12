@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'brcobranca/boleto/template/prawn_tema'
+
 # Template Prawn para carnê de pagamento (Fase 1).
 #
 # Espelha o modelo do RGhost carnê (assets/templates/modelo_carne.eps):
@@ -161,6 +163,7 @@ module Brcobranca
         # ============================================================
         def desenha_canhoto(pdf, boleto)
           desenha_cabecalho_canhoto(pdf, boleto)
+          desenha_selo_parcela_canhoto(pdf, boleto)
 
           campo_canhoto(pdf, 'Vencimento', boleto.data_vencimento.to_s_br, bold: true)
           campo_canhoto(pdf, 'Agência/Código do Beneficiário', boleto.agencia_conta_boleto.to_s)
@@ -182,12 +185,18 @@ module Brcobranca
 
         def desenha_cabecalho_canhoto(pdf, boleto)
           y = pdf.cursor
-          pdf.fill_color COR_FUNDO_CABECALHO
+          cor_fundo = PrawnTema.cor_marca(boleto) || COR_FUNDO_CABECALHO
+          cor_texto = PrawnTema.cor_marca(boleto) ? PrawnTema.cor_texto_sobre(cor_fundo) : COR_TEXTO_VALOR
+
+          pdf.fill_color cor_fundo
           pdf.fill_rectangle([0, y], CANHOTO_WIDTH, HEADER_H)
           pdf.fill_color COR_TEXTO_VALOR
 
-          desenha_logo_banco(pdf, boleto, 0, y, CANHOTO_WIDTH - 38, HEADER_H)
+          # Logo da empresa (tema) tem prioridade sobre o logo do banco no canhoto
+          logo_ok = PrawnTema.desenha_logo(pdf, boleto, x: 2, y: y - 2, altura: HEADER_H - 4)
+          desenha_logo_banco(pdf, boleto, 0, y, CANHOTO_WIDTH - 38, HEADER_H) unless logo_ok
 
+          pdf.fill_color cor_texto
           pdf.text_box "#{boleto.banco}-#{boleto.banco_dv}",
                        at: [CANHOTO_WIDTH - 38, y - 3],
                        width: 38,
@@ -196,12 +205,36 @@ module Brcobranca
                        align: :center,
                        valign: :center,
                        style: :bold
+          pdf.fill_color COR_TEXTO_VALOR
 
           pdf.stroke_color COR_BORDA
           pdf.line_width 0.8
           pdf.stroke_horizontal_line 0, CANHOTO_WIDTH, at: y - HEADER_H
           pdf.line_width 0.5
           pdf.move_down HEADER_H
+        end
+
+        # Selo "PARCELA n/N" destacado no canhoto (tema opcional — Fase 2a).
+        def desenha_selo_parcela_canhoto(pdf, boleto)
+          selo = PrawnTema.selo_parcela(boleto)
+          return unless selo
+
+          y = pdf.cursor
+          altura = PrawnTema::SELO_ALTURA
+          cor = PrawnTema.cor_marca(boleto) || COR_FUNDO_CABECALHO
+          cor_texto = PrawnTema.cor_marca(boleto) ? PrawnTema.cor_texto_sobre(cor) : COR_TEXTO_VALOR
+
+          pdf.fill_color cor
+          pdf.fill_rectangle([0, y], CANHOTO_WIDTH, altura)
+          pdf.fill_color cor_texto
+          pdf.text_box selo,
+                       at: [0, y - 3], width: CANHOTO_WIDTH, height: altura - 4,
+                       size: 10, align: :center, style: :bold
+          pdf.fill_color COR_TEXTO_VALOR
+
+          pdf.stroke_color COR_BORDA
+          pdf.stroke_horizontal_line 0, CANHOTO_WIDTH, at: y - altura
+          pdf.move_down altura
         end
 
         def campo_canhoto(pdf, label, valor, bold: false, altura: ROW_H)
@@ -433,6 +466,16 @@ module Brcobranca
           pdf.text_box 'Autenticação mecânica - Ficha de Compensação',
                        at: [largura - 160, y - QRCODE_W + 2], width: 160, height: 7,
                        size: 5, align: :right
+          pdf.fill_color COR_TEXTO_VALOR
+
+          # Rodapé de contato da empresa (tema opcional — Fase 2a),
+          # à esquerda, abaixo do código de barras
+          return unless PrawnTema.rodape_contato(boleto)
+
+          pdf.fill_color COR_TEXTO_LABEL
+          pdf.text_box PrawnTema.rodape_contato(boleto),
+                       at: [0, y - BARCODE_H - 4], width: barras_w, height: 7,
+                       size: 5, overflow: :shrink_to_fit
           pdf.fill_color COR_TEXTO_VALOR
         end
 

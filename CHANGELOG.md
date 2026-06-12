@@ -7,6 +7,22 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Added — Tema visual personalizável nos templates Prawn (Fase 2a)
+- **Novo módulo `Brcobranca::Boleto::Template::PrawnTema`** compartilhado
+  por `PrawnBolepix` e `PrawnCarne`
+- **Novos atributos opcionais** em `Boleto::Base` (pensados para o fluxo
+  gestao_contrato → boleto_cnab_api → gem):
+  - `logo_empresa` — logo do cedente (path ou IO); no carnê substitui o
+    logo do banco no canhoto, no boleto entra na faixa de marca do recibo
+  - `cor_marca` — hex `RRGGBB` validado; cor de texto com contraste
+    automático por luminância (preto/branco)
+  - `parcela_atual` / `total_parcelas` — selo "PARCELA n/N" em destaque
+  - `rodape_contato` — contato da empresa (truncado em 120 chars)
+- **Fallback total**: sem atributos de tema o visual permanece idêntico;
+  Ficha de Compensação intocada (linha digitável, código de barras e QR
+  continuam decodificando — validado com zbarimg)
+- 17 specs do `PrawnTema` (rodam no CI sem as gems Prawn)
+
 ### Added — `PrawnCarne`: carnê de pagamento via Prawn (Fase 1)
 - **Novo `Brcobranca::Boleto::Template::PrawnCarne`**: carnê no modelo do
   RGhost carnê (canhoto destacável + Ficha de Compensação), sem GhostScript

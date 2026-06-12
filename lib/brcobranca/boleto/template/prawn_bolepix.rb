@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'brcobranca/boleto/template/prawn_tema'
+
 # Template alternativo para geração de boletos híbridos (com PIX) usando Prawn.
 #
 # Layout espelhado do padrão FEBRABAN observado em boletos SICOOB e demais bancos,
@@ -69,8 +71,14 @@ module Brcobranca
         COR_PIX = '006B3F'
 
         def to(formato, _options = {})
-          raise 'Prawn não está disponível. Instale: gem install prawn prawn-table barby rqrcode chunky_png' unless PRAWN_AVAILABLE
-          raise ArgumentError, "Formato #{formato} não suportado pelo PrawnBolepix (apenas :pdf)" unless formato.to_sym == :pdf
+          unless PRAWN_AVAILABLE
+            raise 'Prawn não está disponível. Instale: gem install prawn prawn-table barby rqrcode chunky_png'
+          end
+
+          unless formato.to_sym == :pdf
+            raise ArgumentError,
+                  "Formato #{formato} não suportado pelo PrawnBolepix (apenas :pdf)"
+          end
 
           render_boleto(self)
         end
@@ -139,6 +147,8 @@ module Brcobranca
         # Contém: topo, beneficiário, dados do documento, carteira, sacado,
         # instruções reduzidas e autenticação mecânica (Recibo do Pagador).
         def desenha_recibo_pagador(pdf, boleto)
+          # Faixa de identidade visual da empresa (tema opcional — Fase 2a)
+          PrawnTema.desenha_faixa(pdf, boleto, largura: pdf.bounds.width, titulo: boleto.cedente.to_s)
           desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
           desenha_linha_beneficiario(pdf, boleto)
           desenha_linha_documento(pdf, boleto)
@@ -186,12 +196,16 @@ module Brcobranca
           desenha_linha_sacado(pdf, boleto)
           desenha_linha_sacador_avalista(pdf, boleto)
           desenha_codigo_barras_e_pix(pdf, boleto)
+          # Rodapé de contato da empresa (tema opcional — Fase 2a),
+          # abaixo da área do código de barras/QR Code
+          PrawnTema.desenha_rodape(pdf, boleto, largura: pdf.bounds.width, y: pdf.cursor - BARCODE_HEIGHT - 42)
         end
 
         # Linha única de 5 totalizadores lado-a-lado (para o recibo, mais compacto)
         def desenha_linha_totalizadores_recibo(pdf, boleto)
           draw_row(pdf, [
-                     { label: '(-) Desconto / Abatimento', value: boleto.descontos_e_abatimentos&.to_currency || '', width_ratio: 0.20, align: :right },
+                     { label: '(-) Desconto / Abatimento', value: boleto.descontos_e_abatimentos&.to_currency || '',
+                       width_ratio: 0.20, align: :right },
                      { label: '(-) Outras deduções', value: '', width_ratio: 0.20, align: :right },
                      { label: '(+) Mora / Multa', value: '', width_ratio: 0.20, align: :right },
                      { label: '(+) Outros Acréscimos', value: '', width_ratio: 0.20, align: :right },
@@ -327,8 +341,10 @@ module Brcobranca
 
         def desenha_linha_local_pagamento(pdf, boleto)
           draw_row(pdf, [
-                     { label: 'Local de pagamento', value: boleto.local_pagamento.to_s, width_ratio: 0.75, value_style: :bold },
-                     { label: 'Vencimento', value: boleto.data_vencimento.to_s_br, width_ratio: 0.25, value_style: :bold, destaque: true }
+                     { label: 'Local de pagamento', value: boleto.local_pagamento.to_s, width_ratio: 0.75,
+                       value_style: :bold },
+                     { label: 'Vencimento', value: boleto.data_vencimento.to_s_br, width_ratio: 0.25, value_style: :bold,
+                       destaque: true }
                    ])
         end
 
@@ -336,7 +352,8 @@ module Brcobranca
           benef_texto = montar_beneficiario(boleto)
           draw_row(pdf, [
                      { label: 'Beneficiário', value: benef_texto, width_ratio: 0.75, value_style: :bold, multiline: true },
-                     { label: 'Valor do Documento', value: boleto.valor_documento.to_currency, width_ratio: 0.25, value_style: :bold, destaque: true }
+                     { label: 'Valor do Documento', value: boleto.valor_documento.to_currency, width_ratio: 0.25,
+                       value_style: :bold, destaque: true }
                    ], height: ROW_BENEF_HEIGHT)
         end
 
@@ -358,7 +375,8 @@ module Brcobranca
                      { label: 'Espécie', value: boleto.especie_documento.to_s, width_ratio: 0.08 },
                      { label: 'Aceite', value: boleto.aceite.to_s, width_ratio: 0.07 },
                      { label: 'Data Processamento', value: boleto.data_processamento&.to_s_br || '', width_ratio: 0.14 },
-                     { label: 'Cooperativa contratante/Cód. Beneficiário', value: (boleto.agencia_conta_boleto || '').to_s.gsub(/\s+\/\s+/, '/'), width_ratio: 0.35 }
+                     { label: 'Cooperativa contratante/Cód. Beneficiário',
+                       value: (boleto.agencia_conta_boleto || '').to_s.gsub(%r{\s+/\s+}, '/'), width_ratio: 0.35 }
                    ])
         end
 
@@ -375,7 +393,8 @@ module Brcobranca
                      { label: 'Carteira', value: carteira_txt, width_ratio: 0.22 },
                      { label: 'Espécie', value: boleto.especie.to_s, width_ratio: 0.08 },
                      { label: 'Quantidade', value: boleto.quantidade.to_s, width_ratio: 0.07 },
-                     { label: 'Valor', value: (boleto.valor.to_f.positive? ? boleto.valor.to_f.to_currency : ''), width_ratio: 0.14 },
+                     { label: 'Valor', value: (boleto.valor.to_f.positive? ? boleto.valor.to_f.to_currency : ''),
+                       width_ratio: 0.14 },
                      { label: 'Nosso número', value: boleto.nosso_numero_boleto.to_s, width_ratio: 0.35 }
                    ])
         end
