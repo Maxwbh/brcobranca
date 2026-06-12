@@ -29,9 +29,6 @@ module Brcobranca
         #            "4" -A4 sem envelopamento
         #            "6" -A4 sem envelopamento 3 vias
 
-        # convenio do cedente
-        attr_accessor :convenio
-
         validates_presence_of :agencia, :conta_corrente, :carteira, :convenio, :modalidade_carteira, :tipo_formulario,
                               :digito_conta, :sequencial_remessa, :documento_cedente, message: 'não pode estar em branco.'
         # Remessa 400 - 8 digitos
@@ -56,6 +53,14 @@ module Brcobranca
             carteira: '01'
           }.merge!(campos)
           super(campos)
+        end
+
+        def carteira=(valor)
+          @carteira = valor.to_s.rjust(2, '0') if valor
+        end
+
+        def convenio=(valor)
+          @convenio = valor.to_s.rjust(9, '0') if valor
         end
 
         def cod_banco

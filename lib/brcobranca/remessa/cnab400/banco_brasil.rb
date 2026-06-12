@@ -36,10 +36,14 @@ module Brcobranca
         validates_length_of :carteira, is: 2, message: 'deve ser igual a 2 digítos.'
         validates_length_of :documento_cedente, minimum: 11, maximum: 14, message: 'deve ter entre 11 e 14 dígitos.'
 
-        # Conta corrente
-        #
-        # Obs: formata para o padrao com 8 caracteres
-        #
+        def carteira=(valor)
+          @carteira = valor.to_s.rjust(2, '0') if valor
+        end
+
+        def variacao_carteira=(valor)
+          @variacao_carteira = valor.to_s.rjust(3, '0') if valor
+        end
+
         def conta_corrente=(valor)
           @conta_corrente = valor.to_s.rjust(8, '0') if valor
         end
