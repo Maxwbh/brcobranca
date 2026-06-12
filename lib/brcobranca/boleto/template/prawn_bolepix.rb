@@ -572,13 +572,19 @@ module Brcobranca
 
           pdf.bounding_box([0, y_start], width: barras_width, height: BARCODE_HEIGHT) do
             barcode = Barby::Code25Interleaved.new(boleto.codigo_barras.to_s)
-            barcode.annotate_pdf(pdf, height: BARCODE_HEIGHT - 5, xdim: 0.9)
+            # xdim calculado para o barcode caber na caixa com zona de
+            # silencio (8pt) — um xdim fixo transbordaria sobre o QR Code,
+            # impedindo a leitura do I2/5.
+            modules = barcode.encoding.length
+            xdim = [(barras_width - 8).to_f / modules, 0.9].min
+            barcode.annotate_pdf(pdf, height: BARCODE_HEIGHT - 5, xdim: xdim)
           end
 
           if tem_pix
             qr_x = direita_x
-            # Renderiza QR Code diretamente sem usar bounding_box (evita double-move)
-            qrcode = RQRCode::QRCode.new(boleto.emv.to_s, level: :h)
+            # Renderiza QR Code diretamente sem usar bounding_box (evita double-move).
+            # Nivel M de correcao conforme manual de padroes PIX do BACEN.
+            qrcode = RQRCode::QRCode.new(boleto.emv.to_s, level: :m)
             png = qrcode.as_png(size: 300, module_size: 6, border_modules: 1)
 
             pdf.image StringIO.new(png.to_s),
@@ -587,7 +593,7 @@ module Brcobranca
 
             # Label "Pague com PIX" em verde, centralizado abaixo do QR Code
             pdf.fill_color COR_PIX
-            pdf.text_box pix_label(boleto),
+            pdf.text_box resolve_pix_label(boleto),
                          at: [qr_x, y_start - QRCODE_SIZE - 2],
                          width: QRCODE_SIZE,
                          height: 10,
@@ -623,7 +629,7 @@ module Brcobranca
           pdf.move_down BARCODE_HEIGHT + 8
         end
 
-        def pix_label(boleto)
+        def resolve_pix_label(boleto)
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil

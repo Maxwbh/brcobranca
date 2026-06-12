@@ -161,20 +161,31 @@ module Brcobranca
           return unless boleto.emv
           return unless emv_valido?(boleto.emv)
 
+          # QR Code logo apos o codigo de barras, dentro da area util da
+          # Ficha de Compensacao: acima da margem inferior de impressao
+          # (~4mm) e abaixo da linha do quadro Sacador/Avalista do template.
+          qr_x = @x + 9.2
+          qr_y = @y - 2.25
+
           doc.barcode_qrcode(
             boleto.emv,
-            width: '2.5 cm',
-            height: '2.5 cm',
-            eclevel: 'H',
-            x: "#{@x + 12.9} cm",
-            y: "#{@y - 2.50} cm"
+            width: '2.1 cm',
+            height: '2.1 cm',
+            eclevel: 'M',
+            x: "#{qr_x} cm",
+            y: "#{qr_y} cm"
           )
-          move_more(doc, @x + 12.9, @y - 3.70)
-          doc.show pix_label(boleto)
+          # Label a direita do QR Code (posicao absoluta — nao usar
+          # move_more aqui, que soma deltas e deslocaria o texto).
+          doc.moveto x: "#{qr_x + 2.3} cm", y: "#{qr_y + 0.95} cm"
+          doc.show resolve_pix_label(boleto)
         end
 
         # Obtém o label exibido ao lado do QR Code PIX.
-        def pix_label(boleto)
+        #
+        # Não pode se chamar `pix_label` pois colide com o attr_accessor
+        # homônimo de Boleto::Base quando o template é incluído no boleto.
+        def resolve_pix_label(boleto)
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
