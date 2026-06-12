@@ -20,6 +20,14 @@ module Brcobranca
         validates_length_of :variacao, is: 3, message: 'deve ter 3 dígitos.'
         validates_length_of :convenio, in: 4..7, message: 'deve ter de 4 a 7 dígitos.'
 
+        def carteira=(valor)
+          @carteira = valor.to_s.rjust(2, '0') if valor
+        end
+
+        def variacao=(valor)
+          @variacao = valor.to_s.rjust(3, '0') if valor
+        end
+
         def initialize(campos = {})
           campos = { emissao_boleto: '0',
                      distribuicao_boleto: '0',
