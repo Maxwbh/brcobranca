@@ -9,6 +9,80 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.10.0] - 2026-06-12
+
+### Added — Marca d'água e fonte TTF nos templates Prawn (Fase 3)
+- **`marca_dagua`** (novo atributo em `Boleto::Base`): texto diagonal
+  antifraude em 6% de opacidade, truncado em 60 chars e em maiúsculas.
+  Desenhada **fora das áreas de leitura** (zona de exclusão do código de
+  barras/QR Code) no recibo e na ficha do `PrawnBolepix` e na ficha do
+  `PrawnCarne` — validado com zbarimg (códigos continuam decodificando)
+- **`fonte_ttf`** (novo atributo): path de fonte TTF para suporte UTF-8
+  completo nos PDFs Prawn; variantes `-Bold`/`-Italic`/`-BoldItalic` são
+  detectadas automaticamente quando o path termina em `-Regular.ttf`
+  (ex.: Liberation/DejaVu); fallback silencioso se o arquivo não existir
+
+### Added — Tema visual personalizável nos templates Prawn (Fase 2a)
+- **Novo módulo `Brcobranca::Boleto::Template::PrawnTema`** compartilhado
+  por `PrawnBolepix` e `PrawnCarne`
+- **Novos atributos opcionais** em `Boleto::Base` (pensados para o fluxo
+  gestao_contrato → boleto_cnab_api → gem):
+  - `logo_empresa` — logo do cedente (path ou IO); no carnê substitui o
+    logo do banco no canhoto, no boleto entra na faixa de marca do recibo
+  - `cor_marca` — hex `RRGGBB` validado; cor de texto com contraste
+    automático por luminância (preto/branco)
+  - `parcela_atual` / `total_parcelas` — selo "PARCELA n/N" em destaque
+  - `rodape_contato` — contato da empresa (truncado em 120 chars)
+- **Fallback total**: sem atributos de tema o visual permanece idêntico;
+  Ficha de Compensação intocada (linha digitável, código de barras e QR
+  continuam decodificando — validado com zbarimg)
+- 17 specs do `PrawnTema` (rodam no CI sem as gems Prawn)
+
+### Added — `PrawnCarne`: carnê de pagamento via Prawn (Fase 1)
+- **Novo `Brcobranca::Boleto::Template::PrawnCarne`**: carnê no modelo do
+  RGhost carnê (canhoto destacável + Ficha de Compensação), sem GhostScript
+  - `to_carne(:pdf)` — boleto único em página 21x9cm
+  - `lote_carne(boletos)` — 3 boletos por página A4, com linhas
+    pontilhadas de corte (vertical canhoto/ficha e horizontal entre boletos)
+  - **QR Code PIX** na ficha quando `boleto.emv` presente (nível M,
+    label "Pague com PIX")
+  - Código de barras I2/5 com `xdim` calculado (não invade o QR)
+  - Mesmas gems opcionais do `PrawnBolepix` (prawn, barby, rqrcode,
+    chunky_png) — specs fazem skip quando indisponíveis
+- **Fixture versionado**: `spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf`
+  (3 parcelas Sicoob com PIX), validado com zbarimg — 3 QR Codes decodificam
+  o EMV exato e 3 códigos de barras I2/5 decodificam os códigos corretos
+
+### Fixed — Templates de boleto com PIX (validados visualmente)
+- **RGhost Bolepix**: corrige crash (`ArgumentError`) por colisão do helper
+  `pix_label(boleto)` com o `attr_accessor :pix_label` de `Boleto::Base`;
+  reposiciona o QR Code (estava a 2mm da borda inferior, clipado na
+  impressão) para ao lado do código de barras; corrige posição do label
+  "Pague com PIX" (uso indevido de `move_more` dobrava a coordenada X)
+- **Prawn Bolepix**: corrige sobreposição do código de barras no QR Code
+  (`xdim` fixo transbordava a caixa e destruía a quiet zone, impedindo a
+  leitura do I2/5) — agora o `xdim` é calculado para caber na largura
+- **QR Code nível M** em ambos os templates, conforme manual de padrões
+  PIX do BACEN (era H)
+- Validação com `zbarimg`: QR decodifica o EMV exato e o I2/5 decodifica
+  o código de barras correto nos dois templates
+
+### Changed — Fixtures visuais enxutos
+- Repositório passa a versionar **apenas 2 boletos de exemplo**
+  (Sicoob com PIX): `sicoob_pix.pdf` (RGhost) e `prawn_sicoob_pix.pdf`
+  (Prawn), ambos regenerados com os templates corrigidos e validados
+- Removidos 40 PDFs de fixtures (~8MB) e o modelo de referência
+  `examples/modelo_referencia_layout_sicoob.pdf` (~330KB) — o conjunto
+  completo continua disponível via `bin/generate_fixtures` (ignorado
+  pelo git, exceto os 2 exemplos)
+
+### Fixed — Normalização de carteira/convênio na remessa
+- **Sicoob CNAB 400**: `carteira` e `convenio` agora fazem padding
+  automático (`'1'` → `'01'`, `'229385'` → `'000229385'`) — o integrador
+  pode usar o mesmo valor do boleto
+- **Banco do Brasil CNAB 400/240**: padding em `carteira`,
+  `variacao_carteira` e `variacao`
+
 ## [12.8.2] - 2026-06-12
 
 <!-- Adicione novas mudanças aqui -->

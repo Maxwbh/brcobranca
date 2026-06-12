@@ -1,66 +1,40 @@
 # Artefatos gerados para validação visual
 
-Este diretório contém os arquivos gerados automaticamente pelo script
-[`bin/generate_fixtures`](../../../bin/generate_fixtures). Eles são úteis para:
+Este diretório contém artefatos gerados pelo script
+[`bin/generate_fixtures`](../../../bin/generate_fixtures), úteis para:
 
 - Validação visual do layout dos boletos (PDFs)
 - Validação estrutural dos arquivos CNAB (`.rem`)
 - Conferência do posicionamento do QR Code PIX nos boletos híbridos
 - Testes de regressão visual ao alterar templates
 
-## Como regenerar
+## PDFs versionados (2 exemplos)
+
+Apenas os exemplos **Sicoob com PIX** são versionados no repositório,
+um para cada template de renderização:
+
+| Arquivo | Template | Descrição |
+|---|---|---|
+| `pdf/sicoob_pix.pdf` | **RGhost** (`:rghost_bolepix`) | Boleto híbrido com QR Code PIX, requer GhostScript |
+| `pdf/prawn_sicoob_pix.pdf` | **Prawn** (`PrawnBolepix`) | Recibo do Pagador + Ficha de Compensação + QR Code PIX, puro-Ruby |
+| `pdf/prawn_carne_sicoob_pix.pdf` | **Prawn** (`PrawnCarne`) | Carnê 3 parcelas/página A4 — canhoto + ficha + QR Code PIX, puro-Ruby |
+
+Ambos foram validados com `zbarimg`: o QR Code decodifica a string EMV
+exata e o código de barras I2/5 decodifica o código correto.
+
+## Como gerar o conjunto completo localmente
 
 ```bash
 bin/generate_fixtures
 ```
 
-## Conteúdo
+O script gera localmente (não versionados — ver `.gitignore`):
 
-### `pdf/` — Boletos renderizados em PDF (42 arquivos)
+- **PDFs de todos os 18 bancos** — boletos tradicionais (RGhost),
+  híbridos com PIX (`RghostBolepix`) e via Prawn (`PrawnBolepix`)
+- **Arquivos CNAB de remessa** (ver tabela abaixo)
 
-#### Boletos tradicionais (RGhost)
-Um PDF por banco suportado, gerado com o template padrão `RGhost`:
-
-- `ailos.pdf`
-- `banco_brasil.pdf`
-- `banco_brasilia.pdf`
-- `banco_c6.pdf`, `banco_c6_carteira_20.pdf`
-- `banco_nordeste.pdf`
-- `banestes.pdf`
-- `banrisul.pdf`
-- `bradesco.pdf`
-- `caixa.pdf`
-- `citibank.pdf`
-- `credisis.pdf`
-- `hsbc.pdf`
-- `itau.pdf`
-- `safra.pdf`
-- `santander.pdf`
-- `sicoob.pdf`, `sicoob_carteira_9.pdf`
-- `sicredi.pdf`
-- `unicred.pdf`
-
-#### Boletos híbridos com PIX/QRCode (`RghostBolepix`)
-Mesmos boletos com a string EMV BR Code gerando QR Code PIX:
-
-- `banco_brasil_pix.pdf`
-- `banco_c6_pix.pdf`, `banco_c6_carteira_20_pix.pdf`
-- `bradesco_pix.pdf`
-- `caixa_pix.pdf`
-- `itau_pix.pdf`
-- `santander_pix.pdf`
-- `sicoob_pix.pdf`, `sicoob_carteira_9_pix.pdf`
-
-#### Boletos via Prawn (alternativa sem Ghostscript)
-Template experimental usando gems puro-Ruby (`prawn` + `barby` + `rqrcode`):
-
-- `prawn_bradesco_pix.pdf`
-- `prawn_caixa_pix.pdf`
-- `prawn_itau_pix.pdf`
-- `prawn_sicoob_pix.pdf`
-- `prawn_banco_c6_pix.pdf`
-
-### `remessa/` — Arquivos CNAB de remessa (13 arquivos)
+### `remessa/` — Arquivos CNAB de remessa (13 arquivos, versionados)
 
 #### CNAB 400
 
@@ -131,8 +105,5 @@ Adiciona o segmento Y-03 após os segmentos P/Q/R de cada título:
 
 - **Beneficiário:** `Empresa Exemplo LTDA` — CNPJ `12345678000100`
 - **Pagador:** `Cliente Teste da Silva` — CPF `12345678900`
-- **Valor:** R$ 123,45
-- **Data de vencimento:** hoje + 30 dias
 - **Chave PIX:** CNPJ `12345678000100`
-- **TXID:** `TXID20260416001`
 - **EMV exemplo:** BR Code válido iniciando com `0002...` (fictício)

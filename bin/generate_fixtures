@@ -294,6 +294,29 @@ if Brcobranca::Boleto::Template::PRAWN_AVAILABLE
   path_7linhas = File.join(PDF_DIR, 'prawn_sicoob_7_linhas_instrucoes_pix.pdf')
   File.open(path_7linhas, 'wb') { |f| f.write(boleto_7linhas.to(:pdf)) }
   puts "  ✓ #{path_7linhas} (#{File.size(path_7linhas)} bytes) — 7 linhas de instruções + PIX"
+
+  # Carnê Prawn: 3 parcelas Sicoob com PIX em uma página A4
+  require 'brcobranca/boleto/template/prawn_carne'
+  parcelas_carne = (1..3).map do |n|
+    Brcobranca::Boleto::Sicoob.new(
+      agencia: '4327', conta_corrente: '417270',
+      convenio: '229385', nosso_numero: n.to_s, carteira: '1',
+      valor: 135.00,
+      data_vencimento: Date.today + (30 * n),
+      data_documento: Date.today,
+      documento_numero: "CT-2026-#{n.to_s.rjust(3, '0')}",
+      cedente: 'Empresa Exemplo LTDA',
+      documento_cedente: '12345678000100',
+      instrucao1: "Parcela #{n} de 3",
+      instrucao2: 'Nao receber apos o vencimento',
+      instrucao3: 'Multa de 2% apos o vencimento',
+      emv: EMV_EXEMPLO,
+      **sacado_data
+    )
+  end
+  path_carne = File.join(PDF_DIR, 'prawn_carne_sicoob_pix.pdf')
+  File.open(path_carne, 'wb') { |f| f.write(Brcobranca::Boleto::Template::PrawnCarne.lote_carne(parcelas_carne)) }
+  puts "  ✓ #{path_carne} (#{File.size(path_carne)} bytes) — carnê 3 parcelas + PIX"
 else
   puts '  (Prawn não disponível — install: gem install prawn prawn-table barby rqrcode chunky_png)'
 end

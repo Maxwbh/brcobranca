@@ -14,22 +14,18 @@ Execução:
 bundle exec ruby examples/api_boleto_example.rb
 ```
 
-## PDFs de referência
+## Boletos de exemplo (PDF)
 
-| Arquivo | Descrição |
+Dois boletos Sicoob com PIX validados visualmente, um por template:
+
+| Arquivo | Template |
 |---|---|
-| [`modelo_referencia_layout_sicoob.pdf`](modelo_referencia_layout_sicoob.pdf) | Modelo real de boleto Sicoob utilizado como referência para o layout do template Prawn. Contém 2 páginas (recibo e ficha de compensação) |
+| [`../spec/fixtures/generated/pdf/sicoob_pix.pdf`](../spec/fixtures/generated/pdf/sicoob_pix.pdf) | RGhost (`:rghost_bolepix`) |
+| [`../spec/fixtures/generated/pdf/prawn_sicoob_pix.pdf`](../spec/fixtures/generated/pdf/prawn_sicoob_pix.pdf) | Prawn (`PrawnBolepix`) |
+| [`../spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf`](../spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf) | Prawn (`PrawnCarne` — carnê 3 parcelas/página) |
 
-## Fixtures gerados
-
-Para ver PDFs gerados automaticamente (41 bancos/variações + 13 arquivos CNAB
-de exemplo), consulte:
-
-- `spec/fixtures/generated/pdf/` — boletos renderizados (RGhost e Prawn)
-- `spec/fixtures/generated/remessa/` — arquivos CNAB 240/400
-
-Para regenerar:
+Para gerar o conjunto completo (18 bancos, com/sem PIX) localmente:
 
 ```bash
-bundle exec bin/generate_fixtures
+bin/generate_fixtures
 ```
