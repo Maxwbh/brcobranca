@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.10.1] - 2026-06-12
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.10.0] - 2026-06-12
 
 ### Added — Marca d'água e fonte TTF nos templates Prawn (Fase 3)
