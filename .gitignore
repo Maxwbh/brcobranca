@@ -27,6 +27,14 @@ tmp
 ## BUNDLER
 vendor/bundle
 
+## FIXTURES GERADOS LOCALMENTE
+# bin/generate_fixtures gera o conjunto completo de PDFs para validacao
+# visual local; apenas os 2 exemplos Sicoob com PIX sao versionados.
+spec/fixtures/generated/pdf/*.pdf
+!spec/fixtures/generated/pdf/sicoob_pix.pdf
+!spec/fixtures/generated/pdf/prawn_sicoob_pix.pdf
+!spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf
+
 ## PROJECT::SPECIFIC
 config
 config/*.*

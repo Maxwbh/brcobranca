@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'brcobranca/boleto/template/prawn_tema'
+
 # Template alternativo para geração de boletos híbridos (com PIX) usando Prawn.
 #
 # Layout espelhado do padrão FEBRABAN observado em boletos SICOOB e demais bancos,
@@ -69,8 +71,14 @@ module Brcobranca
         COR_PIX = '006B3F'
 
         def to(formato, _options = {})
-          raise 'Prawn não está disponível. Instale: gem install prawn prawn-table barby rqrcode chunky_png' unless PRAWN_AVAILABLE
-          raise ArgumentError, "Formato #{formato} não suportado pelo PrawnBolepix (apenas :pdf)" unless formato.to_sym == :pdf
+          unless PRAWN_AVAILABLE
+            raise 'Prawn não está disponível. Instale: gem install prawn prawn-table barby rqrcode chunky_png'
+          end
+
+          unless formato.to_sym == :pdf
+            raise ArgumentError,
+                  "Formato #{formato} não suportado pelo PrawnBolepix (apenas :pdf)"
+          end
 
           render_boleto(self)
         end
@@ -96,6 +104,7 @@ module Brcobranca
 
         def render_boleto(boleto)
           pdf = new_document
+          PrawnTema.aplica_fonte(pdf, boleto)
           draw_boleto(pdf, boleto)
           pdf.render
         end
@@ -103,6 +112,7 @@ module Brcobranca
         def render_boletos(boletos)
           pdf = new_document
           boletos.each_with_index do |boleto, index|
+            PrawnTema.aplica_fonte(pdf, boleto)
             draw_boleto(pdf, boleto)
             pdf.start_new_page unless index == boletos.length - 1
           end
@@ -139,6 +149,12 @@ module Brcobranca
         # Contém: topo, beneficiário, dados do documento, carteira, sacado,
         # instruções reduzidas e autenticação mecânica (Recibo do Pagador).
         def desenha_recibo_pagador(pdf, boleto)
+          # Marca d'água diagonal (tema opcional — Fase 3): desenhada antes
+          # do conteúdo, restrita à área do recibo (sem código de barras aqui)
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: pdf.cursor - 40, altura: 160)
+          # Faixa de identidade visual da empresa (tema opcional — Fase 2a)
+          PrawnTema.desenha_faixa(pdf, boleto, largura: pdf.bounds.width, titulo: boleto.cedente.to_s)
           desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
           desenha_linha_beneficiario(pdf, boleto)
           desenha_linha_documento(pdf, boleto)
@@ -177,6 +193,10 @@ module Brcobranca
 
         # Ficha de Compensação (a parte do boleto que é realmente paga).
         def desenha_ficha_compensacao(pdf, boleto)
+          # Marca d'água da ficha: restrita à área dos campos, bem acima do
+          # código de barras/QR (zona de exclusão — não interfere na leitura)
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: pdf.cursor - 60, altura: 160)
           desenha_topo(pdf, boleto)
           desenha_linha_local_pagamento(pdf, boleto)
           desenha_linha_beneficiario(pdf, boleto)
@@ -186,12 +206,16 @@ module Brcobranca
           desenha_linha_sacado(pdf, boleto)
           desenha_linha_sacador_avalista(pdf, boleto)
           desenha_codigo_barras_e_pix(pdf, boleto)
+          # Rodapé de contato da empresa (tema opcional — Fase 2a),
+          # abaixo da área do código de barras/QR Code
+          PrawnTema.desenha_rodape(pdf, boleto, largura: pdf.bounds.width, y: pdf.cursor - BARCODE_HEIGHT - 42)
         end
 
         # Linha única de 5 totalizadores lado-a-lado (para o recibo, mais compacto)
         def desenha_linha_totalizadores_recibo(pdf, boleto)
           draw_row(pdf, [
-                     { label: '(-) Desconto / Abatimento', value: boleto.descontos_e_abatimentos&.to_currency || '', width_ratio: 0.20, align: :right },
+                     { label: '(-) Desconto / Abatimento', value: boleto.descontos_e_abatimentos&.to_currency || '',
+                       width_ratio: 0.20, align: :right },
                      { label: '(-) Outras deduções', value: '', width_ratio: 0.20, align: :right },
                      { label: '(+) Mora / Multa', value: '', width_ratio: 0.20, align: :right },
                      { label: '(+) Outros Acréscimos', value: '', width_ratio: 0.20, align: :right },
@@ -327,8 +351,10 @@ module Brcobranca
 
         def desenha_linha_local_pagamento(pdf, boleto)
           draw_row(pdf, [
-                     { label: 'Local de pagamento', value: boleto.local_pagamento.to_s, width_ratio: 0.75, value_style: :bold },
-                     { label: 'Vencimento', value: boleto.data_vencimento.to_s_br, width_ratio: 0.25, value_style: :bold, destaque: true }
+                     { label: 'Local de pagamento', value: boleto.local_pagamento.to_s, width_ratio: 0.75,
+                       value_style: :bold },
+                     { label: 'Vencimento', value: boleto.data_vencimento.to_s_br, width_ratio: 0.25, value_style: :bold,
+                       destaque: true }
                    ])
         end
 
@@ -336,7 +362,8 @@ module Brcobranca
           benef_texto = montar_beneficiario(boleto)
           draw_row(pdf, [
                      { label: 'Beneficiário', value: benef_texto, width_ratio: 0.75, value_style: :bold, multiline: true },
-                     { label: 'Valor do Documento', value: boleto.valor_documento.to_currency, width_ratio: 0.25, value_style: :bold, destaque: true }
+                     { label: 'Valor do Documento', value: boleto.valor_documento.to_currency, width_ratio: 0.25,
+                       value_style: :bold, destaque: true }
                    ], height: ROW_BENEF_HEIGHT)
         end
 
@@ -358,7 +385,8 @@ module Brcobranca
                      { label: 'Espécie', value: boleto.especie_documento.to_s, width_ratio: 0.08 },
                      { label: 'Aceite', value: boleto.aceite.to_s, width_ratio: 0.07 },
                      { label: 'Data Processamento', value: boleto.data_processamento&.to_s_br || '', width_ratio: 0.14 },
-                     { label: 'Cooperativa contratante/Cód. Beneficiário', value: (boleto.agencia_conta_boleto || '').to_s.gsub(/\s+\/\s+/, '/'), width_ratio: 0.35 }
+                     { label: 'Cooperativa contratante/Cód. Beneficiário',
+                       value: (boleto.agencia_conta_boleto || '').to_s.gsub(%r{\s+/\s+}, '/'), width_ratio: 0.35 }
                    ])
         end
 
@@ -375,7 +403,8 @@ module Brcobranca
                      { label: 'Carteira', value: carteira_txt, width_ratio: 0.22 },
                      { label: 'Espécie', value: boleto.especie.to_s, width_ratio: 0.08 },
                      { label: 'Quantidade', value: boleto.quantidade.to_s, width_ratio: 0.07 },
-                     { label: 'Valor', value: (boleto.valor.to_f.positive? ? boleto.valor.to_f.to_currency : ''), width_ratio: 0.14 },
+                     { label: 'Valor', value: (boleto.valor.to_f.positive? ? boleto.valor.to_f.to_currency : ''),
+                       width_ratio: 0.14 },
                      { label: 'Nosso número', value: boleto.nosso_numero_boleto.to_s, width_ratio: 0.35 }
                    ])
         end
@@ -572,13 +601,19 @@ module Brcobranca
 
           pdf.bounding_box([0, y_start], width: barras_width, height: BARCODE_HEIGHT) do
             barcode = Barby::Code25Interleaved.new(boleto.codigo_barras.to_s)
-            barcode.annotate_pdf(pdf, height: BARCODE_HEIGHT - 5, xdim: 0.9)
+            # xdim calculado para o barcode caber na caixa com zona de
+            # silencio (8pt) — um xdim fixo transbordaria sobre o QR Code,
+            # impedindo a leitura do I2/5.
+            modules = barcode.encoding.length
+            xdim = [(barras_width - 8).to_f / modules, 0.9].min
+            barcode.annotate_pdf(pdf, height: BARCODE_HEIGHT - 5, xdim: xdim)
           end
 
           if tem_pix
             qr_x = direita_x
-            # Renderiza QR Code diretamente sem usar bounding_box (evita double-move)
-            qrcode = RQRCode::QRCode.new(boleto.emv.to_s, level: :h)
+            # Renderiza QR Code diretamente sem usar bounding_box (evita double-move).
+            # Nivel M de correcao conforme manual de padroes PIX do BACEN.
+            qrcode = RQRCode::QRCode.new(boleto.emv.to_s, level: :m)
             png = qrcode.as_png(size: 300, module_size: 6, border_modules: 1)
 
             pdf.image StringIO.new(png.to_s),
@@ -587,7 +622,7 @@ module Brcobranca
 
             # Label "Pague com PIX" em verde, centralizado abaixo do QR Code
             pdf.fill_color COR_PIX
-            pdf.text_box pix_label(boleto),
+            pdf.text_box resolve_pix_label(boleto),
                          at: [qr_x, y_start - QRCODE_SIZE - 2],
                          width: QRCODE_SIZE,
                          height: 10,
@@ -623,7 +658,7 @@ module Brcobranca
           pdf.move_down BARCODE_HEIGHT + 8
         end
 
-        def pix_label(boleto)
+        def resolve_pix_label(boleto)
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil

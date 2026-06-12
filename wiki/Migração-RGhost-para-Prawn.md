@@ -128,14 +128,13 @@ end
 
 ## Exemplos visuais
 
-PDFs de exemplo estão em `spec/fixtures/generated/pdf/`:
+Dois boletos Sicoob com PIX versionados em `spec/fixtures/generated/pdf/`,
+um por template (ambos validados com leitura de QR Code e código de barras):
 
 | Arquivo | Template |
 |---|---|
-| `prawn_bradesco_pix.pdf` | Prawn |
-| `prawn_sicoob_pix.pdf` | Prawn |
-| `prawn_itau_pix.pdf` | Prawn |
-| `bradesco_pix.pdf` | RGhost |
 | `sicoob_pix.pdf` | RGhost |
+| `prawn_sicoob_pix.pdf` | Prawn |
+| `prawn_carne_sicoob_pix.pdf` | Prawn (carnê 3/página) |
 
-Para regenerar: `bin/generate_fixtures`
+Para gerar o conjunto completo localmente (18 bancos): `bin/generate_fixtures`

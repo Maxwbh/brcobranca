@@ -101,6 +101,21 @@ module Brcobranca
       attr_accessor :txid
       # <b>OPCIONAL</b>: Descontos e abatimentos
       attr_accessor :descontos_e_abatimentos
+      # <b>OPCIONAL</b>: Tema visual (templates Prawn) — logo da empresa cedente (path ou IO)
+      attr_accessor :logo_empresa
+      # <b>OPCIONAL</b>: Tema visual — cor da marca em hexadecimal RRGGBB (ex: '006B3F')
+      attr_accessor :cor_marca
+      # <b>OPCIONAL</b>: Tema visual — número da parcela atual (selo "PARCELA n/N")
+      attr_accessor :parcela_atual
+      # <b>OPCIONAL</b>: Tema visual — total de parcelas (selo "PARCELA n/N")
+      attr_accessor :total_parcelas
+      # <b>OPCIONAL</b>: Tema visual — rodapé com contato da empresa
+      attr_accessor :rodape_contato
+      # <b>OPCIONAL</b>: Tema visual — texto da marca d'água diagonal (antifraude)
+      attr_accessor :marca_dagua
+      # <b>OPCIONAL</b>: Tema visual — path de fonte TTF para suporte UTF-8 completo
+      # (variantes -Bold/-Italic são detectadas automaticamente se existirem)
+      attr_accessor :fonte_ttf
 
       # Validações
       validates_presence_of :agencia, :conta_corrente, :moeda, :especie_documento, :especie, :aceite, :nosso_numero,

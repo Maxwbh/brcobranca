@@ -39,7 +39,7 @@
 - **Sem GhostScript?** Sem problema — template **Prawn** gera PDF puro-Ruby
 - **API JSON** — `to_hash`, `as_json`, `to_json` em boleto, remessa e retorno
 - **Registro de bancos** — `Brcobranca::Bancos` descobre bancos/CNAB/PIX programaticamente
-- **1.100+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
+- **1.300+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
 
 ---
 
@@ -280,7 +280,7 @@ end
 ```bash
 git clone https://github.com/Maxwbh/brcobranca.git
 bundle install
-bundle exec rspec   # 1.100+ testes
+bundle exec rspec   # 1.300+ testes
 ```
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
