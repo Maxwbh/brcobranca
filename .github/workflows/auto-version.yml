@@ -42,8 +42,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      # Respeita bump manual: se a versão do version.rb já está à frente da
+      # última tag (ex.: bump feito no branch antes do merge), não incrementa
+      # de novo — apenas cria a tag e o release dessa versão.
+      - name: Verificar bump manual
+        id: manual
+        run: |
+          VERSION=$(ruby -r ./lib/brcobranca/version.rb -e "puts Brcobranca::VERSION")
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "manual=false" >> $GITHUB_OUTPUT
+            echo "Tag v$VERSION já existe — bump automático seguirá"
+          else
+            echo "manual=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "📌 Bump manual detectado: v$VERSION ainda sem tag"
+          fi
+
       - name: Determinar tipo de bump
         id: bump-type
+        if: steps.manual.outputs.manual == 'false'
         run: |
           COMMIT_MSG="${{ github.event.head_commit.message }}"
 
@@ -59,6 +76,7 @@ jobs:
           fi
 
       - name: Incrementar versão
+        if: steps.manual.outputs.manual == 'false'
         run: |
           chmod +x bin/bump_version
           bin/bump_version ${{ steps.bump-type.outputs.type }}
@@ -72,8 +90,10 @@ jobs:
 
       - name: Commit e Push
         run: |
-          git add lib/brcobranca/version.rb CHANGELOG.md
-          git commit -m "chore: Bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          if [ "${{ steps.manual.outputs.manual }}" = "false" ]; then
+            git add lib/brcobranca/version.rb CHANGELOG.md
+            git commit -m "chore: Bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          fi
           git tag -a "v${{ steps.version.outputs.version }}" -m "Release ${{ steps.version.outputs.version }}"
           git push origin HEAD:${{ github.ref_name }}
           git push --tags
