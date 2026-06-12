@@ -7,7 +7,35 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
-<!-- Adicione novas mudanças aqui -->
+### Fixed — Templates de boleto com PIX (validados visualmente)
+- **RGhost Bolepix**: corrige crash (`ArgumentError`) por colisão do helper
+  `pix_label(boleto)` com o `attr_accessor :pix_label` de `Boleto::Base`;
+  reposiciona o QR Code (estava a 2mm da borda inferior, clipado na
+  impressão) para ao lado do código de barras; corrige posição do label
+  "Pague com PIX" (uso indevido de `move_more` dobrava a coordenada X)
+- **Prawn Bolepix**: corrige sobreposição do código de barras no QR Code
+  (`xdim` fixo transbordava a caixa e destruía a quiet zone, impedindo a
+  leitura do I2/5) — agora o `xdim` é calculado para caber na largura
+- **QR Code nível M** em ambos os templates, conforme manual de padrões
+  PIX do BACEN (era H)
+- Validação com `zbarimg`: QR decodifica o EMV exato e o I2/5 decodifica
+  o código de barras correto nos dois templates
+
+### Changed — Fixtures visuais enxutos
+- Repositório passa a versionar **apenas 2 boletos de exemplo**
+  (Sicoob com PIX): `sicoob_pix.pdf` (RGhost) e `prawn_sicoob_pix.pdf`
+  (Prawn), ambos regenerados com os templates corrigidos e validados
+- Removidos 40 PDFs de fixtures (~8MB) e o modelo de referência
+  `examples/modelo_referencia_layout_sicoob.pdf` (~330KB) — o conjunto
+  completo continua disponível via `bin/generate_fixtures` (ignorado
+  pelo git, exceto os 2 exemplos)
+
+### Fixed — Normalização de carteira/convênio na remessa
+- **Sicoob CNAB 400**: `carteira` e `convenio` agora fazem padding
+  automático (`'1'` → `'01'`, `'229385'` → `'000229385'`) — o integrador
+  pode usar o mesmo valor do boleto
+- **Banco do Brasil CNAB 400/240**: padding em `carteira`,
+  `variacao_carteira` e `variacao`
 
 ## [12.8.2] - 2026-06-12
 

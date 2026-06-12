@@ -29,10 +29,10 @@ cobrança híbrida com PIX, e arquivos CNAB 240/400/444.
 
 | Diretório | Conteúdo |
 |-----------|----------|
-| [spec/fixtures/generated/pdf/](../spec/fixtures/generated/pdf/) | 42 PDFs de boletos (todos os bancos, com/sem PIX, via RGhost e Prawn) |
+| [spec/fixtures/generated/pdf/](../spec/fixtures/generated/pdf/) | 2 boletos Sicoob com PIX de exemplo — `sicoob_pix.pdf` (RGhost) e `prawn_sicoob_pix.pdf` (Prawn), ambos validados com leitura de QR Code e código de barras |
 | [spec/fixtures/generated/remessa/](../spec/fixtures/generated/remessa/) | 13 arquivos CNAB 240/400 de exemplo |
 
-Para regenerar os fixtures: `bin/generate_fixtures`
+Para gerar o conjunto completo localmente (18 bancos, com/sem PIX): `bin/generate_fixtures`
 
 ---
 
