@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.10.0] - 2026-06-12
+
 ### Added — Marca d'água e fonte TTF nos templates Prawn (Fase 3)
 - **`marca_dagua`** (novo atributo em `Boleto::Base`): texto diagonal
   antifraude em 6% de opacidade, truncado em 60 chars e em maiúsculas.
