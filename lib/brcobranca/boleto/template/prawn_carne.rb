@@ -70,6 +70,7 @@ module Brcobranca
             margin: [STRIP_MARGIN, STRIP_MARGIN, STRIP_MARGIN, STRIP_MARGIN],
             info: documento_info
           )
+          PrawnTema.aplica_fonte(pdf, self)
           desenha_carne(pdf, self)
           pdf.render
         end
@@ -80,6 +81,7 @@ module Brcobranca
 
           pdf = Prawn::Document.new(page_size: 'A4', margin: [16, 16, 16, 16], info: documento_info)
           altura_util = STRIP_HEIGHT - (2 * STRIP_MARGIN)
+          PrawnTema.aplica_fonte(pdf, boletos.first) if boletos.any?
 
           boletos.each_with_index do |boleto, index|
             posicao = index % 3
@@ -261,6 +263,11 @@ module Brcobranca
         # FICHA DE COMPENSAÇÃO (direita)
         # ============================================================
         def desenha_ficha(pdf, boleto)
+          # Marca d'água (tema opcional — Fase 3): restrita à área dos campos,
+          # acima do código de barras/QR (não interfere na leitura)
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: pdf.cursor - 30, altura: 110,
+                                                     tamanho: 20, rotacao: 15)
           desenha_cabecalho_ficha(pdf, boleto)
 
           ficha_row(pdf, [

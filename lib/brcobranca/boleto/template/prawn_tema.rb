@@ -118,6 +118,66 @@ module Brcobranca
           false
         end
 
+        # Texto da marca d'água (truncado em 60 chars, maiúsculas) ou nil.
+        def marca_dagua(boleto)
+          return nil unless boleto.respond_to?(:marca_dagua)
+
+          texto = boleto.marca_dagua.to_s.strip
+          texto.empty? ? nil : texto[0, 60].upcase
+        end
+
+        # Desenha a marca d'água diagonal em opacidade baixa (antifraude).
+        #
+        # Deve ser chamada ANTES do conteúdo da seção (Prawn não tem z-order:
+        # o que vem depois cobre o que veio antes). O chamador é responsável
+        # por posicioná-la fora da área do código de barras/QR Code — o texto
+        # fica restrito à caixa [0, y] x [largura, altura].
+        def desenha_marca_dagua(pdf, boleto, largura:, y:, altura:, tamanho: 32, rotacao: 30)
+          texto = marca_dagua(boleto)
+          return false unless texto
+
+          pdf.transparent(0.06) do
+            pdf.fill_color '000000'
+            pdf.text_box texto,
+                         at: [10, y], width: largura - 20, height: altura,
+                         size: tamanho, style: :bold, align: :center, valign: :center,
+                         rotate: rotacao, rotate_around: :center,
+                         overflow: :shrink_to_fit
+          end
+          pdf.fill_color '000000'
+          true
+        end
+
+        # Registra e aplica a fonte TTF do tema no documento (UTF-8 completo).
+        #
+        # Se o path terminar em "-Regular.ttf", as variantes -Bold/-Italic/
+        # -BoldItalic são usadas quando existirem no mesmo diretório.
+        # Retorna true se aplicou; false (sem efeito) se o atributo estiver
+        # ausente ou o arquivo não existir.
+        def aplica_fonte(pdf, boleto)
+          return false unless boleto.respond_to?(:fonte_ttf)
+
+          path = boleto.fonte_ttf.to_s
+          return false unless path.end_with?('.ttf') && File.exist?(path)
+
+          familia = {
+            normal: path,
+            bold: variante_fonte(path, 'Bold'),
+            italic: variante_fonte(path, 'Italic'),
+            bold_italic: variante_fonte(path, 'BoldItalic')
+          }
+          pdf.font_families.update('TemaTTF' => familia)
+          pdf.font('TemaTTF')
+          true
+        rescue StandardError
+          false
+        end
+
+        def variante_fonte(path, sufixo)
+          candidato = path.sub(/-Regular\.ttf\z/, "-#{sufixo}.ttf")
+          candidato != path && File.exist?(candidato) ? candidato : path
+        end
+
         # Desenha o rodapé de contato (texto pequeno cinza, centralizado).
         def desenha_rodape(pdf, boleto, largura:, y:)
           texto = rodape_contato(boleto)

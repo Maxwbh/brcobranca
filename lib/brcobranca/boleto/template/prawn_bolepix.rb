@@ -104,6 +104,7 @@ module Brcobranca
 
         def render_boleto(boleto)
           pdf = new_document
+          PrawnTema.aplica_fonte(pdf, boleto)
           draw_boleto(pdf, boleto)
           pdf.render
         end
@@ -111,6 +112,7 @@ module Brcobranca
         def render_boletos(boletos)
           pdf = new_document
           boletos.each_with_index do |boleto, index|
+            PrawnTema.aplica_fonte(pdf, boleto)
             draw_boleto(pdf, boleto)
             pdf.start_new_page unless index == boletos.length - 1
           end
@@ -147,6 +149,10 @@ module Brcobranca
         # Contém: topo, beneficiário, dados do documento, carteira, sacado,
         # instruções reduzidas e autenticação mecânica (Recibo do Pagador).
         def desenha_recibo_pagador(pdf, boleto)
+          # Marca d'água diagonal (tema opcional — Fase 3): desenhada antes
+          # do conteúdo, restrita à área do recibo (sem código de barras aqui)
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: pdf.cursor - 40, altura: 160)
           # Faixa de identidade visual da empresa (tema opcional — Fase 2a)
           PrawnTema.desenha_faixa(pdf, boleto, largura: pdf.bounds.width, titulo: boleto.cedente.to_s)
           desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
@@ -187,6 +193,10 @@ module Brcobranca
 
         # Ficha de Compensação (a parte do boleto que é realmente paga).
         def desenha_ficha_compensacao(pdf, boleto)
+          # Marca d'água da ficha: restrita à área dos campos, bem acima do
+          # código de barras/QR (zona de exclusão — não interfere na leitura)
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: pdf.cursor - 60, altura: 160)
           desenha_topo(pdf, boleto)
           desenha_linha_local_pagamento(pdf, boleto)
           desenha_linha_beneficiario(pdf, boleto)

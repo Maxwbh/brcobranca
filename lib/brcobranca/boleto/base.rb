@@ -111,6 +111,11 @@ module Brcobranca
       attr_accessor :total_parcelas
       # <b>OPCIONAL</b>: Tema visual — rodapé com contato da empresa
       attr_accessor :rodape_contato
+      # <b>OPCIONAL</b>: Tema visual — texto da marca d'água diagonal (antifraude)
+      attr_accessor :marca_dagua
+      # <b>OPCIONAL</b>: Tema visual — path de fonte TTF para suporte UTF-8 completo
+      # (variantes -Bold/-Italic são detectadas automaticamente se existirem)
+      attr_accessor :fonte_ttf
 
       # Validações
       validates_presence_of :agencia, :conta_corrente, :moeda, :especie_documento, :especie, :aceite, :nosso_numero,

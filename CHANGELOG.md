@@ -7,6 +7,17 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Added — Marca d'água e fonte TTF nos templates Prawn (Fase 3)
+- **`marca_dagua`** (novo atributo em `Boleto::Base`): texto diagonal
+  antifraude em 6% de opacidade, truncado em 60 chars e em maiúsculas.
+  Desenhada **fora das áreas de leitura** (zona de exclusão do código de
+  barras/QR Code) no recibo e na ficha do `PrawnBolepix` e na ficha do
+  `PrawnCarne` — validado com zbarimg (códigos continuam decodificando)
+- **`fonte_ttf`** (novo atributo): path de fonte TTF para suporte UTF-8
+  completo nos PDFs Prawn; variantes `-Bold`/`-Italic`/`-BoldItalic` são
+  detectadas automaticamente quando o path termina em `-Regular.ttf`
+  (ex.: Liberation/DejaVu); fallback silencioso se o arquivo não existir
+
 ### Added — Tema visual personalizável nos templates Prawn (Fase 2a)
 - **Novo módulo `Brcobranca::Boleto::Template::PrawnTema`** compartilhado
   por `PrawnBolepix` e `PrawnCarne`

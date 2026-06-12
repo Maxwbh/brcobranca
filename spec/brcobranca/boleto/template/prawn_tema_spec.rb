@@ -96,6 +96,34 @@ RSpec.describe Brcobranca::Boleto::Template::PrawnTema do
     end
   end
 
+  describe '.marca_dagua' do
+    it 'trunca em 60 caracteres e converte para maiusculas' do
+      boleto.marca_dagua = 'empresa exemplo ltda' + ('x' * 100)
+      resultado = described_class.marca_dagua(boleto)
+      expect(resultado.size).to eq(60)
+      expect(resultado).to start_with('EMPRESA EXEMPLO LTDA')
+    end
+
+    it 'retorna nil para texto vazio' do
+      boleto.marca_dagua = '  '
+      expect(described_class.marca_dagua(boleto)).to be_nil
+    end
+  end
+
+  describe '.variante_fonte' do
+    it 'deriva variante Bold quando o arquivo existe' do
+      regular = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+      skip 'Liberation fonts nao instaladas' unless File.exist?(regular)
+
+      bold = described_class.variante_fonte(regular, 'Bold')
+      expect(bold).to end_with('LiberationSans-Bold.ttf')
+    end
+
+    it 'mantem o path original quando a variante nao existe' do
+      expect(described_class.variante_fonte('/tmp/fonte.ttf', 'Bold')).to eq('/tmp/fonte.ttf')
+    end
+  end
+
   describe '.tema?' do
     it 'false sem nenhum atributo' do
       expect(described_class.tema?(boleto)).to be false

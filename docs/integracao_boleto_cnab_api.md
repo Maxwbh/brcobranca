@@ -102,7 +102,7 @@ end
 
 ## 4. Tema (customização visual) — contrato proposto
 
-> Status: **Fase 2a implementada na gem** (exceto `marca_dagua`, Fase 3).
+> Status: **Fases 2a e 3 implementadas na gem** — todos os campos abaixo ja sao aceitos pelos templates Prawn.
 > Os campos abaixo definem como a `boleto_cnab_api` deve **enviar** os
 > dados quando a gem implementar o tema. Válido para os dois modelos
 > (`prawn` boleto e `prawn_carne`).
@@ -132,7 +132,7 @@ end
 | `logo_empresa_formato` | String | `png` ou `jpg` | — (usado na decodificação) |
 | `cor_marca` | String hex | `^[0-9A-Fa-f]{6}$` | `cor_marca` |
 | `parcela_atual` / `total_parcelas` | Integer | > 0; atual ≤ total | `parcela_atual` / `total_parcelas` |
-| `marca_dagua` | String | máx. 60 chars | `marca_dagua` |
+| `marca_dagua` | String | máx. 60 chars (zona de exclusão do barcode/QR garantida pela gem) | `marca_dagua` |
 | `rodape_contato` | String | máx. 120 chars | `rodape_contato` |
 
 ### Responsabilidades da boleto_cnab_api
@@ -196,7 +196,7 @@ Resposta (`include_data=true`):
 | gem | Campos PIX no boleto (`chave_pix`, `tipo_chave_pix`, `txid`, `emv`) | ✅ v12.8.0 |
 | gem | `PrawnBolepix` (boleto) e `PrawnCarne` (carnê 3/página) | ✅ |
 | gem | Atributos de tema (`logo_empresa`, `cor_marca`, `parcela_atual`/`total_parcelas`, `rodape_contato`) | ✅ Fase 2a |
-| gem | `marca_dagua` + fonte TTF | 📋 Fase 3 |
+| gem | `marca_dagua` + `fonte_ttf` (TTF com variantes automaticas) | ✅ Fase 3 |
 | API | `template=prawn` no `/api/boleto/multi` | ✅ |
 | API | Endpoint `/api/boleto/carne` (PrawnCarne) | 📋 proposto |
 | API | Bloco `tema` (decodificação base64 do logo, validações, tempfile) | 📋 proposto |
