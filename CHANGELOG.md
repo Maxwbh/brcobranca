@@ -7,6 +7,21 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Added — `PrawnCarne`: carnê de pagamento via Prawn (Fase 1)
+- **Novo `Brcobranca::Boleto::Template::PrawnCarne`**: carnê no modelo do
+  RGhost carnê (canhoto destacável + Ficha de Compensação), sem GhostScript
+  - `to_carne(:pdf)` — boleto único em página 21x9cm
+  - `lote_carne(boletos)` — 3 boletos por página A4, com linhas
+    pontilhadas de corte (vertical canhoto/ficha e horizontal entre boletos)
+  - **QR Code PIX** na ficha quando `boleto.emv` presente (nível M,
+    label "Pague com PIX")
+  - Código de barras I2/5 com `xdim` calculado (não invade o QR)
+  - Mesmas gems opcionais do `PrawnBolepix` (prawn, barby, rqrcode,
+    chunky_png) — specs fazem skip quando indisponíveis
+- **Fixture versionado**: `spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf`
+  (3 parcelas Sicoob com PIX), validado com zbarimg — 3 QR Codes decodificam
+  o EMV exato e 3 códigos de barras I2/5 decodificam os códigos corretos
+
 ### Fixed — Templates de boleto com PIX (validados visualmente)
 - **RGhost Bolepix**: corrige crash (`ArgumentError`) por colisão do helper
   `pix_label(boleto)` com o `attr_accessor :pix_label` de `Boleto::Base`;

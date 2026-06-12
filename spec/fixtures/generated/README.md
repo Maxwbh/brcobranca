@@ -17,6 +17,7 @@ um para cada template de renderização:
 |---|---|---|
 | `pdf/sicoob_pix.pdf` | **RGhost** (`:rghost_bolepix`) | Boleto híbrido com QR Code PIX, requer GhostScript |
 | `pdf/prawn_sicoob_pix.pdf` | **Prawn** (`PrawnBolepix`) | Recibo do Pagador + Ficha de Compensação + QR Code PIX, puro-Ruby |
+| `pdf/prawn_carne_sicoob_pix.pdf` | **Prawn** (`PrawnCarne`) | Carnê 3 parcelas/página A4 — canhoto + ficha + QR Code PIX, puro-Ruby |
 
 Ambos foram validados com `zbarimg`: o QR Code decodifica a string EMV
 exata e o código de barras I2/5 decodifica o código correto.

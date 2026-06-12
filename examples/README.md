@@ -22,6 +22,7 @@ Dois boletos Sicoob com PIX validados visualmente, um por template:
 |---|---|
 | [`../spec/fixtures/generated/pdf/sicoob_pix.pdf`](../spec/fixtures/generated/pdf/sicoob_pix.pdf) | RGhost (`:rghost_bolepix`) |
 | [`../spec/fixtures/generated/pdf/prawn_sicoob_pix.pdf`](../spec/fixtures/generated/pdf/prawn_sicoob_pix.pdf) | Prawn (`PrawnBolepix`) |
+| [`../spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf`](../spec/fixtures/generated/pdf/prawn_carne_sicoob_pix.pdf) | Prawn (`PrawnCarne` — carnê 3 parcelas/página) |
 
 Para gerar o conjunto completo (18 bancos, com/sem PIX) localmente:
 

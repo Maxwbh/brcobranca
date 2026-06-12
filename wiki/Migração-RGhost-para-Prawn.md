@@ -135,5 +135,6 @@ um por template (ambos validados com leitura de QR Code e código de barras):
 |---|---|
 | `sicoob_pix.pdf` | RGhost |
 | `prawn_sicoob_pix.pdf` | Prawn |
+| `prawn_carne_sicoob_pix.pdf` | Prawn (carnê 3/página) |
 
 Para gerar o conjunto completo localmente (18 bancos): `bin/generate_fixtures`
