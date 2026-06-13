@@ -281,7 +281,7 @@ module Brcobranca
           pdf.fill_color COR_TEXTO_VALOR
 
           # Logo do banco (se houver PNG) ou texto como fallback
-          desenha_logo_banco(pdf, boleto, 0, y, logo_w, HEADER_HEIGHT)
+          PrawnTema.desenha_logo_banco_prawn(pdf, boleto, 0, y, logo_w, HEADER_HEIGHT)
 
           # Código do banco - DV (centro, destaque)
           pdf.fill_color 'FFFFFF'
@@ -324,7 +324,7 @@ module Brcobranca
           pdf.move_down HEADER_HEIGHT
         end
 
-        def desenha_logo_banco(pdf, boleto, x, y, col_width, altura)
+        def PrawnTema.desenha_logo_banco_prawn(pdf, boleto, x, y, col_width, altura)
           png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
           if File.exist?(png_path)
             pdf.image png_path, at: [x + 2, y - 2], height: altura - 6, width: col_width - 4
@@ -594,7 +594,7 @@ module Brcobranca
 
           width = pdf.bounds.width
           y_start = pdf.cursor
-          tem_pix = boleto.emv && emv_valido?(boleto.emv)
+          tem_pix = boleto.emv && PrawnTema.emv_valido?(boleto.emv)
 
           barras_width = tem_pix ? width * 0.55 : width * 0.60
           direita_x = barras_width + 10
@@ -622,7 +622,7 @@ module Brcobranca
 
             # Label "Pague com PIX" em verde, centralizado abaixo do QR Code
             pdf.fill_color COR_PIX
-            pdf.text_box resolve_pix_label(boleto),
+            pdf.text_box PrawnTema.resolve_pix_label(boleto),
                          at: [qr_x, y_start - QRCODE_SIZE - 2],
                          width: QRCODE_SIZE,
                          height: 10,
@@ -658,18 +658,13 @@ module Brcobranca
           pdf.move_down BARCODE_HEIGHT + 8
         end
 
-        def resolve_pix_label(boleto)
+        def PrawnTema.resolve_pix_label(boleto)
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
           config_label || 'Pague com PIX'
         end
 
-        def emv_valido?(emv)
-          return false if emv.nil? || emv.to_s.strip.empty?
-
-          emv.to_s.start_with?('0002')
-        end
       end
     end
   end

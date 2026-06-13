@@ -190,6 +190,37 @@ module Brcobranca
           pdf.fill_color '000000'
           true
         end
+
+        # Validação mínima do EMV BR Code (compartilhada por todos os templates).
+        def emv_valido?(emv)
+          return false if emv.nil? || emv.to_s.strip.empty?
+
+          emv.to_s.start_with?('0002')
+        end
+
+        # Label exibido ao lado do QR Code PIX (compartilhado por todos os templates).
+        def resolve_pix_label(boleto)
+          return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
+
+          config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
+          config_label || 'Pague com PIX'
+        end
+
+        # Desenha o logo do banco no PDF Prawn (compartilhado por PrawnBolepix e PrawnCarne).
+        def desenha_logo_banco_prawn(pdf, boleto, pos_x, pos_y, col_width, altura)
+          png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
+          if File.exist?(png_path)
+            pdf.image png_path, at: [pos_x + 2, pos_y - 2], height: altura - 4
+          else
+            pdf.text_box boleto.banco_nome.upcase,
+                         at: [pos_x + 2, pos_y - 3], width: col_width - 4, height: altura - 4,
+                         size: 8, align: :left, valign: :center, style: :bold
+          end
+        rescue StandardError
+          pdf.text_box boleto.banco_nome.upcase,
+                       at: [pos_x + 2, pos_y - 3], width: col_width - 4, height: altura - 4,
+                       size: 8, align: :left, valign: :center, style: :bold
+        end
       end
     end
   end

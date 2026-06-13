@@ -196,7 +196,7 @@ module Brcobranca
 
           # Logo da empresa (tema) tem prioridade sobre o logo do banco no canhoto
           logo_ok = PrawnTema.desenha_logo(pdf, boleto, x: 2, y: y - 2, altura: HEADER_H - 4)
-          desenha_logo_banco(pdf, boleto, 0, y, CANHOTO_WIDTH - 38, HEADER_H) unless logo_ok
+          PrawnTema.desenha_logo_banco_prawn(pdf, boleto, 0, y, CANHOTO_WIDTH - 38, HEADER_H) unless logo_ok
 
           pdf.fill_color cor_texto
           pdf.text_box "#{boleto.banco}-#{boleto.banco_dv}",
@@ -313,7 +313,7 @@ module Brcobranca
           pdf.fill_rectangle([0, y], largura, HEADER_H)
           pdf.fill_color COR_TEXTO_VALOR
 
-          desenha_logo_banco(pdf, boleto, 0, y, logo_w, HEADER_H)
+          PrawnTema.desenha_logo_banco_prawn(pdf, boleto, 0, y, logo_w, HEADER_H)
 
           pdf.fill_color 'FFFFFF'
           pdf.fill_rectangle([logo_w, y], codigo_w, HEADER_H)
@@ -444,7 +444,7 @@ module Brcobranca
 
           largura = pdf.bounds.width
           y = pdf.cursor - 4
-          tem_pix = boleto.emv && emv_valido?(boleto.emv)
+          tem_pix = boleto.emv && PrawnTema.emv_valido?(boleto.emv)
 
           barras_w = tem_pix ? largura - QRCODE_W - 70 : largura * 0.62
 
@@ -462,7 +462,7 @@ module Brcobranca
             pdf.image StringIO.new(png.to_s), at: [qr_x, y + 8], width: QRCODE_W
 
             pdf.fill_color COR_PIX
-            pdf.text_box resolve_pix_label(boleto),
+            pdf.text_box PrawnTema.resolve_pix_label(boleto),
                          at: [qr_x + QRCODE_W + 4, y - 6],
                          width: largura - qr_x - QRCODE_W - 6,
                          height: 16, size: 6, style: :bold, valign: :center
@@ -486,20 +486,15 @@ module Brcobranca
           pdf.fill_color COR_TEXTO_VALOR
         end
 
-        def resolve_pix_label(boleto)
+        def PrawnTema.resolve_pix_label(boleto)
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
 
           config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
           config_label || 'Pague com PIX'
         end
 
-        def emv_valido?(emv)
-          return false if emv.nil? || emv.to_s.strip.empty?
 
-          emv.to_s.start_with?('0002')
-        end
-
-        def desenha_logo_banco(pdf, boleto, x, y, w, h)
+        def PrawnTema.desenha_logo_banco_prawn(pdf, boleto, x, y, w, h)
           png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
           if File.exist?(png_path)
             pdf.image png_path, at: [x + 2, y - 2], height: h - 4
@@ -510,11 +505,6 @@ module Brcobranca
           texto_logo_banco(pdf, boleto, x, y, w, h)
         end
 
-        def texto_logo_banco(pdf, boleto, x, y, w, h)
-          pdf.text_box boleto.banco_nome.upcase,
-                       at: [x + 2, y - 3], width: w - 4, height: h - 4,
-                       size: 8, align: :left, valign: :center, style: :bold
-        end
       end
     end
   end

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Brcobranca::Retorno::Cnab400::Base do
-  let(:arquivo) { File.join(File.dirname(__FILE__), '..', '..', '..', 'arquivos', nome_arquivo) }
+  let(:arquivo) { File.join(File.dirname(__FILE__), '..', '..', '..', 'fixtures', 'retorno', nome_arquivo) }
 
   describe '#load_lines' do
     it 'retorna nil se o arquivo é nil' do

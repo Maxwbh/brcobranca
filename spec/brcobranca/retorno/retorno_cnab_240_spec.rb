@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Brcobranca::Retorno::RetornoCnab240 do
   before do
-    @arquivo = File.join(File.dirname(__FILE__), '..', '..', 'arquivos', 'CNAB240.RET')
+    @arquivo = File.join(File.dirname(__FILE__), '..', '..', 'fixtures', 'retorno', 'CNAB240.RET')
   end
 
   it 'Transforma arquivo de retorno em objetos de retorno retornando somente as linhas de pagamentos de títulos sem registro' do
