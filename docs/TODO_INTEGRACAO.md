@@ -91,26 +91,37 @@ Legenda: ✅ implementado · — ausente · 🔑 PIX
 ### 🔴 Alta prioridade
 
 - [ ] **Retorno CNAB 400 Sicoob (756)** — fechar a lacuna remessa↔retorno do Sicoob
-- [ ] **Specs de retorno ausentes** (cobertura de regressão — implementação já existe):
+- [ ] **i18n** — mensagens de erro e labels em pt-BR / en
+- [ ] **QR Code PIX estático** — gerar BR Code EMV a partir de `chave_pix`/`txid` sem remessa
+      (conecta os campos da Fase 8 ao template Bolepix automaticamente)
+- [ ] **PIX no retorno** — parsear dados PIX dos arquivos de retorno
+- [ ] **Remover dependência `parseline`** — gem sem manutenção desde 2009.
+      Substituir por módulo interno `Brcobranca::ParseLine` (DSL fixed-width).
+      Impacta ~20 arquivos de retorno
+- [ ] **Remover metadata duplicada do gemspec** — `gem.homepage` + `homepage_uri` redundantes
+- [ ] **Extrair `PixMixin` compartilhado** — CNAB 240 e CNAB 400 têm mixins separados com
+      estrutura semelhante (mapeamento DICT idêntico). Extrair lógica comum
+- [ ] **Modularizar classes base grandes** — `cnab240/base.rb` (540 linhas),
+      `boleto/base.rb` (460+), `pagamento.rb` (411), `util/validations.rb` (307)
+- [ ] **Aposentar `RetornoCnab400` legado** — marcado DEPRECATED, mantido só por compat.
+      Planejar remoção em major futura
+- [ ] **Padronizar herança de retorno** — `Cnab400::{BancoBrasilia,BancoNordeste,Credisis}`
+      herdam de `Retorno::Base` em vez de `Cnab400::Base`; `Cnab240::Caixa` herda do legado
+      `RetornoCnab240`. Uniformizar (atenção: breaking change, agendar para major)
+- [ ] **Encapsulamento** — muitos helpers internos estão públicos; revisar `private`/`protected`
+- [ ] **Specs de retorno ausentes** (implementação já existe, faltam specs):
   - [ ] `retorno/cnab240/caixa_spec.rb`
   - [ ] `retorno/cnab400/banco_brasil_spec.rb`
   - [ ] `retorno/cnab400/banco_c6_spec.rb`
 - [ ] **`Bancos.registrar`** — registro de bancos custom em runtime
 - [ ] **Validação cruzada no `Bancos`** — `find` retornando classes resolvidas, não strings
-- [ ] **i18n** — mensagens de erro e labels em pt-BR / en
-- [ ] **QR Code PIX estático** — gerar BR Code EMV a partir de `chave_pix`/`txid` sem remessa
-      (conecta os campos da Fase 8 ao template Bolepix automaticamente)
-
-### 🟡 Média prioridade
-
-- [ ] **PIX no retorno** — parsear dados PIX dos arquivos de retorno
-- [ ] **Caixa SIGCB** — suporte a convênio de 7 dígitos
 - [ ] **Resolver FIXMEs de DV** — `retorno/cnab400/itau.rb` e `retorno_cnab400.rb`
       ("SEM DIV" — agência sem dígito verificador)
 - [ ] **Avalista no CNAB 400 Banco do Brasil** — `TODO implementar avalista` em `monta_detalhe`
 
 ### 🟢 Baixa prioridade / futuro
 
+- [ ] **Caixa SIGCB** — suporte a convênio de 7 dígitos
 - [ ] **CNAB 240 para Bradesco** — remessa e retorno
 - [ ] **CNAB 240 para Itaú** — complementar o CNAB 400/444
 - [ ] **Retorno CNAB 240 Banco do Brasil (001)** e **Unicred (136)**
@@ -119,27 +130,6 @@ Legenda: ✅ implementado · — ausente · 🔑 PIX
 - [ ] **PIX para Sicredi (748)** — CNAB 240 com Segmento Y-03
 - [ ] **PIX para Banrisul (041)** — avaliar formato suportado
 - [ ] **HSBC** — verificar outras carteiras (`TODO` em `boleto/hsbc.rb`)
-
----
-
-## 🧹 Débito técnico / Qualidade de código
-
-> Achados da revisão do projeto. Não bloqueiam, mas reduzem manutenção futura.
-
-- [ ] **Remover dependência `parseline`** — gem sem manutenção desde 2009.
-      Substituir por módulo interno `Brcobranca::ParseLine` (DSL fixed-width).
-      Impacta ~20 arquivos de retorno. *Modernização + menos dependências externas.*
-- [ ] **Remover metadata duplicada do gemspec** — `gem.homepage` + `homepage_uri` redundantes.
-- [ ] **Extrair `PixMixin` compartilhado** — CNAB 240 e CNAB 400 têm mixins separados com
-      estrutura semelhante (mapeamento DICT idêntico). Extrair lógica comum para um pai.
-- [ ] **Modularizar classes base grandes** — `cnab240/base.rb` (540 linhas),
-      `boleto/base.rb` (460), `pagamento.rb` (411), `util/validations.rb` (307).
-- [ ] **Aposentar `RetornoCnab400` legado** — marcado DEPRECATED, mantido só por compat.
-      Planejar remoção em major futura.
-- [ ] **Encapsulamento** — muitos helpers internos estão públicos; revisar `private`/`protected`.
-- [ ] **Padronizar herança de retorno** — `Cnab400::{BancoBrasilia,BancoNordeste,Credisis}`
-      herdam de `Retorno::Base` em vez de `Cnab400::Base`; `Cnab240::Caixa` herda do legado
-      `RetornoCnab240`. Uniformizar (atenção: breaking change, agendar para major).
 
 ---
 

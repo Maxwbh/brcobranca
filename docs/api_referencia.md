@@ -347,7 +347,7 @@ end
 
 > **Disponível desde:** v12.6.0
 
-O módulo `Brcobranca::Bancos` é um registro central com os metadados dos 18 bancos suportados — uma fonte única de verdade sobre quais bancos, CNAB e PIX estão implementados. Projetado para alimentar endpoints de descoberta em APIs REST (ex.: `boleto_cnab_api`).
+O módulo `Brcobranca::Bancos` é um registro central com os metadados dos 18 bancos suportados — uma fonte única de verdade sobre quais bancos, CNAB e PIX estão implementados. Projetado para alimentar endpoints de descoberta em APIs REST.
 
 ### Métodos Disponíveis
 
@@ -448,7 +448,7 @@ Brcobranca::Bancos.to_json
 # => '{"total_bancos":18,"total_com_remessa":14,...}'
 ```
 
-### Endpoints sugeridos (Rails / boleto_cnab_api)
+### Endpoints sugeridos (Rails)
 
 ```ruby
 # config/routes.rb

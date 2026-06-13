@@ -246,8 +246,7 @@ File.write('carne.pdf', pdf)
 
 ### Tema personalizável (logo da empresa)
 
-Atributos opcionais nos dois templates Prawn — pensados para multi-tenant
-(ex.: [boleto_cnab_api](docs/integracao_boleto_cnab_api.md)):
+Atributos opcionais nos dois templates Prawn — pensados para multi-tenant:
 
 ```ruby
 boleto.logo_empresa   = 'logos/imobiliaria.png' # path ou IO — entra na faixa de marca
