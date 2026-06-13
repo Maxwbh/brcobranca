@@ -189,18 +189,18 @@ Resposta (`include_data=true`):
 
 ---
 
-## 5. Checklist de implementação
+## 5. Status na gem (brcobranca)
 
-| Lado | Item | Status |
-|---|---|:---:|
-| gem | Campos PIX no boleto (`chave_pix`, `tipo_chave_pix`, `txid`, `emv`) | ✅ v12.8.0 |
-| gem | `PrawnBolepix` (boleto) e `PrawnCarne` (carnê 3/página) | ✅ |
-| gem | Atributos de tema (`logo_empresa`, `cor_marca`, `parcela_atual`/`total_parcelas`, `rodape_contato`) | ✅ Fase 2a |
-| gem | `marca_dagua` + `fonte_ttf` (TTF com variantes automaticas) | ✅ Fase 3 |
-| API | `template=prawn` no `/api/boleto/multi` | ✅ |
-| API | Endpoint `/api/boleto/carne` (PrawnCarne) | 📋 proposto |
-| API | Bloco `tema` (decodificação base64 do logo, validações, tempfile) | 📋 proposto |
-| gestão_contrato | Cadastro da empresa: logo (upload), cor_hex, contato | 📋 proposto |
+Recursos disponíveis na gem para consumo pela API. A implementação do lado
+da API (`boleto_cnab_api`) e do `gestao_contrato` é responsabilidade desses
+projetos.
+
+| Recurso na gem | Status |
+|---|:---:|
+| Campos PIX no boleto (`chave_pix`, `tipo_chave_pix`, `txid`, `emv`) | ✅ v12.8.0 |
+| `PrawnBolepix` (boleto) e `PrawnCarne` (carnê 3/página) | ✅ |
+| Atributos de tema (`logo_empresa`, `cor_marca`, `parcela_atual`/`total_parcelas`, `rodape_contato`) | ✅ |
+| `marca_dagua` + `fonte_ttf` (TTF com variantes automáticas) | ✅ |
 
 ---
 
