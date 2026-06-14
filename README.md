@@ -36,10 +36,11 @@
 
 - **18 bancos** em uma única gem — boleto, remessa e retorno
 - **PIX nativo** — campos `chave_pix`/`tipo_chave_pix`/`txid` no boleto + registro PIX na remessa CNAB
-- **Sem GhostScript?** Sem problema — template **Prawn** gera PDF puro-Ruby
+- **Sem GhostScript?** Sem problema — templates **Prawn** geram PDF puro-Ruby (boleto e **carnê 3/página**)
+- **Tema personalizável** — logo da empresa, cor da marca, selo "PARCELA n/N", marca d'água e fonte TTF
 - **API JSON** — `to_hash`, `as_json`, `to_json` em boleto, remessa e retorno
 - **Registro de bancos** — `Brcobranca::Bancos` descobre bancos/CNAB/PIX programaticamente
-- **1.300+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
+- **1.370+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
 
 ---
 
@@ -233,6 +234,33 @@ boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
 File.write('boleto.pdf', boleto.to(:pdf))
 ```
 
+### Carnê de pagamento (3 boletos por página A4)
+
+```ruby
+require 'brcobranca/boleto/template/prawn_carne'
+
+# Canhoto destacável + Ficha de Compensação + QR PIX, com linhas de corte
+pdf = Brcobranca::Boleto::Template::PrawnCarne.lote_carne(parcelas)
+File.write('carne.pdf', pdf)
+```
+
+### Tema personalizável (logo da empresa)
+
+Atributos opcionais nos dois templates Prawn — pensados para multi-tenant:
+
+```ruby
+boleto.logo_empresa   = 'logos/imobiliaria.png' # path ou IO — entra na faixa de marca
+boleto.cor_marca      = '006B3F'                # hex; contraste do texto é automático
+boleto.parcela_atual  = 2                       # selo "PARCELA 2/12" em destaque
+boleto.total_parcelas = 12
+boleto.rodape_contato = 'financeiro@empresa.com - (77) 3000-0000'
+boleto.marca_dagua    = 'Empresa Exemplo LTDA'  # diagonal antifraude (6% opacidade)
+boleto.fonte_ttf      = 'fonts/OpenSans-Regular.ttf' # UTF-8 completo
+```
+
+Sem esses atributos o visual permanece o padrão. A Ficha de Compensação
+(linha digitável, código de barras e QR Code) nunca é alterada pelo tema.
+
 > Comparacao RGhost vs Prawn: [Wiki: Migracao](https://github.com/Maxwbh/brcobranca/wiki/Migração-RGhost-para-Prawn)
 
 ---
@@ -306,7 +334,7 @@ Fork mantido por **[Maxwell da Silva Oliveira](https://github.com/Maxwbh)** — 
 
 **BRCobranca** is a Ruby library for Brazilian bank payment slips (boletos), CNAB remittance/return files, and PIX hybrid billing.
 
-**Key features:** 18 banks · CNAB 240/400/444 · PIX in 7 banks · PDF via RGhost or Prawn (no GhostScript needed) · JSON serialization API · Bank registry for programmatic discovery · Ruby 3.0–3.4
+**Key features:** 18 banks · CNAB 240/400/444 · PIX in 7 banks · PDF via RGhost or Prawn (no GhostScript needed) · Payment book (carnê, 3 slips/page) · Customizable theme (company logo, brand color, watermark, TTF font) · JSON serialization API · Bank registry for programmatic discovery · Ruby 3.0–3.4
 
 ### Quick Start
 

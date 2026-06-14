@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Brcobranca::Retorno::RetornoCbr643 do
   before do
-    @arquivo = File.join(File.dirname(__FILE__), '..', '..', 'arquivos', 'CBR64310.RET')
+    @arquivo = File.join(File.dirname(__FILE__), '..', '..', 'fixtures', 'retorno', 'CBR64310.RET')
   end
 
   it 'Transforma arquivo de retorno em objetos de retorno' do

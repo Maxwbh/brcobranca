@@ -207,36 +207,67 @@ module Brcobranca
     ].freeze
 
     class << self
-      # All supported banks.
+      # All supported banks (built-in + custom registered at runtime).
       # @return [Array<Hash>]
       def todos
-        REGISTRO
+        REGISTRO + registro_customizado
+      end
+
+      # Register a custom bank at runtime.
+      #
+      # Useful for extending the registry without changing the gem.
+      # The bank hash must contain at least :codigo and :nome.
+      #
+      # @param banco [Hash] bank metadata (same shape as REGISTRO entries)
+      # @raise [ArgumentError] if :codigo/:nome missing or code already used
+      # @return [Hash] the normalized registered bank
+      #
+      # @example
+      #   Brcobranca::Bancos.registrar(
+      #     codigo: "999", nome: "Banco Custom", boleto: "BancoCustom",
+      #     cnab: { "400" => { remessa: "Cnab400::BancoCustom", retorno: nil } }
+      #   )
+      def registrar(banco)
+        banco = normalizar_registro(banco)
+        raise ArgumentError, 'banco precisa de :codigo e :nome' if banco[:codigo].to_s.empty? || banco[:nome].to_s.empty?
+        raise ArgumentError, "codigo #{banco[:codigo]} ja registrado" if find(banco[:codigo])
+
+        registro_customizado << banco
+        banco
+      end
+
+      # Remove a custom bank previously registered. Built-in banks are
+      # never removed. @return [Boolean] true if a custom bank was removed.
+      def remover(codigo)
+        antes = registro_customizado.size
+        registro_customizado.reject! { |b| b[:codigo] == codigo.to_s }
+        registro_customizado.size != antes
       end
 
       # Find bank by code.
       # @param codigo [String] bank code (e.g. "756")
       # @return [Hash, nil]
       def find(codigo)
-        REGISTRO.find { |b| b[:codigo] == codigo.to_s }
+        todos.find { |b| b[:codigo] == codigo.to_s }
       end
 
       # Bank codes only.
       # @return [Array<String>]
       def codigos
-        REGISTRO.map { |b| b[:codigo] }
+        todos.map { |b| b[:codigo] }
       end
 
       # Banks that support boleto generation.
       # @return [Array<Hash>]
       def com_boleto
-        REGISTRO.select { |b| b[:boleto] }
+        todos.select { |b| b[:boleto] }
       end
 
       # Banks that have CNAB remessa support.
       # @param formato [String, nil] "240", "400", "444" or nil for any
       # @return [Array<Hash>]
       def com_remessa(formato = nil)
-        REGISTRO.select do |b|
+        todos.select do |b|
           if formato
             b[:cnab].key?(formato.to_s)
           else
@@ -249,7 +280,7 @@ module Brcobranca
       # @param formato [String, nil] "240", "400" or nil for any
       # @return [Array<Hash>]
       def com_retorno(formato = nil)
-        REGISTRO.select do |b|
+        todos.select do |b|
           if formato
             b[:cnab].dig(formato.to_s, :retorno)
           else
@@ -261,25 +292,55 @@ module Brcobranca
       # Banks that support PIX in remessa files.
       # @return [Array<Hash>]
       def com_pix
-        REGISTRO.select { |b| b[:pix].any? }
+        todos.select { |b| b[:pix].any? }
       end
 
       # CNAB formats supported across all banks.
       # @return [Array<String>]
       def formatos_cnab
-        REGISTRO.flat_map { |b| b[:cnab].keys }.uniq.sort
+        todos.flat_map { |b| b[:cnab].keys }.uniq.sort
+      end
+
+      # Resolve the boleto class for a bank code.
+      # @return [Class, nil]
+      def classe_boleto(codigo)
+        banco = find(codigo)
+        return nil unless banco && banco[:boleto]
+
+        resolver_classe("Brcobranca::Boleto::#{banco[:boleto]}")
+      end
+
+      # Resolve the remessa class for a bank code and CNAB format.
+      # @return [Class, nil]
+      def classe_remessa(codigo, formato)
+        nome = find(codigo)&.dig(:cnab, formato.to_s, :remessa)
+        nome && resolver_classe("Brcobranca::Remessa::#{nome}")
+      end
+
+      # Resolve the retorno class for a bank code and CNAB format.
+      # @return [Class, nil]
+      def classe_retorno(codigo, formato)
+        nome = find(codigo)&.dig(:cnab, formato.to_s, :retorno)
+        nome && resolver_classe("Brcobranca::Retorno::#{nome}")
+      end
+
+      # Resolve the PIX remessa class for a bank code and CNAB format.
+      # @return [Class, nil]
+      def classe_pix(codigo, formato)
+        nome = find(codigo)&.dig(:pix, formato.to_s)
+        nome && resolver_classe("Brcobranca::Remessa::#{nome}")
       end
 
       # Full summary as a hash (for API responses).
       # @return [Hash]
       def as_json
         {
-          total_bancos: REGISTRO.size,
+          total_bancos: todos.size,
           total_com_remessa: com_remessa.size,
           total_com_retorno: com_retorno.size,
           total_com_pix: com_pix.size,
           formatos_cnab: formatos_cnab,
-          bancos: REGISTRO.map { |b| banco_as_json(b) }
+          bancos: todos.map { |b| banco_as_json(b) }
         }
       end
 
@@ -291,6 +352,30 @@ module Brcobranca
       end
 
       private
+
+      # Mutable list of custom banks registered at runtime.
+      def registro_customizado
+        @registro_customizado ||= []
+      end
+
+      # Resolve a fully-qualified class name to the Class, or nil.
+      def resolver_classe(nome)
+        Object.const_get(nome)
+      rescue NameError
+        nil
+      end
+
+      # Ensure a registered bank has the default keys present.
+      def normalizar_registro(banco)
+        {
+          codigo: banco[:codigo].to_s,
+          nome: banco[:nome],
+          boleto: banco[:boleto],
+          cnab: banco[:cnab] || {},
+          pix: banco[:pix] || {},
+          carteiras: banco[:carteiras] || []
+        }.merge(banco[:extras] ? { extras: banco[:extras] } : {})
+      end
 
       def banco_as_json(banco)
         cnab_formatos = banco[:cnab].map do |fmt, cap|

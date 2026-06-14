@@ -9,6 +9,23 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.10.2] - 2026-06-14
+
+### Added — `Brcobranca::Bancos`: resolução de classes e registro custom
+- **Resolvedores de classe** — convertem o código do banco na classe Ruby:
+  - `Bancos.classe_boleto(codigo)` → ex.: `Brcobranca::Boleto::Sicoob`
+  - `Bancos.classe_remessa(codigo, formato)` / `classe_retorno(codigo, formato)`
+  - `Bancos.classe_pix(codigo, formato)` → classe de remessa PIX
+  - Retornam `nil` quando o banco/formato não existe (sem exceção)
+- **Registro custom em runtime**:
+  - `Bancos.registrar(banco)` — adiciona banco custom (requer `:codigo` e `:nome`;
+    rejeita código já existente)
+  - `Bancos.remover(codigo)` — remove banco custom (não afeta os 18 built-in)
+  - `todos`, `find`, `com_*`, `as_json` passam a incluir os bancos custom
+
+### Changed
+- **gemspec**: remove `homepage_uri` duplicado da metadata (já derivado de `gem.homepage`)
+
 ## [12.10.1] - 2026-06-12
 
 <!-- Adicione novas mudanças aqui -->

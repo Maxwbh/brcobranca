@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Brcobranca::Retorno::Cnab400::Banrisul do
   before do
-    @arquivo = File.join(File.dirname(__FILE__), '..', '..', '..', 'arquivos', 'CNAB400BANRISUL.RET')
+    @arquivo = File.join(File.dirname(__FILE__), '..', '..', '..', 'fixtures', 'retorno', 'CNAB400BANRISUL.RET')
   end
 
   it 'Ignora primeira linha que é header' do

@@ -17,7 +17,6 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 3.0.0'
 
   gem.metadata = {
-    'homepage_uri' => 'https://github.com/Maxwbh/brcobranca',
     'changelog_uri' => 'https://github.com/Maxwbh/brcobranca/releases',
     'source_code_uri' => 'https://github.com/Maxwbh/brcobranca',
     'bug_tracker_uri' => 'https://github.com/Maxwbh/brcobranca/issues',
