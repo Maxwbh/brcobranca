@@ -152,21 +152,6 @@ resultado = boleto.to_hash_seguro
 render json: boleto.as_json_seguro
 ```
 
-#### Dados PIX
-
-```ruby
-boleto = Brcobranca::Boleto::Sicoob.new(
-  # ... outros campos ...
-  emv: '00020126580014br.gov.bcb.pix...'
-)
-
-boleto.dados_pix
-#=> {
-#     emv: '00020126580014br.gov.bcb.pix...',
-#     qrcode_pix: 'data:image/png;base64,...'
-#   }
-```
-
 ---
 
 ## Remessa API
@@ -655,6 +640,8 @@ end
 | 12.4.0 | Remessa API (Pagamento#to_hash, Remessa::Base#to_hash, Factory Remessa.criar) |
 | 12.5.0 | Retorno API (Retorno::Base#to_hash, Factory Retorno.parse, auto-detecção) |
 | 12.6.0 | API de Bancos (`Brcobranca::Bancos` — registro central, `todos/find/com_pix/as_json`) |
+| 12.8.0 | Campos PIX no boleto (`chave_pix`, `tipo_chave_pix`, `txid`); `dados_pix` expandido |
+| 12.10.x | `Bancos.classe_boleto/remessa/retorno/pix` + `Bancos.registrar/remover` |
 
 ---
 
