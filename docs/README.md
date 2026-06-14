@@ -13,7 +13,6 @@ cobrança híbrida com PIX, e arquivos CNAB 240/400/444.
 | [Campos por Banco](campos_por_banco.md) | Campos obrigatórios/opcionais por banco |
 | [API de Serialização](api_referencia.md) | `to_hash`, `as_json`, factory methods |
 | [API de Bancos](api_referencia.md#api-de-bancos) | `Brcobranca::Bancos` — registro de bancos/CNAB/PIX suportados |
-| [Integração boleto_cnab_api](integracao_boleto_cnab_api.md) | Contrato JSON da API REST, incluindo tema/customização visual |
 | [Roadmap](TODO_INTEGRACAO.md) | Status das entregas e versões |
 
 ### Arquivos do projeto

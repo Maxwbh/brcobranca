@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Brcobranca::Retorno::Cnab400::Santander do
-  let(:file) { File.join(File.dirname(__FILE__), '..', '..', '..', 'arquivos', 'CNAB400SANTANDER.RET') }
+  let(:file) { File.join(File.dirname(__FILE__), '..', '..', '..', 'fixtures', 'retorno', 'CNAB400SANTANDER.RET') }
   let(:pagamentos) { described_class.load_lines(file) }
 
   it 'Ignora primeira linha que é header' do

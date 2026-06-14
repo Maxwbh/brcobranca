@@ -2,7 +2,7 @@
 
 RSpec.describe Brcobranca::Retorno::Cnab240::Sicredi do
   before do
-    @arquivo = File.join(File.dirname(__FILE__), '..', '..', '..', 'arquivos', 'CNAB240SICREDI.CRT')
+    @arquivo = File.join(File.dirname(__FILE__), '..', '..', '..', 'fixtures', 'retorno', 'CNAB240SICREDI.CRT')
   end
 
   it 'Transforma arquivo de retorno em objetos de retorno retornando somente as linhas de pagamentos de títulos sem registro' do

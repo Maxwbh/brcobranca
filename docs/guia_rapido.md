@@ -327,7 +327,7 @@ remessa = Brcobranca::Remessa::Cnab240::Sicoob.new(
 ## Registro de Bancos (`Brcobranca::Bancos`)
 
 Registro central com metadados dos 18 bancos suportados — útil para montar
-seletores dinâmicos na UI ou expor um endpoint de descoberta (`boleto_cnab_api`).
+seletores dinâmicos na UI ou expor um endpoint de descoberta.
 
 ```ruby
 # Listar todos os bancos
