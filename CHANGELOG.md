@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.10.2] - 2026-06-14
+
 ### Added — `Brcobranca::Bancos`: resolução de classes e registro custom
 - **Resolvedores de classe** — convertem o código do banco na classe Ruby:
   - `Bancos.classe_boleto(codigo)` → ex.: `Brcobranca::Boleto::Sicoob`
