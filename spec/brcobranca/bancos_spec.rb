@@ -134,4 +134,66 @@ RSpec.describe Brcobranca::Bancos do
       expect(parsed['total_bancos']).to eq(18)
     end
   end
+
+  describe '.classe_boleto' do
+    it 'resolve a classe de boleto por codigo' do
+      expect(described_class.classe_boleto('756')).to eq(Brcobranca::Boleto::Sicoob)
+      expect(described_class.classe_boleto('336')).to eq(Brcobranca::Boleto::BancoC6)
+    end
+
+    it 'retorna nil para banco inexistente' do
+      expect(described_class.classe_boleto('999')).to be_nil
+    end
+  end
+
+  describe '.classe_remessa / .classe_retorno / .classe_pix' do
+    it 'resolve remessa por formato' do
+      expect(described_class.classe_remessa('756', '240')).to eq(Brcobranca::Remessa::Cnab240::Sicoob)
+      expect(described_class.classe_remessa('237', '400')).to eq(Brcobranca::Remessa::Cnab400::Bradesco)
+    end
+
+    it 'resolve retorno por formato' do
+      expect(described_class.classe_retorno('237', '400')).to eq(Brcobranca::Retorno::Cnab400::Bradesco)
+    end
+
+    it 'resolve classe PIX por formato' do
+      expect(described_class.classe_pix('756', '240')).to eq(Brcobranca::Remessa::Cnab240::SicoobPix)
+      expect(described_class.classe_pix('237', '400')).to eq(Brcobranca::Remessa::Cnab400::BradescoPix)
+    end
+
+    it 'retorna nil quando o formato nao existe para o banco' do
+      expect(described_class.classe_remessa('756', '444')).to be_nil
+      expect(described_class.classe_pix('021', '400')).to be_nil
+    end
+  end
+
+  describe '.registrar / .remover' do
+    after { described_class.remover('999') }
+
+    it 'registra um banco custom em runtime' do
+      banco = described_class.registrar(
+        codigo: '999', nome: 'Banco Custom', boleto: 'BancoCustom',
+        cnab: { '400' => { remessa: 'Cnab400::BancoCustom', retorno: nil } }
+      )
+      expect(banco[:codigo]).to eq('999')
+      expect(described_class.find('999')[:nome]).to eq('Banco Custom')
+      expect(described_class.todos.size).to eq(19)
+    end
+
+    it 'falha sem codigo ou nome' do
+      expect { described_class.registrar(nome: 'X') }.to raise_error(ArgumentError, /codigo/)
+      expect { described_class.registrar(codigo: '999') }.to raise_error(ArgumentError, /nome/)
+    end
+
+    it 'falha ao registrar codigo ja existente' do
+      expect { described_class.registrar(codigo: '756', nome: 'Dup') }.to raise_error(ArgumentError, /ja registrado/)
+    end
+
+    it 'remove banco custom e nao afeta os built-in' do
+      described_class.registrar(codigo: '999', nome: 'Banco Custom')
+      expect(described_class.remover('999')).to be true
+      expect(described_class.remover('756')).to be false
+      expect(described_class.todos.size).to eq(18)
+    end
+  end
 end

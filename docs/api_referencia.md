@@ -361,8 +361,32 @@ O módulo `Brcobranca::Bancos` é um registro central com os metadados dos 18 ba
 | `Bancos.com_retorno(formato=nil)` | `Array<Hash>` | Bancos com retorno |
 | `Bancos.com_pix` | `Array<Hash>` | 7 bancos com PIX em remessa |
 | `Bancos.formatos_cnab` | `Array<String>` | Formatos CNAB disponíveis (`["240","400","444"]`) |
+| `Bancos.classe_boleto(codigo)` | `Class, nil` | Classe de boleto resolvida (ex.: `Brcobranca::Boleto::Sicoob`) |
+| `Bancos.classe_remessa(codigo, formato)` | `Class, nil` | Classe de remessa por formato |
+| `Bancos.classe_retorno(codigo, formato)` | `Class, nil` | Classe de retorno por formato |
+| `Bancos.classe_pix(codigo, formato)` | `Class, nil` | Classe de remessa PIX por formato |
+| `Bancos.registrar(banco)` | `Hash` | Registra banco custom em runtime (requer `:codigo` e `:nome`) |
+| `Bancos.remover(codigo)` | `Boolean` | Remove banco custom registrado |
 | `Bancos.as_json` | `Hash` | Hash pronto para serialização JSON |
 | `Bancos.to_json` | `String` | String JSON |
+
+#### Resolução de classes e registro custom
+
+```ruby
+# Resolver a classe a partir do código (útil para factory dinâmico)
+Brcobranca::Bancos.classe_boleto('756')          #=> Brcobranca::Boleto::Sicoob
+Brcobranca::Bancos.classe_remessa('237', '400')  #=> Brcobranca::Remessa::Cnab400::Bradesco
+Brcobranca::Bancos.classe_retorno('237', '400')  #=> Brcobranca::Retorno::Cnab400::Bradesco
+Brcobranca::Bancos.classe_pix('756', '240')      #=> Brcobranca::Remessa::Cnab240::SicoobPix
+
+# Registrar um banco custom (não altera os 18 built-in)
+Brcobranca::Bancos.registrar(
+  codigo: '999', nome: 'Banco Custom', boleto: 'BancoCustom',
+  cnab: { '400' => { remessa: 'Cnab400::BancoCustom', retorno: nil } }
+)
+Brcobranca::Bancos.find('999')[:nome]  #=> "Banco Custom"
+Brcobranca::Bancos.remover('999')      #=> true
+```
 
 ### Estrutura de um banco
 
