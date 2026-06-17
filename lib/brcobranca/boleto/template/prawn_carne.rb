@@ -486,25 +486,6 @@ module Brcobranca
           pdf.fill_color COR_TEXTO_VALOR
         end
 
-        def PrawnTema.resolve_pix_label(boleto)
-          return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
-
-          config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
-          config_label || 'Pague com PIX'
-        end
-
-
-        def PrawnTema.desenha_logo_banco_prawn(pdf, boleto, x, y, w, h)
-          png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
-          if File.exist?(png_path)
-            pdf.image png_path, at: [x + 2, y - 2], height: h - 4
-          else
-            texto_logo_banco(pdf, boleto, x, y, w, h)
-          end
-        rescue StandardError
-          texto_logo_banco(pdf, boleto, x, y, w, h)
-        end
-
       end
     end
   end

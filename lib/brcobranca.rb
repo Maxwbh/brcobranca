@@ -132,6 +132,8 @@ module Brcobranca
       autoload :RghostCarne, 'brcobranca/boleto/template/rghost_carne'
       autoload :RghostBolepix, 'brcobranca/boleto/template/rghost_bolepix'
       autoload :PrawnBolepix, 'brcobranca/boleto/template/prawn_bolepix'
+      autoload :PrawnCarne,  'brcobranca/boleto/template/prawn_carne'
+      autoload :PrawnTema,   'brcobranca/boleto/template/prawn_tema'
     end
   end
 

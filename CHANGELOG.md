@@ -7,7 +7,15 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
-<!-- Adicione novas mudanças aqui -->
+### Fixed — PrawnCarne: carnê 3-vias funcional
+- Adiciona autoload de `PrawnCarne` e `PrawnTema` em `lib/brcobranca.rb`
+  — `Brcobranca::Boleto::Template::PrawnCarne` agora é acessível sem
+  `require` manual (resolve "uninitialized constant")
+- Remove cópia residual de `desenha_logo_banco_prawn` e `resolve_pix_label`
+  dentro de `prawn_carne.rb` que redefinia métodos do `PrawnTema` com
+  referência a `texto_logo_banco` inexistente (resolve `NoMethodError`)
+- O método correto `desenha_logo_banco_prawn` em `prawn_tema.rb` já trata
+  o fallback (texto quando não há logo PNG) sem depender de método auxiliar
 
 ## [12.10.2] - 2026-06-14
 
