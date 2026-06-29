@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.10.4] - 2026-06-29
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.10.3] - 2026-06-17
 
 ### Fixed — PrawnCarne: carnê 3-vias funcional
