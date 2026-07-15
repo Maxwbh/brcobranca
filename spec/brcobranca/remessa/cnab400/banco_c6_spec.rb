@@ -141,7 +141,7 @@ RSpec.describe Brcobranca::Remessa::Cnab400::BancoC6 do
         expect(detalhe[17..28]).to eq '000000123456'                              # Código do Beneficiário
         expect(detalhe[62..72]).to eq ''.rjust(11, ' ')                           # Nosso Número (carteira 10 = brancos)
         expect(detalhe[73]).to eq ' '                                             # DV Nosso Número (carteira 10 = branco)
-        expect(detalhe[82..84]).to eq '000'                                       # Banco Cobrança Direta (zeros p/ carteira 10)
+        expect(detalhe[82..84]).to eq '000'                                       # Banco Cobrança Direta (zeros, cart. 10)
         expect(detalhe[106..107]).to eq '10'                                      # Código da Carteira
         expect(detalhe[108..109]).to eq '01'                                      # Código de Ocorrência (Remessa)
         expect(detalhe[110..119]).to eq '0000000000'                              # Seu Número
