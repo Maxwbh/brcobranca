@@ -7,7 +7,23 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
-<!-- Adicione novas mudanças aqui -->
+### Fixed — Banco C6 (336): DV do Nosso Número e Banco Cobrança Direta
+- **DV do Nosso Número** (boleto e remessa CNAB 400) passa a usar **Módulo 11
+  base 7** (padrão Bradesco) sobre a base `0CCNNNNNNNNNN` (`'0'` + carteira +
+  nosso número), conforme campo D017 / Nota 04 do manual oficial. O cálculo
+  anterior usava base 9 e ignorava a carteira, gerando DV incorreto na
+  carteira 20; agora também emite o dígito **`'P'`** quando o resultado é 10
+- **Banco Cobrança Direta** (posições 83-85 do detalhe, D018) passa a conter
+  `000` na carteira 10 e `336` apenas na carteira 20 (cobrança direta)
+- Nota de compatibilidade em `BancoC6Pix` esclarecendo que o registro tipo 8
+  (PIX/DICT) segue o padrão FEBRABAN e não é definido pelo manual CNAB 400 do
+  C6 (PIX oficial do C6 é via API REST/EVP ou campos estendidos do detalhe)
+- Documentação (`docs/campos_por_banco.md`, `wiki/Bancos-Suportados.md`)
+  atualizada com o algoritmo do DV, o comportamento por carteira e a nota PIX
+
+> ⚠️ **Mudança de comportamento:** boletos/remessas na **carteira 20** passam a
+> gerar o DV correto (podendo conter a letra `'P'`). Integrações que dependiam
+> do DV anterior (incorreto) devem revalidar.
 
 ## [12.10.4] - 2026-06-29
 

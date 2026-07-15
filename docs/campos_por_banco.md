@@ -365,6 +365,22 @@ Posição | Tamanho | Conteúdo
 44      |   1     | Indicador de Layout (3 = Emissão Banco, 4 = Emissão Cliente)
 ```
 
+### Dígito verificador do Nosso Número
+
+Calculado por **Módulo 11 base 7** (padrão Bradesco), conforme o manual do C6
+(campo D017 / Nota 04). A base do cálculo é `0CCNNNNNNNNNN` — ou seja,
+`'0'` + **carteira** (2 posições) + **nosso número** (10 posições):
+
+- Multiplicadores cíclicos de 2 a 7 (da direita para a esquerda);
+- Resultado (`11 - resto`): `11` → DV `'0'`, `10` → DV **`'P'`**, demais → o próprio resultado.
+
+> ⚠️ O DV **depende da carteira**: o mesmo nosso número gera dígitos diferentes
+> nas carteiras 10 e 20. Um resultado igual a 10 produz o dígito **`'P'`**
+> (não numérico) — trate `nosso_numero_dv` sempre como `String`.
+
+Na remessa, o DV só é gravado na **carteira 20** (Cobrança Direta Própria);
+na **carteira 10** o campo fica em branco, pois o banco gera o nosso número.
+
 ### Exemplo
 
 ```ruby
@@ -396,6 +412,29 @@ remessa = Brcobranca::Remessa::Cnab400::BancoC6.new(
   pagamentos: [pagamento]
 )
 ```
+
+Diferenças por carteira no registro detalhe (validadas contra o manual):
+
+| Campo (posição) | Carteira 10 (Emissão Banco) | Carteira 20 (Emissão Cliente) |
+|---|---|---|
+| Nosso Número (63-73) | brancos (banco gera) | `0` + nosso número (10) |
+| DV Nosso Número (74) | branco | Módulo 11 base 7 (pode ser `'P'`) |
+| Banco Cobrança Direta (83-85) | `000` | `336` |
+
+> O campo **Banco Cobrança Direta** (D018) só recebe o código do banco (`336`)
+> na cobrança direta (carteira 20); nas demais carteiras contém zeros.
+
+### PIX no C6
+
+O C6 **não define** um "registro tipo 8" de PIX/DICT no layout CNAB 400. A classe
+`Brcobranca::Remessa::Cnab400::BancoC6Pix` gera esse registro no **padrão FEBRABAN**
+(comum a Santander/Bradesco/Itaú) como base de interoperabilidade — mas o C6, no
+seu manual, trata pagamento com valor divergente/QR pelos **campos opcionais
+estendidos do próprio detalhe** (D086-D090). O boleto híbrido com PIX (Bolepix) do
+C6 é oferecido pela **API REST**, que aceita **apenas chave aleatória (EVP)**.
+
+> Antes de enviar arquivos `BancoC6Pix` ao C6, confirme o suporte a esse registro
+> na versão vigente do manual do banco.
 
 ---
 
