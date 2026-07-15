@@ -77,7 +77,7 @@ module Brcobranca
         #   63-73  | 11  | Nosso Número (vazio carteira 10; "0NNNNNNNNNN" carteira 20)
         #    74    |  1  | Dígito do Nosso Número
         #   75-82  |  8  | Brancos
-        #   83-85  |  3  | "336" (Código do Banco)
+        #   83-85  |  3  | Banco Cobrança Direta ("336" carteira 20; "000" carteira 10)
         #   86-106 | 21  | Brancos
         #  107-108 |  2  | Código da Carteira ("10" ou "20")
         #  109-110 |  2  | Código de Ocorrência (01 = Remessa)
@@ -127,7 +127,7 @@ module Brcobranca
           detalhe << nosso_numero_remessa(pagamento)                                 # Nosso Número                     9[11]
           detalhe << dv_nosso_numero(pagamento)                                      # Dígito do Nosso Número           9[01]
           detalhe << ''.rjust(8, ' ')                                                # Brancos                          X[08]
-          detalhe << cod_banco                                                       # Código do Banco                  9[03]
+          detalhe << banco_cobranca_direta                                           # Banco Cobrança Direta            9[03]
           detalhe << ''.rjust(21, ' ')                                               # Brancos                          X[21]
           detalhe << carteira.to_s.rjust(2, '0')                                     # Código da Carteira               9[02]
           detalhe << pagamento.identificacao_ocorrencia                              # Código de Ocorrência             9[02]
@@ -175,15 +175,27 @@ module Brcobranca
           "0#{pagamento.nosso_numero.to_s.rjust(10, '0')}"
         end
 
-        # Dígito verificador do nosso número calculado via Módulo 11.
-        # Para carteira 10 retorna espaço (banco calcula).
+        # Dígito verificador do nosso número (Cobrança Direta Própria).
+        #
+        # Para carteira 10 (Cobrança Com Registro) retorna espaço, pois o banco
+        # gera o nosso número e o dígito. Para carteira 20 usa Módulo 11 base 7
+        # (padrão Bradesco) sobre "0CCNNNNNNNNNN" conforme manual C6 (Nota 04):
+        # resultado 11 => "0", 10 => "P", demais => o próprio resultado.
         def dv_nosso_numero(pagamento)
           return ' ' if carteira.to_s == '10'
 
-          pagamento.nosso_numero.to_s.rjust(10, '0').modulo11(
-            multiplicador: (2..9).to_a,
-            mapeamento: { 10 => 0, 11 => 0 }
+          base = "0#{carteira.to_s.rjust(2, '0')}#{pagamento.nosso_numero.to_s.rjust(10, '0')}"
+          base.modulo11(
+            multiplicador: [2, 3, 4, 5, 6, 7],
+            mapeamento: { 10 => 'P', 11 => 0 }
           ) { |total| 11 - (total % 11) }.to_s
+        end
+
+        # Banco Cobrança Direta (campo D018, posições 83-85).
+        # Obrigatório somente para cobrança direta (carteira 20 = "336");
+        # nas demais carteiras deve conter zeros.
+        def banco_cobranca_direta
+          carteira.to_s == '20' ? cod_banco : '000'
         end
 
         def formata_data_multa(pagamento)

@@ -141,7 +141,7 @@ RSpec.describe Brcobranca::Remessa::Cnab400::BancoC6 do
         expect(detalhe[17..28]).to eq '000000123456'                              # Código do Beneficiário
         expect(detalhe[62..72]).to eq ''.rjust(11, ' ')                           # Nosso Número (carteira 10 = brancos)
         expect(detalhe[73]).to eq ' '                                             # DV Nosso Número (carteira 10 = branco)
-        expect(detalhe[82..84]).to eq '336'                                       # Código do Banco
+        expect(detalhe[82..84]).to eq '000'                                       # Banco Cobrança Direta (zeros p/ carteira 10)
         expect(detalhe[106..107]).to eq '10'                                      # Código da Carteira
         expect(detalhe[108..109]).to eq '01'                                      # Código de Ocorrência (Remessa)
         expect(detalhe[110..119]).to eq '0000000000'                              # Seu Número
@@ -157,7 +157,8 @@ RSpec.describe Brcobranca::Remessa::Cnab400::BancoC6 do
         banco_c6.carteira = '20'
         detalhe = banco_c6.monta_detalhe(pagamento, 2)
         expect(detalhe[62..72]).to eq '00000000123'                # Nosso Número 11 posições
-        expect(detalhe[73]).to match(/\d/)                         # DV calculado
+        expect(detalhe[73]).to eq '3'                              # DV (Módulo 11 base 7 sobre 0200000000123)
+        expect(detalhe[82..84]).to eq '336'                        # Banco Cobrança Direta (336 p/ carteira 20)
         expect(detalhe[106..107]).to eq '20'                       # Carteira 20
       end
     end

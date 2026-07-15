@@ -74,7 +74,9 @@ RSpec.describe 'C6 Bank (336) — cenarios completos por carteira' do
       end
 
       it 'nosso_numero_boleto inclui DV' do
-        expect(boleto.nosso_numero_boleto).to match(/\A0000000042-\d\z/)
+        # DV via Módulo 11 base 7 sobre "0100000000042" resulta em "P" (Nota 04 do manual C6).
+        expect(boleto.nosso_numero_boleto).to match(/\A0000000042-[\dP]\z/)
+        expect(boleto.nosso_numero_boleto).to eq('0000000042-P')
       end
 
       it 'agencia_conta_boleto no formato correto' do

@@ -99,6 +99,22 @@ RSpec.describe Brcobranca::Boleto::BancoC6 do # :nodoc:[all]
     expect(boleto_novo.nosso_numero_boleto).to match(/\A0000000001-\d\z/)
   end
 
+  describe 'Dígito verificador do Nosso Número (Módulo 11 base 7 sobre 0CCNNNNNNNNNN)' do
+    it 'calcula o DV incluindo a carteira na base do cálculo' do
+      boleto_c10 = described_class.new @valid_attributes.merge(carteira: '10')
+      expect(boleto_c10.nosso_numero_dv).to eq('2')
+
+      boleto_c20 = described_class.new @valid_attributes.merge(carteira: '20')
+      expect(boleto_c20.nosso_numero_dv).to eq('6')
+    end
+
+    it 'retorna "P" quando o resultado do cálculo é 10 (conforme Nota 04 do manual)' do
+      boleto = described_class.new @valid_attributes.merge(carteira: '20', nosso_numero: '0000000013')
+      expect(boleto.nosso_numero_dv).to eq('P')
+      expect(boleto.nosso_numero_boleto).to eq('0000000013-P')
+    end
+  end
+
   it 'Montar agencia_conta_boleto' do
     boleto_novo = described_class.new(@valid_attributes)
     expect(boleto_novo.agencia_conta_boleto).to eql('0001 / 000000123456')

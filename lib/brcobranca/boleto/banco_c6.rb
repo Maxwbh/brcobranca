@@ -61,14 +61,21 @@ module Brcobranca
       end
 
       # Dígito verificador do Nosso Número.
-      # Calculado via Módulo 11 conforme manual C6.
-      # Resto 0, 10 ou 1 => DV = 0 (conforme prática usual para o cálculo de DV do nosso número).
+      #
+      # Calculado via Módulo 11 base 7 (padrão Bradesco), conforme manual C6
+      # (campo D017 / Nota 04). A base do cálculo é composta por
+      # "0" + Carteira (2) + Nosso Número (10), ou seja "0CCNNNNNNNNNN".
+      #
+      # Regra do resultado (11 - resto):
+      #   - 11 => DV "0"
+      #   - 10 => DV "P"
+      #   - demais => o próprio resultado
       #
       # @return [String]
       def nosso_numero_dv
-        nosso_numero.to_s.modulo11(
-          multiplicador: (2..9).to_a,
-          mapeamento: { 10 => 0, 11 => 0 }
+        base_nosso_numero_dv.modulo11(
+          multiplicador: [2, 3, 4, 5, 6, 7],
+          mapeamento: { 10 => 'P', 11 => 0 }
         ) { |total| 11 - (total % 11) }.to_s
       end
 
@@ -103,6 +110,16 @@ module Brcobranca
       # @return [String]
       def indicador_layout
         carteira.to_s == '20' ? '4' : '3'
+      end
+
+      private
+
+      # Base para o cálculo do dígito verificador do Nosso Número: "0CCNNNNNNNNNN"
+      # (zero fixo + carteira com 2 posições + nosso número com 10 posições).
+      #
+      # @return [String]
+      def base_nosso_numero_dv
+        "0#{carteira.to_s.rjust(2, '0')}#{nosso_numero.to_s.rjust(10, '0')}"
       end
     end
   end
