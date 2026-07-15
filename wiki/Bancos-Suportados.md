@@ -91,6 +91,15 @@ boleto = Brcobranca::Boleto::BancoC6.new(
 )
 ```
 
+**Dígito verificador do Nosso Número:** Módulo 11 base 7 sobre `0CCNNNNNNNNNN`
+(zero + carteira + nosso número). O DV **depende da carteira** e pode ser a
+letra **`'P'`** (quando o cálculo resulta em 10). Trate `nosso_numero_dv` como
+`String`. Na remessa, o DV só é gravado na carteira 20 (na 10 fica em branco).
+
+**PIX:** `BancoC6Pix` gera registro tipo 8 no padrão FEBRABAN. O PIX oficial do
+C6 (Bolepix) é via API REST e aceita apenas chave aleatória (EVP) —
+veja [[Configuração PIX]].
+
 ---
 
 ## Classes por banco

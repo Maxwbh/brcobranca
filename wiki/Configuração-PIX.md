@@ -183,10 +183,16 @@ File.write('remessa_pix.rem', remessa.gera_arquivo)
 | Santander (033) | CNAB 400 | `Cnab400::SantanderPix` |
 | Bradesco (237) | CNAB 400 | `Cnab400::BradescoPix` |
 | Itaú (341) | CNAB 400 | `Cnab400::ItauPix` |
-| C6 Bank (336) | CNAB 400 | `Cnab400::BancoC6Pix` |
+| C6 Bank (336) ¹ | CNAB 400 | `Cnab400::BancoC6Pix` |
 | Banco do Brasil (001) | CNAB 240 | `Cnab240::BancoBrasilPix` |
 | Caixa (104) | CNAB 240 | `Cnab240::CaixaPix` |
 | Sicoob (756) | CNAB 240 | `Cnab240::SicoobPix` |
+
+> ¹ **C6 Bank:** `BancoC6Pix` gera o registro tipo 8 no padrão FEBRABAN (aceita
+> os 5 tipos de chave DICT). O manual CNAB 400 do C6, porém, não define esse
+> registro — o PIX oficial do C6 (Bolepix) é oferecido pela **API REST** e
+> aceita **apenas chave aleatória (EVP)**. Confirme o suporte com o banco antes
+> de usar essa classe em produção.
 
 ### Descobrir programaticamente
 
