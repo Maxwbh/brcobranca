@@ -9,6 +9,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 <!-- Adicione novas mudanças aqui -->
 
+## [12.10.6] - 2026-07-15
+
+<!-- Adicione novas mudanças aqui -->
+
 ## [12.10.5] - 2026-07-15
 
 ### Fixed — Banco C6 (336): DV do Nosso Número e Banco Cobrança Direta
