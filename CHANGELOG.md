@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.10.5] - 2026-07-15
+
 ### Fixed — Banco C6 (336): DV do Nosso Número e Banco Cobrança Direta
 - **DV do Nosso Número** (boleto e remessa CNAB 400) passa a usar **Módulo 11
   base 7** (padrão Bradesco) sobre a base `0CCNNNNNNNNNN` (`'0'` + carteira +
