@@ -22,6 +22,7 @@
 </p>
 
 <p align="center">
+  <a href="#galeria-de-boletos">Galeria</a> ·
   <a href="#uso-rápido">Uso Rápido</a> ·
   <a href="#bancos-suportados">Bancos</a> ·
   <a href="#pix">PIX</a> ·
@@ -41,6 +42,54 @@
 - **API JSON** — `to_hash`, `as_json`, `to_json` em boleto, remessa e retorno
 - **Registro de bancos** — `Brcobranca::Bancos` descobre bancos/CNAB/PIX programaticamente
 - **1.370+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
+
+---
+
+## Galeria de Boletos
+
+Exemplos **reais** gerados pela gem — validados com `zbarimg` (QR Code PIX e código
+de barras I2/5 decodificam corretamente). Os mesmos templates atendem os **18 bancos**
+suportados; abaixo Bradesco (tradicional) e Sicoob (demais).
+
+<table>
+  <tr>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/boleto_tradicional.png" alt="Boleto tradicional (RGhost)" width="100%"><br>
+      <strong>Boleto tradicional</strong> · RGhost<br>
+      <sub>Recibo do Pagador + Ficha de Compensação, sem PIX</sub>
+    </td>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/boleto_pix_rghost.png" alt="Boleto híbrido com PIX (RGhost)" width="100%"><br>
+      <strong>Boleto híbrido com PIX</strong> · RGhost<br>
+      <sub>QR Code PIX na Ficha de Compensação (Bolepix)</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/boleto_pix_prawn.png" alt="Boleto PIX via Prawn" width="100%"><br>
+      <strong>Boleto PIX via Prawn</strong> · sem GhostScript<br>
+      <sub>PDF puro-Ruby com o mesmo QR Code PIX</sub>
+    </td>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/boleto_tema.png" alt="Boleto com tema personalizável (Prawn)" width="100%"><br>
+      <strong>Tema personalizável</strong> · Prawn<br>
+      <sub>Logo da empresa, cor da marca, selo "PARCELA n/N", marca d'água e rodapé</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/carne_prawn.png" alt="Carnê de pagamento (Prawn)" width="100%"><br>
+      <strong>Carnê de pagamento</strong> · Prawn<br>
+      <sub>3 parcelas por página A4 — canhoto destacável + ficha + QR PIX</sub>
+    </td>
+    <td width="50%" valign="top" align="center">
+      <sub>Gere o conjunto completo dos 18 bancos com<br><code>bin/generate_fixtures</code></sub>
+    </td>
+  </tr>
+</table>
+
+> Cada tipo acima corresponde a um gerador/template. Veja como usá-los em
+> [Uso Rápido](#uso-rápido), [PIX](#pix) e [Template Prawn](#template-prawn-sem-ghostscript).
 
 ---
 

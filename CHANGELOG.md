@@ -7,7 +7,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
-<!-- Adicione novas mudanças aqui -->
+### Docs — Galeria de boletos no README
+- Nova seção **Galeria de Boletos** no `README.md` com exemplos reais de cada
+  tipo/template: boleto tradicional (RGhost), híbrido com PIX (RGhost e Prawn),
+  carnê (Prawn) e tema personalizável (logo, cor, selo de parcela, marca d'água)
+- Imagens otimizadas em `docs/images/boletos/` (~260 KB no total); geradas a
+  partir dos PDFs versionados em `spec/fixtures/generated/pdf/`
 
 ## [12.10.6] - 2026-07-15
 
