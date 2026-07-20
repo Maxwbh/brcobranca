@@ -43,17 +43,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Ruby (sem bundler-cache para evitar modo frozen)
+      - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: false
-
-      - name: Install dependencies
-        run: |
-          bundle config set --local deployment false
-          bundle config set --local frozen false
-          bundle install --jobs 4
+          bundler-cache: true
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL

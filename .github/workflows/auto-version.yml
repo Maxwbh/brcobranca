@@ -5,11 +5,12 @@ on:
     branches:
       - main
       - master
-    paths-ignore:
-      - 'lib/brcobranca/version.rb'
-      - 'CHANGELOG.md'
-      - '**.md'
-      - 'docs/**'
+    # Só gera nova versão quando a FONTE do projeto muda (lib/**).
+    # Alterações em documentação (**.md, docs/**), CI (.github/**),
+    # testes (spec/**) ou lockfile (Gemfile.lock) NÃO disparam bump.
+    # O commit de bump usa [skip ci], evitando re-disparo.
+    paths:
+      - 'lib/**'
 
 permissions:
   contents: write

@@ -7,6 +7,19 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### CI — versionamento por fonte + pipeline mais rápido
+- **Auto-version** passa a disparar apenas quando a **fonte** muda (`paths: lib/**`).
+  Alterações em documentação, CI (`.github/**`), testes ou `Gemfile.lock` não geram
+  mais bump de versão — o que também elimina o loop de versão causado pelo sync do
+  lockfile
+- **`Gemfile.lock`** sincronizado com a versão atual da gem (12.10.6)
+- **`bundler-cache: true`** habilitado nos jobs de CI (as gems passam a ser cacheadas
+  agora que o lockfile está consistente), reduzindo bastante o tempo de cada job
+- **RuboCop unificado** — o job duplicado `linters` foi removido; o `rubocop`
+  agora faz lint (falha em nível E), gera o SARIF do code-scanning numa única execução
+- **Ruby head (experimental)** movido para agendamento semanal (`schedule`), saindo
+  do caminho crítico dos PRs — já era não-bloqueante (`continue-on-error`)
+
 ### Docs — Galeria de boletos no README
 - Nova seção **Galeria de Boletos** no `README.md` com exemplos reais de cada
   tipo/template: boleto tradicional (RGhost), híbrido com PIX (RGhost e Prawn),
