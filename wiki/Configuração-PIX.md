@@ -221,5 +221,4 @@ Brcobranca::Bancos.com_pix.map { |b| "#{b[:codigo]} - #{b[:nome]}" }
 ## Próximos passos
 
 - [[Bancos Suportados]] — campos obrigatórios por banco
-- [[Integração com Rails]] — endpoint para boleto PIX
-- [[Integração com Gestão de Contratos]] — fluxo completo contrato → PIX
+- [Campos por Banco](https://github.com/Maxwbh/brcobranca/blob/master/docs/campos_por_banco.md) — detalhes de cada campo PIX

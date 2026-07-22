@@ -126,18 +126,21 @@ module Brcobranca
           texto.empty? ? nil : texto[0, 60].upcase
         end
 
-        # Desenha a marca d'água diagonal em opacidade baixa (antifraude).
+        # Desenha a marca d'água diagonal (antifraude) na cor da marca da
+        # empresa (cor_marca) — preto quando o tema não define cor.
         #
-        # Deve ser chamada ANTES do conteúdo da seção (Prawn não tem z-order:
-        # o que vem depois cobre o que veio antes). O chamador é responsável
-        # por posicioná-la fora da área do código de barras/QR Code — o texto
-        # fica restrito à caixa [0, y] x [largura, altura].
-        def desenha_marca_dagua(pdf, boleto, largura:, y:, altura:, tamanho: 32, rotacao: 30)
+        # Prawn não tem z-order: o que vem depois cobre o que veio antes.
+        # Chamada APÓS o conteúdo, a marca fica POR CIMA dos campos (mais
+        # visível); antes do conteúdo, fica por baixo. Em qualquer ordem, o
+        # chamador é responsável por posicioná-la fora da área do código de
+        # barras/QR Code — o texto fica restrito à caixa [0, y] x [largura, altura].
+        def desenha_marca_dagua(pdf, boleto, largura:, y:, altura:, tamanho: 32, rotacao: 30, opacidade: 0.12)
           texto = marca_dagua(boleto)
           return false unless texto
 
-          pdf.transparent(0.06) do
-            pdf.fill_color '000000'
+          cor = cor_marca(boleto) || '000000'
+          pdf.transparent(opacidade) do
+            pdf.fill_color cor
             pdf.text_box texto,
                          at: [10, y], width: largura - 20, height: altura,
                          size: tamanho, style: :bold, align: :center, valign: :center,
@@ -198,6 +201,38 @@ module Brcobranca
           emv.to_s.start_with?('0002')
         end
 
+        # Desenha o QR Code PIX como vetores nativos do PDF (um retângulo por
+        # módulo escuro), com zona de silêncio de 2 módulos e nível M de
+        # correção (padrões PIX do BACEN). Diferente da rasterização PNG, o
+        # vetor permanece nítido em qualquer resolução de exibição/impressão.
+        # Compartilhado por PrawnBolepix e PrawnCarne.
+        def desenha_qr_vetorial(pdf, emv, x:, y:, tamanho:)
+          qrcode = RQRCode::QRCode.new(emv, level: :m)
+          mods = qrcode.modules
+          # Zona de silêncio de 4 módulos (mínimo da ISO/IEC 18004): isola o
+          # QR das linhas da grade ao redor e acelera o lock-on do scanner,
+          # especialmente em tamanhos pequenos.
+          quiet = 4
+          total = mods.length + (quiet * 2)
+          mod = tamanho.to_f / total
+
+          # Fundo branco (inclui a zona de silêncio)
+          pdf.fill_color 'FFFFFF'
+          pdf.fill_rectangle([x, y], tamanho, tamanho)
+
+          pdf.fill_color '000000'
+          mods.each_with_index do |linha, r|
+            linha.each_with_index do |escuro, c|
+              next unless escuro
+
+              px = x + ((quiet + c) * mod)
+              py = y - ((quiet + r) * mod)
+              # Pequena sobreposição evita frestas brancas entre módulos
+              pdf.fill_rectangle([px, py], mod + 0.05, mod + 0.05)
+            end
+          end
+        end
+
         # Label exibido ao lado do QR Code PIX (compartilhado por todos os templates).
         def resolve_pix_label(boleto)
           return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
@@ -206,11 +241,13 @@ module Brcobranca
           config_label || 'Pague com PIX'
         end
 
-        # Desenha o logo do banco no PDF Prawn (compartilhado por PrawnBolepix e PrawnCarne).
+        # Desenha o logo do banco no PDF Prawn (compartilhado por PrawnBolepix e
+        # PrawnCarne). O `fit` encaixa a imagem na célula preservando a
+        # proporção — sem transbordar sobre a coluna do código do banco.
         def desenha_logo_banco_prawn(pdf, boleto, pos_x, pos_y, col_width, altura)
           png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
           if File.exist?(png_path)
-            pdf.image png_path, at: [pos_x + 2, pos_y - 2], height: altura - 4
+            pdf.image png_path, at: [pos_x + 2, pos_y - 2], fit: [col_width - 6, altura - 4]
           else
             pdf.text_box boleto.banco_nome.upcase,
                          at: [pos_x + 2, pos_y - 3], width: col_width - 4, height: altura - 4,
