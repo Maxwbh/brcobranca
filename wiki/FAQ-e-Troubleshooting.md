@@ -181,17 +181,23 @@ banco[:cnab].keys   # => ["240", "400"]
 
 ---
 
-### Como processar um arquivo de retorno sem saber o formato?
+### Como processar um arquivo de retorno?
 
-Use a factory com auto-detecção:
+Com **auto-detecção** de formato (CNAB 240/400/CBR643):
 
 ```ruby
-# Auto-detecta formato (CNAB 240/400) e banco
 resultado = Brcobranca::Retorno.parse('retorno.ret')
+# => { formato: :cnab400, banco: '237', total_registros: 10, registros: [...] }
 
-resultado.each do |registro|
-  puts registro.to_hash
-end
+# Como objetos (em vez de Hash):
+registros = Brcobranca::Retorno.load_lines('retorno.ret')
+```
+
+Ou diretamente na classe do banco/formato, quando você já os conhece:
+
+```ruby
+registros = Brcobranca::Retorno::Cnab240::Sicoob.load_lines(File.open('retorno.ret'))
+registros.each { |r| puts r.to_hash }
 ```
 
 ---

@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Biblioteca Ruby para boletos bancários, CNAB e PIX</strong><br>
-  <sub>18 bancos · CNAB 240/400/444 · PIX em 7 bancos · PDF via RGhost ou Prawn</sub>
+  <sub>18 bancos · CNAB 240/400/444 · PIX em 7 bancos · PDF moderno via Prawn (sem GhostScript)</sub>
 </p>
 
 <p align="center">
@@ -36,51 +36,52 @@
 ## Por que BRCobranca?
 
 - **18 bancos** em uma única gem — boleto, remessa e retorno
+- **Template Prawn (recomendado)** — PDF puro-Ruby com **layout moderno**, QR PIX vetorial, carnê 3/página e acentuação completa, **sem GhostScript**
 - **PIX nativo** — campos `chave_pix`/`tipo_chave_pix`/`txid` no boleto + registro PIX na remessa CNAB
-- **Sem GhostScript?** Sem problema — templates **Prawn** geram PDF puro-Ruby (boleto e **carnê 3/página**)
 - **Tema personalizável** — logo da empresa, cor da marca, selo "PARCELA n/N", marca d'água e fonte TTF
 - **API JSON** — `to_hash`, `as_json`, `to_json` em boleto, remessa e retorno
 - **Registro de bancos** — `Brcobranca::Bancos` descobre bancos/CNAB/PIX programaticamente
-- **1.370+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
+- **1.380+ testes** · Ruby 3.0 a 3.4 · CI em 5 versões
 
 ---
 
 ## Galeria de Boletos
 
 Exemplos **reais** gerados pela gem — validados com `zbarimg` (QR Code PIX e código
-de barras I2/5 decodificam corretamente). Os mesmos templates atendem os **18 bancos**
-suportados; abaixo Bradesco (tradicional) e Sicoob (demais).
+de barras I2/5 decodificam corretamente). O template **Prawn é o recomendado**:
+layout moderno, puro-Ruby (sem GhostScript) e QR Code vetorial. Os mesmos templates
+atendem os **18 bancos** suportados.
 
 <table>
   <tr>
     <td width="50%" valign="top" align="center">
-      <img src="docs/images/boletos/boleto_tradicional.png" alt="Boleto tradicional (RGhost)" width="100%"><br>
-      <strong>Boleto tradicional</strong> · RGhost<br>
-      <sub>Recibo do Pagador + Ficha de Compensação, sem PIX</sub>
-    </td>
-    <td width="50%" valign="top" align="center">
-      <img src="docs/images/boletos/boleto_pix_rghost.png" alt="Boleto híbrido com PIX (RGhost)" width="100%"><br>
-      <strong>Boleto híbrido com PIX</strong> · RGhost<br>
-      <sub>QR Code PIX na Ficha de Compensação (Bolepix)</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top" align="center">
-      <img src="docs/images/boletos/boleto_pix_prawn.png" alt="Boleto PIX via Prawn" width="100%"><br>
-      <strong>Boleto PIX via Prawn</strong> · sem GhostScript<br>
-      <sub>PDF puro-Ruby com o mesmo QR Code PIX</sub>
+      <img src="docs/images/boletos/boleto_pix_prawn.png" alt="Boleto PIX via Prawn (layout moderno)" width="100%"><br>
+      <strong>⭐ Boleto híbrido com PIX</strong> · Prawn (recomendado)<br>
+      <sub>Layout moderno: caixas de resumo no recibo + QR Code vetorial integrado à ficha</sub>
     </td>
     <td width="50%" valign="top" align="center">
       <img src="docs/images/boletos/boleto_tema.png" alt="Boleto com tema personalizável (Prawn)" width="100%"><br>
-      <strong>Tema personalizável</strong> · Prawn<br>
-      <sub>Logo da empresa, cor da marca, selo "PARCELA n/N", marca d'água e rodapé</sub>
+      <strong>⭐ Tema personalizável</strong> · Prawn (recomendado)<br>
+      <sub>Logo da empresa, cor da marca, selo "PARCELA n/N", marca d'água na cor da marca e rodapé</sub>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top" align="center">
-      <img src="docs/images/boletos/carne_prawn.png" alt="Carnê de pagamento (Prawn)" width="100%"><br>
-      <strong>Carnê de pagamento</strong> · Prawn<br>
-      <sub>3 parcelas por página A4 — canhoto destacável + ficha + QR PIX</sub>
+      <img src="docs/images/boletos/carne_prawn.png" alt="Carnê de pagamento (Prawn, layout moderno)" width="100%"><br>
+      <strong>⭐ Carnê de pagamento</strong> · Prawn (recomendado)<br>
+      <sub>3 parcelas por página A4 — canhoto destacável + célula "Pague com Pix" integrada às instruções</sub>
+    </td>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/boleto_tradicional.png" alt="Boleto tradicional (RGhost)" width="100%"><br>
+      <strong>Boleto tradicional</strong> · RGhost (legado)<br>
+      <sub>Recibo do Pagador + Ficha de Compensação, sem PIX — requer GhostScript</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" align="center">
+      <img src="docs/images/boletos/boleto_pix_rghost.png" alt="Boleto híbrido com PIX (RGhost)" width="100%"><br>
+      <strong>Boleto híbrido com PIX</strong> · RGhost (legado)<br>
+      <sub>QR Code PIX na Ficha de Compensação (Bolepix) — requer GhostScript</sub>
     </td>
     <td width="50%" valign="top" align="center">
       <sub>Gere o conjunto completo dos 18 bancos com<br><code>bin/generate_fixtures</code></sub>
@@ -89,7 +90,7 @@ suportados; abaixo Bradesco (tradicional) e Sicoob (demais).
 </table>
 
 > Cada tipo acima corresponde a um gerador/template. Veja como usá-los em
-> [Uso Rápido](#uso-rápido), [PIX](#pix) e [Template Prawn](#template-prawn-sem-ghostscript).
+> [Template Prawn](#template-prawn-recomendado--sem-ghostscript), [Uso Rápido](#uso-rápido) e [PIX](#pix).
 
 ---
 
@@ -104,14 +105,19 @@ gem 'brcobranca', github: 'Maxwbh/brcobranca'
 bundle install
 ```
 
-GhostScript necessário apenas para o template RGhost:
+**Recomendado:** use o [template Prawn](#template-prawn-recomendado--sem-ghostscript) —
+100% Ruby, layout moderno, **nenhuma dependência de sistema**:
+
+```ruby
+gem 'prawn'; gem 'prawn-table'; gem 'barby'; gem 'rqrcode'; gem 'chunky_png'
+```
+
+GhostScript é necessário **apenas** para o template RGhost (legado):
 
 ```bash
 sudo apt-get install ghostscript   # Ubuntu/Debian
 brew install ghostscript            # macOS
 ```
-
-> Não quer GhostScript? Use o [template Prawn](#template-prawn-sem-ghostscript).
 
 ---
 
@@ -121,6 +127,7 @@ brew install ghostscript            # macOS
 
 ```ruby
 require 'brcobranca'
+require 'brcobranca/boleto/template/prawn_bolepix'
 
 boleto = Brcobranca::Boleto::Bradesco.new(
   agencia: '0548',
@@ -136,8 +143,12 @@ boleto = Brcobranca::Boleto::Bradesco.new(
   cep_sacado: '01234567'
 )
 
+# Template Prawn (recomendado): layout moderno, puro Ruby, sem GhostScript
+boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
 File.write('boleto.pdf', boleto.to(:pdf))
 ```
+
+> Sem o `extend`, `boleto.to(:pdf)` usa o gerador RGhost legado (requer GhostScript).
 
 ### Remessa CNAB
 
@@ -237,8 +248,13 @@ boleto.dados_pix
 ### Boleto PDF com QR Code
 
 ```ruby
-Brcobranca.setup { |c| c.gerador = :rghost_bolepix }
+# Prawn (recomendado): QR Code vetorial integrado à ficha
+require 'brcobranca/boleto/template/prawn_bolepix'
+boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
 File.write('boleto_pix.pdf', boleto.to(:pdf))
+
+# Alternativa RGhost (legado, requer GhostScript):
+# Brcobranca.setup { |c| c.gerador = :rghost_bolepix }
 ```
 
 ### Remessa CNAB com registro PIX
@@ -262,9 +278,19 @@ Brcobranca::Remessa::Cnab240::SicoobPix.new(pagamentos: [pagamento], ...)
 
 ---
 
-## Template Prawn (sem GhostScript)
+## Template Prawn (recomendado — sem GhostScript)
 
-Alternativa puro-Ruby para gerar PDF sem dependencia de sistema:
+Alternativa puro-Ruby para gerar PDF sem dependencia de sistema, com layout
+moderno inspirado nos boletos híbridos do mercado (boleto **e carnê**):
+
+- **Recibo do Pagador** com caixas de resumo destacadas (Vencimento, Valor e Nosso Número)
+- **QR Code PIX integrado ao grid** — célula própria "Pague com Pix" no bloco de
+  instruções, no boleto (`Instruções | Pague com Pix | Totalizadores`) e no carnê
+- **QR Code vetorial** (desenhado nativo no PDF) com zona de silêncio ISO de
+  4 módulos: decodifica de 100 a 300 dpi, em tela e impressão — validado com `zbarimg`
+- **Acentuação PT-BR completa na fonte padrão** (ç, ã, é, ê, õ…) — sem precisar
+  de TTF; `fonte_ttf` disponível para Unicode além do WinAnsi
+- Código de barras I2/5 com largura priorizada para leitura também em tela
 
 ```ruby
 # Gemfile
@@ -303,7 +329,7 @@ boleto.cor_marca      = '006B3F'                # hex; contraste do texto é aut
 boleto.parcela_atual  = 2                       # selo "PARCELA 2/12" em destaque
 boleto.total_parcelas = 12
 boleto.rodape_contato = 'financeiro@empresa.com - (77) 3000-0000'
-boleto.marca_dagua    = 'Empresa Exemplo LTDA'  # diagonal antifraude (6% opacidade)
+boleto.marca_dagua    = 'Empresa Exemplo LTDA'  # diagonal antifraude, na cor da marca
 boleto.fonte_ttf      = 'fonts/OpenSans-Regular.ttf' # UTF-8 completo
 ```
 
@@ -357,7 +383,7 @@ end
 ```bash
 git clone https://github.com/Maxwbh/brcobranca.git
 bundle install
-bundle exec rspec   # 1.300+ testes
+bundle exec rspec   # 1.380+ testes
 ```
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
@@ -383,7 +409,7 @@ Fork mantido por **[Maxwell da Silva Oliveira](https://github.com/Maxwbh)** — 
 
 **BRCobranca** is a Ruby library for Brazilian bank payment slips (boletos), CNAB remittance/return files, and PIX hybrid billing.
 
-**Key features:** 18 banks · CNAB 240/400/444 · PIX in 7 banks · PDF via RGhost or Prawn (no GhostScript needed) · Payment book (carnê, 3 slips/page) · Customizable theme (company logo, brand color, watermark, TTF font) · JSON serialization API · Bank registry for programmatic discovery · Ruby 3.0–3.4
+**Key features:** 18 banks · CNAB 240/400/444 · PIX in 7 banks · Modern Prawn PDF templates (recommended, no GhostScript) with vector PIX QR Code · Legacy RGhost templates · Payment book (carnê, 3 slips/page) · Customizable theme (company logo, brand color, watermark, TTF font) · JSON serialization API · Bank registry for programmatic discovery · Ruby 3.0–3.4
 
 ### Quick Start
 

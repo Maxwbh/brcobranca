@@ -7,6 +7,32 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+### Changed — Templates Prawn: layout moderno (boleto híbrido + carnê)
+- **`PrawnBolepix`** redesenhado no padrão dos boletos híbridos modernos
+  (referência Efi/Asaas): grade fina e clara, caixas de resumo no Recibo do
+  Pagador (Vencimento, Valor, Nosso Número) e **QR Code PIX integrado à Ficha
+  de Compensação** (célula própria no bloco `Instruções | Pague com Pix |
+  Totalizadores`, alinhada à régua de 75%)
+- **`PrawnCarne`** modernizado na mesma linguagem visual — célula "Pague com
+  Pix" integrada ao bloco de instruções (não mais flutuante), cabeçalhos
+  brancos com réguas fortes, largura de barras preservada para leitura
+- **QR Code vetorial** compartilhado (`PrawnTema.desenha_qr_vetorial`): um
+  retângulo por módulo com **zona de silêncio ISO de 4 módulos** — nítido em
+  qualquer resolução, decodifica de 100 a 300 dpi (validado com `zbarimg` e
+  EMV real com CRC16)
+- **Marca d'água** agora na **cor da marca** da empresa, por cima do conteúdo,
+  com opacidade maior (12%), restrita às áreas sem código de barras/QR
+- **Acentuação PT-BR** completa na fonte padrão (aviso `m17n` do Prawn suprimido)
+- **Logos**: gerados PNGs de Sicoob, Banco do Brasil e C6 (antes o Prawn caía
+  no fallback de texto); wordmark do C6 refeito; encaixe com `fit:` sem invadir
+  a coluna do código do banco
+- Fixtures visuais versionados regenerados com o novo layout
+
+### Docs
+- README reposiciona o **Prawn como template recomendado** (galeria e exemplos)
+- Wiki e `docs/` auditados: removidas páginas de aplicação externa (Rails,
+  Gestão de Contratos) e corrigidas referências de API; versão exibida 12.10.6
+
 ### CI — versionamento por fonte + pipeline mais rápido
 - **Auto-version** passa a disparar apenas quando a **fonte** muda (`paths: lib/**`).
   Alterações em documentação, CI (`.github/**`), testes ou `Gemfile.lock` não geram

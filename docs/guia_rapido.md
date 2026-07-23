@@ -16,19 +16,20 @@ gem 'brcobranca'
 gem install brcobranca
 ```
 
-### Requisitos do Sistema
+### Geração de PDF
 
-O GhostScript 9.0+ é necessário para geração de PDFs:
+**Recomendado — template Prawn (puro-Ruby, sem dependência de sistema):**
+
+```ruby
+gem 'prawn'; gem 'prawn-table'; gem 'barby'; gem 'rqrcode'; gem 'chunky_png'
+```
+
+O **GhostScript** é necessário **apenas** para o template RGhost (legado):
 
 ```bash
-# Ubuntu/Debian
-sudo apt-get install ghostscript
-
-# macOS
-brew install ghostscript
-
-# Alpine (Docker)
-apk add ghostscript
+sudo apt-get install ghostscript   # Ubuntu/Debian
+brew install ghostscript            # macOS
+apk add ghostscript                 # Alpine (Docker)
 ```
 
 ---
@@ -67,13 +68,18 @@ end
 ### 2. Gerar PDF
 
 ```ruby
-# PDF único
-boleto.to(Brcobranca.configuration.formato) # :pdf
+# Recomendado: template Prawn (layout moderno, sem GhostScript)
+require 'brcobranca/boleto/template/prawn_bolepix'
+boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
+File.write('boleto.pdf', boleto.to(:pdf))
 
-# Múltiplos boletos em um PDF
+# Múltiplos boletos em um PDF único
 boletos = [boleto1, boleto2, boleto3]
-Brcobranca::Boleto::Base.lote(boletos, formato: :pdf)
+boletos.each { |b| b.extend(Brcobranca::Boleto::Template::PrawnBolepix) }
+File.write('lote.pdf', Brcobranca::Boleto::Template::PrawnBolepix.lote(boletos))
 ```
+
+> Sem o `extend`, `boleto.to(:pdf)` usa o gerador RGhost legado (requer GhostScript).
 
 ### 3. Salvar arquivo
 
@@ -180,20 +186,20 @@ retornos = Brcobranca::Retorno::Cnab240::Santander.load_lines(
 
 ## Boleto com PIX (Cobrança Híbrida)
 
-### Com RGhost (padrão, requer GhostScript)
+### Com Prawn (recomendado — layout moderno, sem GhostScript)
 
 ```ruby
-Brcobranca.setup do |config|
-  config.gerador = :rghost_bolepix
-end
+# Instale: gem install prawn prawn-table barby rqrcode chunky_png
+require 'brcobranca/boleto/template/prawn_bolepix'
 
-boleto = Brcobranca::Boleto::Santander.new(
+boleto = Brcobranca::Boleto::Sicoob.new(
   # ... campos normais
   chave_pix: '12345678000100',               # chave PIX do recebedor
   tipo_chave_pix: 'cnpj',                    # cpf, cnpj, email, telefone, chave_aleatoria
   txid: 'TXID20260528001',                   # identificador da transação
   emv: '00020126580014br.gov.bcb.pix0136...' # BR Code EMV (para QR Code)
 )
+boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
 
 File.write('boleto.pdf', boleto.to(:pdf))
 
@@ -204,18 +210,10 @@ boleto.dados_pix
 #     qrcode_disponivel: true }
 ```
 
-### Com Prawn (alternativa sem GhostScript)
+### Com RGhost (legado, requer GhostScript)
 
 ```ruby
-# Instale: gem install prawn prawn-table barby rqrcode chunky_png
-require 'brcobranca/boleto/template/prawn_bolepix'
-
-boleto = Brcobranca::Boleto::Sicoob.new(
-  # ... campos normais
-  emv: '00020126580014br.gov.bcb.pix0136...'
-)
-boleto.extend(Brcobranca::Boleto::Template::PrawnBolepix)
-
+Brcobranca.setup { |config| config.gerador = :rghost_bolepix }
 File.write('boleto.pdf', boleto.to(:pdf))
 ```
 
@@ -263,7 +261,7 @@ File.write('remessa_pix.rem', remessa.gera_arquivo)
 
 ---
 
-## Banco C6 (novo, código 336)
+## Banco C6 (código 336)
 
 ```ruby
 boleto = Brcobranca::Boleto::BancoC6.new(
@@ -289,13 +287,13 @@ remessa = Brcobranca::Remessa::Cnab400::BancoC6.new(
   pagamentos: [pagamento]
 )
 
-# Via factory
+# Ou via factory (por código/símbolo do banco + formato):
 Brcobranca::Remessa.criar(banco: :c6, formato: :cnab400, **params)
 ```
 
 ---
 
-## Sicoob Carteira 9 (novo, 2024/2025)
+## Sicoob Carteira 9
 
 Nova modalidade que usa **Número do Contrato** em vez do Código do Cedente
 no código de barras.
@@ -353,71 +351,13 @@ Referência completa: [API de Bancos](api_referencia.md#api-de-bancos).
 
 ---
 
-## Integração com Rails
-
-### Controller
-
-```ruby
-class BoletosController < ApplicationController
-  def show
-    @boleto = criar_boleto(params[:id])
-
-    respond_to do |format|
-      format.html
-      format.pdf do
-        send_data @boleto.to(:pdf),
-          filename: "boleto_#{@boleto.nosso_numero}.pdf",
-          type: 'application/pdf',
-          disposition: 'inline'
-      end
-    end
-  end
-
-  private
-
-  def criar_boleto(id)
-    cobranca = Cobranca.find(id)
-    Brcobranca::Boleto::Bradesco.new(
-      # ... mapear campos
-    )
-  end
-end
-```
-
-### Route
-
-```ruby
-resources :boletos, only: [:show]
-```
-
-### Endpoint de descoberta de bancos
-
-```ruby
-# app/controllers/api/bancos_controller.rb
-class Api::BancosController < ApplicationController
-  def index
-    render json: Brcobranca::Bancos.as_json
-  end
-
-  def show
-    banco = Brcobranca::Bancos.find(params[:id])
-    banco ? render(json: banco) : head(:not_found)
-  end
-end
-
-# config/routes.rb
-namespace :api do
-  resources :bancos, only: %i[index show]
-end
-```
-
----
-
 ## Troubleshooting
 
 ### Erro: "GhostScript não encontrado"
 
-Instale o GhostScript no sistema operacional.
+Use o template **Prawn** (recomendado, não requer GhostScript) — veja
+[Geração de PDF](#geração-de-pdf) — ou instale o GhostScript no sistema
+operacional para usar o template RGhost legado.
 
 ### Erro: "Boleto inválido"
 

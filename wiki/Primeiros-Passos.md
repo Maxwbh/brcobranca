@@ -162,4 +162,4 @@ boleto.as_json_seguro
 
 - [[Configuração PIX]] — adicionar QR Code PIX ao boleto
 - [[Bancos Suportados]] — ver campos específicos por banco
-- [[Integração com Rails]] — controller e rotas prontas
+- [Referência da API](https://github.com/Maxwbh/brcobranca/blob/master/docs/api_referencia.md) — `to_hash`/`as_json`/`to_json`

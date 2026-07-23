@@ -2,7 +2,7 @@
 
 Bem-vindo à Wiki do **BRCobranca** — biblioteca Ruby para emissão de boletos bancários e arquivos CNAB.
 
-**Versão atual:** 12.8.0 · **Ruby:** >= 3.0 · **18 bancos suportados**
+**Versão atual:** 12.10.6 · **Ruby:** >= 3.0 · **18 bancos suportados** · **PIX em 7 bancos**
 
 ---
 
@@ -15,8 +15,6 @@ Bem-vindo à Wiki do **BRCobranca** — biblioteca Ruby para emissão de boletos
 | [[Bancos Suportados]] | Tabela completa com CNAB e PIX por banco |
 | [[FAQ e Troubleshooting]] | Erros comuns e soluções |
 | [[Migração RGhost para Prawn]] | Como trocar o template de PDF sem GhostScript |
-| [[Integração com Rails]] | Controllers, routes e exemplos completos |
-| [[Integração com Gestão de Contratos]] | Fluxo contrato → boleto → remessa → retorno |
 
 ---
 

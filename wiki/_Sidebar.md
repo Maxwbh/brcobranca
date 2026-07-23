@@ -9,11 +9,6 @@
 
 - [[Migração RGhost para Prawn]]
 
-### Integração
-
-- [[Integração com Rails]]
-- [[Integração com Gestão de Contratos]]
-
 ### Suporte
 
 - [[FAQ e Troubleshooting]]

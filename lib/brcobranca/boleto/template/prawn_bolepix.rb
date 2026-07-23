@@ -30,6 +30,9 @@ module Brcobranca
         require 'barby/outputter/prawn_outputter'
         require 'rqrcode'
         require 'chunky_png'
+        # A fonte padrão (Helvetica/WinAnsi) cobre toda a acentuação PT-BR;
+        # o aviso m17n do Prawn seria só ruído nos logs de produção.
+        Prawn::Fonts::AFM.hide_m17n_warning = true if defined?(Prawn::Fonts::AFM)
         PRAWN_AVAILABLE = true
       rescue LoadError
         PRAWN_AVAILABLE = false
@@ -55,20 +58,27 @@ module Brcobranca
         INSTRUCOES_LINHAS_MAX = 7
         BARCODE_HEIGHT = 48
         QRCODE_SIZE = 85
+        # Chips de resumo do Recibo do Pagador (Vencimento | Valor | Nosso número)
+        CHIP_HEIGHT = 32
 
         # ==================== CORES ====================
-        # Cinza muito claro para fundos de cabeçalhos/labels
-        COR_FUNDO_LABEL = 'F5F5F5'
-        # Cinza claro para cabeçalho principal (barra de topo)
-        COR_FUNDO_CABECALHO = 'EEEEEE'
+        # Visual moderno: grade fina em cinza claro, muito branco, labels
+        # discretos — os destaques ficam por conta dos valores em negrito
+        # e do teal PIX (referência: boletos Efi/Asaas).
+        # Cinza muito claro para fundo dos campos em destaque
+        COR_FUNDO_DESTAQUE = 'F7F7F7'
         # Cinza para texto de labels
-        COR_TEXTO_LABEL = '555555'
+        COR_TEXTO_LABEL = '777777'
         # Preto para valores
         COR_TEXTO_VALOR = '000000'
-        # Cinza para bordas
-        COR_BORDA = '333333'
-        # Verde escuro (tipo Sicoob) para destaque do PIX
-        COR_PIX = '006B3F'
+        # Cinza claro para a grade de campos
+        COR_BORDA = 'B3B3B3'
+        # Cinza escuro para réguas fortes (linha sob o cabeçalho)
+        COR_BORDA_FORTE = '333333'
+        # Teal oficial da marca PIX (preenchimentos e molduras)
+        COR_PIX = '32BCAD'
+        # Teal escuro para texto PIX sobre fundo branco (contraste)
+        COR_PIX_TEXTO = '0F7564'
 
         def to(formato, _options = {})
           unless PRAWN_AVAILABLE
@@ -149,19 +159,67 @@ module Brcobranca
         # Contém: topo, beneficiário, dados do documento, carteira, sacado,
         # instruções reduzidas e autenticação mecânica (Recibo do Pagador).
         def desenha_recibo_pagador(pdf, boleto)
-          # Marca d'água diagonal (tema opcional — Fase 3): desenhada antes
-          # do conteúdo, restrita à área do recibo (sem código de barras aqui)
-          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
-                                                     y: pdf.cursor - 40, altura: 160)
           # Faixa de identidade visual da empresa (tema opcional — Fase 2a)
           PrawnTema.desenha_faixa(pdf, boleto, largura: pdf.bounds.width, titulo: boleto.cedente.to_s)
+          y_inicio = pdf.cursor
           desenha_topo(pdf, boleto, titulo_direito: 'Recibo do Pagador')
+          desenha_resumo_chips(pdf, boleto)
+          desenha_zona_dados_e_pix(pdf, boleto)
+          desenha_linha_sacado(pdf, boleto)
+          desenha_linha_autenticacao_recibo(pdf)
+          # Marca d'água diagonal (tema opcional): POR CIMA do conteúdo, na
+          # cor da marca — o recibo não tem código de barras nem QR Code.
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: y_inicio - 30, altura: y_inicio - pdf.cursor - 40)
+        end
+
+        # Faixa de resumo com 3 caixas destacadas: Vencimento | Valor | Nosso nº
+        # (como as caixas Cobrança/Vencimento/Valor Final do boleto Efi):
+        # borda fina cinza, label pequeno em caixa alta e valor grande em negrito.
+        def desenha_resumo_chips(pdf, boleto)
+          width = pdf.bounds.width
+          y = pdf.cursor
+          gap = 6
+          chip_w = ((width - (gap * 2)) / 3.0).round(2)
+
+          chips = [
+            ['VENCIMENTO', boleto.data_vencimento.to_s_br],
+            ['VALOR DO DOCUMENTO', boleto.valor_documento.to_currency],
+            ['NOSSO NÚMERO', boleto.nosso_numero_boleto.to_s]
+          ]
+
+          pdf.stroke_color COR_BORDA
+          pdf.line_width 0.6
+
+          chips.each_with_index do |(label, valor), i|
+            x = i * (chip_w + gap)
+
+            pdf.fill_color COR_FUNDO_DESTAQUE
+            pdf.fill_rectangle([x, y], chip_w, CHIP_HEIGHT)
+            pdf.stroke_rectangle([x, y], chip_w, CHIP_HEIGHT)
+
+            pdf.fill_color COR_TEXTO_LABEL
+            pdf.text_box label,
+                         at: [x + 8, y - 5], width: chip_w - 16, height: 7,
+                         size: LABEL_SIZE, overflow: :shrink_to_fit
+            pdf.fill_color COR_TEXTO_VALOR
+            pdf.text_box valor,
+                         at: [x + 8, y - 13], width: chip_w - 16, height: 15,
+                         size: 12, style: :bold, overflow: :shrink_to_fit
+          end
+
+          pdf.line_width 0.5
+          pdf.move_down CHIP_HEIGHT + 6
+        end
+
+        # Zona de dados do recibo (largura total, layout tradicional).
+        # O QR Code PIX aparece apenas na Ficha de Compensação — padrão dos
+        # bancos para o boleto híbrido (um único bloco PIX por documento).
+        def desenha_zona_dados_e_pix(pdf, boleto)
           desenha_linha_beneficiario(pdf, boleto)
           desenha_linha_documento(pdf, boleto)
           desenha_linha_carteira(pdf, boleto)
           desenha_linha_totalizadores_recibo(pdf, boleto)
-          desenha_linha_sacado(pdf, boleto)
-          desenha_linha_autenticacao_recibo(pdf)
         end
 
         # Linha pontilhada de corte entre o Recibo do Pagador e a Ficha de
@@ -193,22 +251,27 @@ module Brcobranca
 
         # Ficha de Compensação (a parte do boleto que é realmente paga).
         def desenha_ficha_compensacao(pdf, boleto)
-          # Marca d'água da ficha: restrita à área dos campos, bem acima do
-          # código de barras/QR (zona de exclusão — não interfere na leitura)
-          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
-                                                     y: pdf.cursor - 60, altura: 160)
+          y_inicio = pdf.cursor
           desenha_topo(pdf, boleto)
           desenha_linha_local_pagamento(pdf, boleto)
           desenha_linha_beneficiario(pdf, boleto)
           desenha_linha_documento(pdf, boleto)
           desenha_linha_carteira(pdf, boleto)
+          y_antes_bloco = pdf.cursor
           desenha_bloco_instrucoes_totalizadores(pdf, boleto)
           desenha_linha_sacado(pdf, boleto)
           desenha_linha_sacador_avalista(pdf, boleto)
           desenha_codigo_barras_e_pix(pdf, boleto)
+          # Marca d'água diagonal (tema opcional): POR CIMA do conteúdo, na
+          # cor da marca — restrita às linhas de campos acima do bloco de
+          # instruções (zona de exclusão do QR Code e do código de barras).
+          PrawnTema.desenha_marca_dagua(pdf, boleto, largura: pdf.bounds.width,
+                                                     y: y_inicio - 26,
+                                                     altura: y_inicio - y_antes_bloco - 30,
+                                                     tamanho: 26)
           # Rodapé de contato da empresa (tema opcional — Fase 2a),
-          # abaixo da área do código de barras/QR Code
-          PrawnTema.desenha_rodape(pdf, boleto, largura: pdf.bounds.width, y: pdf.cursor - BARCODE_HEIGHT - 42)
+          # abaixo da área do código de barras
+          PrawnTema.desenha_rodape(pdf, boleto, largura: pdf.bounds.width, y: pdf.cursor - 6)
         end
 
         # Linha única de 5 totalizadores lado-a-lado (para o recibo, mais compacto)
@@ -272,22 +335,16 @@ module Brcobranca
           logo_w = 80
           codigo_w = 55
 
-          pdf.stroke_color COR_BORDA
-          pdf.line_width 0.5
-
-          # Fundo sombreado no topo (cinza claro)
-          pdf.fill_color COR_FUNDO_CABECALHO
-          pdf.fill_rectangle([0, y], width, HEADER_HEIGHT)
-          pdf.fill_color COR_TEXTO_VALOR
+          # Cabeçalho limpo (fundo branco): Logo | Código | Linha digitável,
+          # separados por réguas verticais fortes e sublinhado por uma régua
+          # forte — o visual clássico do topo de boleto, sem fundo sombreado.
+          pdf.stroke_color COR_BORDA_FORTE
+          pdf.line_width 0.8
 
           # Logo do banco (se houver PNG) ou texto como fallback
           PrawnTema.desenha_logo_banco_prawn(pdf, boleto, 0, y, logo_w, HEADER_HEIGHT)
 
-          # Código do banco - DV (centro, destaque)
-          pdf.fill_color 'FFFFFF'
-          pdf.fill_rectangle([logo_w, y], codigo_w, HEADER_HEIGHT)
           pdf.fill_color COR_TEXTO_VALOR
-
           pdf.text_box "#{boleto.banco}-#{boleto.banco_dv}",
                        at: [logo_w, y - 4],
                        width: codigo_w,
@@ -296,11 +353,6 @@ module Brcobranca
                        align: :center,
                        valign: :center,
                        style: :bold
-
-          # Linha digitável (direita, fundo branco)
-          pdf.fill_color 'FFFFFF'
-          pdf.fill_rectangle([logo_w + codigo_w, y], width - logo_w - codigo_w, HEADER_HEIGHT)
-          pdf.fill_color COR_TEXTO_VALOR
 
           pdf.text_box boleto.codigo_barras.linha_digitavel,
                        at: [logo_w + codigo_w + 5, y - 4],
@@ -311,42 +363,17 @@ module Brcobranca
                        valign: :center,
                        style: :bold
 
-          # Bordas verticais internas
-          pdf.stroke_color COR_BORDA
-          pdf.stroke_vertical_line y, y - HEADER_HEIGHT, at: logo_w
-          pdf.stroke_vertical_line y, y - HEADER_HEIGHT, at: logo_w + codigo_w
+          # Réguas verticais fortes entre logo, código e linha digitável
+          pdf.stroke_vertical_line y - 2, y - HEADER_HEIGHT + 4, at: logo_w
+          pdf.stroke_vertical_line y - 2, y - HEADER_HEIGHT + 4, at: logo_w + codigo_w
 
-          # Borda inferior grossa (destaca o header)
-          pdf.line_width 1.2
+          # Régua forte sob o cabeçalho
+          pdf.line_width 1.1
           pdf.stroke_horizontal_line 0, width, at: y - HEADER_HEIGHT
           pdf.line_width 0.5
+          pdf.stroke_color COR_BORDA
 
-          pdf.move_down HEADER_HEIGHT
-        end
-
-        def PrawnTema.desenha_logo_banco_prawn(pdf, boleto, x, y, col_width, altura)
-          png_path = boleto.logotipo.sub(/\.eps\z/, '.png')
-          if File.exist?(png_path)
-            pdf.image png_path, at: [x + 2, y - 2], height: altura - 6, width: col_width - 4
-          else
-            pdf.text_box boleto.banco_nome.upcase,
-                         at: [x, y - 6],
-                         width: col_width,
-                         height: altura,
-                         size: 8,
-                         align: :center,
-                         valign: :center,
-                         style: :bold
-          end
-        rescue StandardError
-          pdf.text_box boleto.banco_nome.upcase,
-                       at: [x, y - 6],
-                       width: col_width,
-                       height: altura,
-                       size: 8,
-                       align: :center,
-                       valign: :center,
-                       style: :bold
+          pdf.move_down HEADER_HEIGHT + 2
         end
 
         def desenha_linha_local_pagamento(pdf, boleto)
@@ -412,17 +439,25 @@ module Brcobranca
         def desenha_bloco_instrucoes_totalizadores(pdf, boleto)
           width = pdf.bounds.width
           y = pdf.cursor
-          left_width = width * 0.65
-          right_width = width * 0.35
-          altura = BLOCO_INSTRUCOES_ALTURA
+          tem_pix = boleto.emv && PrawnTema.emv_valido?(boleto.emv)
 
-          # Faixa cinza clara no topo (label)
-          label_stripe_height = 10
-          pdf.fill_color COR_FUNDO_LABEL
-          pdf.fill_rectangle([0, y], left_width, label_stripe_height)
-          pdf.fill_color COR_TEXTO_VALOR
+          # Com PIX, o bloco ganha uma célula central para o QR Code
+          # (integrado ao grid da ficha, como nos boletos modernos):
+          #   [ Instruções 57% | Pague com Pix 18% | Totalizadores 25% ]
+          # Sem PIX: [ Instruções 75% | Totalizadores 25% ]
+          # Os totalizadores usam 25% para alinhar com a coluna de
+          # Vencimento/Valor do Documento das linhas acima (régua em 75%),
+          # deixando o máximo de espaço para as instruções.
+          pix_width = tem_pix ? width * 0.18 : 0
+          right_width = width * 0.25
+          left_width = width - right_width - pix_width
+          # Com PIX o bloco é mais alto (6 módulos), garantindo QR Code de
+          # ~2,7 cm legível também em tela; os 5 totalizadores se distribuem
+          # proporcionalmente na nova altura.
+          altura = tem_pix ? TOTALIZADORES_HEIGHT * 6 : BLOCO_INSTRUCOES_ALTURA
+          total_row_h = altura / 5.0
 
-          # Borda externa do bloco
+          # Borda externa do bloco (grade fina clara, fundo branco)
           pdf.stroke_color COR_BORDA
           pdf.stroke_rectangle([0, y], width, altura)
 
@@ -452,7 +487,14 @@ module Brcobranca
           # Separador vertical entre colunas
           pdf.stroke_vertical_line y, y - altura, at: left_width
 
+          # Célula central "Pague com Pix" (somente quando há EMV)
+          if tem_pix
+            desenha_celula_pix(pdf, boleto, x: left_width, y: y, largura: pix_width, altura: altura)
+            pdf.stroke_vertical_line y, y - altura, at: left_width + pix_width
+          end
+
           # Coluna direita: 5 totalizadores empilhados
+          total_x = left_width + pix_width
           totalizadores = [
             ['(-) Desconto / Abatimento', boleto.descontos_e_abatimentos&.to_currency || ''],
             ['(-) Outras deduções', ''],
@@ -461,17 +503,12 @@ module Brcobranca
             ['(=) Valor cobrado', '']
           ]
           totalizadores.each_with_index do |(label, valor), i|
-            top = y - (i * TOTALIZADORES_HEIGHT)
-
-            # Faixa cinza clara de label
-            pdf.fill_color COR_FUNDO_LABEL
-            pdf.fill_rectangle([left_width, top], right_width, label_stripe_height)
-            pdf.fill_color COR_TEXTO_VALOR
+            top = y - (i * total_row_h)
 
             # Label (esquerda, pequeno)
             pdf.fill_color COR_TEXTO_LABEL
             pdf.text_box label,
-                         at: [left_width + 4, top - 3],
+                         at: [total_x + 4, top - 3],
                          width: right_width - 8,
                          height: 8,
                          size: LABEL_SIZE
@@ -479,14 +516,15 @@ module Brcobranca
 
             # Valor (alinhado à direita)
             pdf.text_box valor,
-                         at: [left_width + 4, top - 12],
+                         at: [total_x + 4, top - 12],
                          width: right_width - 8,
                          height: 9,
                          size: VALUE_SIZE,
                          align: :right
 
-            # Separador horizontal entre totalizadores (exceto último)
-            pdf.stroke_horizontal_line left_width, width, at: top - TOTALIZADORES_HEIGHT if i < totalizadores.length - 1
+            # Separador horizontal entre totalizadores (exceto último) —
+            # começa em total_x para não cruzar a célula do QR Code PIX
+            pdf.stroke_horizontal_line total_x, width, at: top - total_row_h if i < totalizadores.length - 1
           end
 
           pdf.move_down altura
@@ -497,6 +535,27 @@ module Brcobranca
 
           [boleto.instrucao1, boleto.instrucao2, boleto.instrucao3,
            boleto.instrucao4, boleto.instrucao5, boleto.instrucao6].compact.reject { |l| l.to_s.strip.empty? }.join("\n")
+        end
+
+        # Célula "Pague com Pix" integrada ao bloco de instruções da ficha:
+        # cabeçalho no teal PIX, QR Code centralizado e nota de confirmação.
+        def desenha_celula_pix(pdf, boleto, x:, y:, largura:, altura:)
+          header_h = 10
+
+          # Cabeçalho preenchido no teal PIX (mesma altura da zona de labels)
+          pdf.fill_color COR_PIX
+          pdf.fill_rectangle([x, y], largura, header_h)
+          pdf.fill_color 'FFFFFF'
+          pdf.text_box PrawnTema.resolve_pix_label(boleto).upcase,
+                       at: [x, y - 2], width: largura, height: 8,
+                       size: 6, style: :bold, align: :center
+
+          # QR Code centralizado na célula (vetorial, compartilhado no PrawnTema),
+          # com folga em todos os lados — a leitura tem prioridade sobre legendas.
+          qr_size = [altura - header_h - 4, largura - 4].min
+          qr_x = x + ((largura - qr_size) / 2.0)
+          PrawnTema.desenha_qr_vetorial(pdf, boleto.emv.to_s, x: qr_x, y: y - header_h - 3, tamanho: qr_size)
+          pdf.fill_color COR_TEXTO_VALOR
         end
 
         def desenha_linha_sacado(pdf, boleto)
@@ -530,14 +589,8 @@ module Brcobranca
           y = pdf.cursor
           x_cursor = 0
 
-          # Faixa cinza clara na parte superior de cada célula (onde fica o label)
-          # Dá o efeito visual de "cabeçalho de campo" característico do boleto
-          label_stripe_height = 10
-          pdf.fill_color COR_FUNDO_LABEL
-          pdf.fill_rectangle([0, y], width, label_stripe_height)
-          pdf.fill_color COR_TEXTO_VALOR
-
-          # Borda externa do retângulo
+          # Grade fina e clara, fundo branco — labels pequenos em cinza fazem o
+          # papel de "cabeçalho de campo" sem faixas sombreadas.
           pdf.stroke_color COR_BORDA
           pdf.stroke_rectangle([0, y], width, height)
 
@@ -546,16 +599,12 @@ module Brcobranca
 
             # Destaque especial: fundo leve para campos destacados (ex.: Vencimento, Valor)
             if col[:destaque]
-              pdf.fill_color COR_FUNDO_CABECALHO
+              pdf.fill_color COR_FUNDO_DESTAQUE
               pdf.fill_rectangle([x_cursor, y], col_width, height)
-              pdf.fill_color COR_TEXTO_VALOR
-              # Redesenha a faixa do label por cima do destaque
-              pdf.fill_color COR_FUNDO_LABEL
-              pdf.fill_rectangle([x_cursor, y], col_width, label_stripe_height)
               pdf.fill_color COR_TEXTO_VALOR
             end
 
-            # Label (topo, pequeno, cinza escuro)
+            # Label (topo, pequeno, cinza)
             pdf.fill_color COR_TEXTO_LABEL
             pdf.text_box col[:label].to_s,
                          at: [x_cursor + 4, y - 3],
@@ -589,80 +638,42 @@ module Brcobranca
           pdf.move_down height
         end
 
+        # Código de barras I2/5 na base da ficha. O QR Code PIX fica na célula
+        # central do bloco de instruções (desenha_celula_pix) — aqui o barcode
+        # ocupa a largura padrão com a autenticação mecânica à direita.
         def desenha_codigo_barras_e_pix(pdf, boleto)
           return unless boleto.codigo_barras
 
           width = pdf.bounds.width
           y_start = pdf.cursor
-          tem_pix = boleto.emv && PrawnTema.emv_valido?(boleto.emv)
-
-          barras_width = tem_pix ? width * 0.55 : width * 0.60
+          # 68%% de largura prioriza a leitura do I2/5 tambem em tela
+          # (mesma otimizacao aplicada ao carne).
+          barras_width = width * 0.68
           direita_x = barras_width + 10
 
           pdf.bounding_box([0, y_start], width: barras_width, height: BARCODE_HEIGHT) do
             barcode = Barby::Code25Interleaved.new(boleto.codigo_barras.to_s)
             # xdim calculado para o barcode caber na caixa com zona de
-            # silencio (8pt) — um xdim fixo transbordaria sobre o QR Code,
-            # impedindo a leitura do I2/5.
+            # silêncio (8pt), garantindo a leitura do I2/5.
             modules = barcode.encoding.length
             xdim = [(barras_width - 8).to_f / modules, 0.9].min
             barcode.annotate_pdf(pdf, height: BARCODE_HEIGHT - 5, xdim: xdim)
           end
 
-          if tem_pix
-            qr_x = direita_x
-            # Renderiza QR Code diretamente sem usar bounding_box (evita double-move).
-            # Nivel M de correcao conforme manual de padroes PIX do BACEN.
-            qrcode = RQRCode::QRCode.new(boleto.emv.to_s, level: :m)
-            png = qrcode.as_png(size: 300, module_size: 6, border_modules: 1)
+          pdf.fill_color COR_TEXTO_LABEL
+          pdf.text_box 'Autenticação mecânica - Ficha de Compensação',
+                       at: [direita_x, y_start - 5],
+                       width: width - direita_x,
+                       height: 15,
+                       size: 7,
+                       align: :right,
+                       valign: :top
+          pdf.fill_color COR_TEXTO_VALOR
 
-            pdf.image StringIO.new(png.to_s),
-                      at: [qr_x, y_start],
-                      width: QRCODE_SIZE
-
-            # Label "Pague com PIX" em verde, centralizado abaixo do QR Code
-            pdf.fill_color COR_PIX
-            pdf.text_box PrawnTema.resolve_pix_label(boleto),
-                         at: [qr_x, y_start - QRCODE_SIZE - 2],
-                         width: QRCODE_SIZE,
-                         height: 10,
-                         size: 8,
-                         align: :center,
-                         style: :bold
-            pdf.fill_color COR_TEXTO_VALOR
-
-            # Autenticação mecânica (direita do QR Code)
-            autent_x = qr_x + QRCODE_SIZE + 10
-            pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box 'Autenticação mecânica - Ficha de Compensação',
-                         at: [autent_x, y_start - 5],
-                         width: width - autent_x,
-                         height: 15,
-                         size: 7,
-                         align: :right,
-                         valign: :top
-            pdf.fill_color COR_TEXTO_VALOR
-          else
-            # Autenticação mecânica (toda a direita)
-            pdf.fill_color COR_TEXTO_LABEL
-            pdf.text_box 'Autenticação mecânica - Ficha de Compensação',
-                         at: [direita_x, y_start - 5],
-                         width: width - direita_x,
-                         height: 15,
-                         size: 7,
-                         align: :right,
-                         valign: :top
-            pdf.fill_color COR_TEXTO_VALOR
-          end
-
-          pdf.move_down BARCODE_HEIGHT + 8
-        end
-
-        def PrawnTema.resolve_pix_label(boleto)
-          return boleto.pix_label if boleto.respond_to?(:pix_label) && boleto.pix_label
-
-          config_label = Brcobranca.configuration.respond_to?(:pix_label) ? Brcobranca.configuration.pix_label : nil
-          config_label || 'Pague com PIX'
+          # O bounding_box do barcode já desceu o cursor em BARCODE_HEIGHT;
+          # aqui apenas o respiro final (evita dobrar o deslocamento e afastar
+          # demais o rodapé de contato do tema).
+          pdf.move_down 8
         end
 
       end
