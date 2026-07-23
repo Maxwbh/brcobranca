@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Brcobranca
-  VERSION = '12.10.6'
+  VERSION = '12.11.0'
 end

@@ -7,6 +7,10 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/spec
 
 ## [Unreleased]
 
+<!-- Adicione novas mudanças aqui -->
+
+## [12.11.0] - 2026-07-23
+
 ### Changed — Templates Prawn: layout moderno (boleto híbrido + carnê)
 - **`PrawnBolepix`** redesenhado no padrão dos boletos híbridos modernos
   (referência Efi/Asaas): grade fina e clara, caixas de resumo no Recibo do
